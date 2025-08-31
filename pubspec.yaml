@@ -15,8 +15,8 @@ dependencies:
   # get
   get: ^4.6.5
 
-  # Material You 动态配色 - 使用 ^1.1.2，但由 overrides 强制锁定
-  dynamic_color: ^1.1.2
+  # Material You 动态配色 - 使用 ^1.5.2
+  dynamic_color: ^1.5.2
 
   # 网络相关 
   dio: ^5.3.2
@@ -39,7 +39,7 @@ dependencies:
   # 控件
   ns_danmaku:
     git: 
-      url: https://github.com/lucinhu/flutter_ns_danmaku.git  
+      url: https://github.com/lucinhu/flutter_ns_danmaku.git   
   cached_network_image: ^3.3.1
   photo_view: ^0.14.0  
   card_swiper: ^3.0.1  
@@ -100,9 +100,8 @@ dependencies:
 # 强制覆盖依赖版本 (关键修复)
 # ----------------------------
 dependency_overrides:
-  # ✅ 强制使用已知兼容的版本
-  dynamic_color: 1.1.2
-  cached_network_image: 3.3.1
+  # ✅ 强制使用 Flutter SDK 提供的 material_color_utilities 版本
+  material_color_utilities: 0.8.0
 
 dev_dependencies:
   build_runner: ^2.4.4
