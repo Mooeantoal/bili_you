@@ -68,21 +68,27 @@ class SearchApi {
 
   ///根据keyWord获取搜索建议
   static Future<List<SearchSuggestItem>> getSearchSuggests(
-      {required String keyWord}) async {
-    List<SearchSuggestItem> list = [];
-    var response = await _requestSearchSuggests(keyWord);
-    if (response.code != 0) {
-      throw "getSearchSuggests: code:${response.code}";
-    }
-    if (response.result == null || response.result!.tag == null) {
-      return list;
-    }
-    for (var i in response.result!.tag!) {
-      list.add(
-          SearchSuggestItem(showWord: i.name ?? "", realWord: i.value ?? ""));
-    }
+    {required String keyWord}) async {
+  List<SearchSuggestItem> list = [];
+  var response = await _requestSearchSuggests(keyWord);
+  if (response.code != 0) {
+    throw "getSearchSuggests: code:${response.code}";
+  }
+  if (response.result == null || response.result!.tag == null) {
     return list;
   }
+  for (var i in response.result!.tag!) {
+    // ✅ 修复：使用 keyWordTitleToRawTitle 移除 HTML 标签
+    final cleanName = StringFormatUtils.keyWordTitleToRawTitle(i.name ?? "");
+    
+    list.add(
+        SearchSuggestItem(
+          showWord: cleanName, // ✅ 已清理 HTML 标签
+          realWord: i.value ?? ""
+        ));
+  }
+  return list;
+}
 
   ///搜索请求
   ///keyword 搜索的词
