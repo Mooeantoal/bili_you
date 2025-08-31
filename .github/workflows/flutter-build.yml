@@ -1,0 +1,39 @@
+name: Build Flutter APK
+
+on:
+  push:
+    branches: [ main, master ]  # 当推送到 main/master 分支时触发
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 设置 Flutter 环境
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.19.5'  # 推荐使用稳定版本
+
+      # 3. 安装依赖
+      - name: Get dependencies
+        run: flutter pub get
+
+      # 4. 构建 APK（Release 版本）
+      - name: Build APK
+        run: flutter build apk --release --split-per-abi
+        # --split-per-abi 生成多个小体积 APK（arm64-v8a, armeabi-v7a）
+
+      # 5. 上传构建产物
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-apk
+          path: build/app/outputs/flutter-apk/
