@@ -1,3 +1,4 @@
+// 完整替换此文件的内容为以下代码
 import 'package:bili_you/common/values/hero_tag_id.dart';
 import 'package:bili_you/common/widget/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +99,7 @@ class RecommendCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(6, 4, 6, 6), // 优化内边距，底部减少
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -109,7 +110,7 @@ class RecommendCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 13),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2), // 减少标题与信息行的间距
+                    const SizedBox(height: 2),
                     // 优化信息行：将所有信息放在一行，更紧凑
                     Row(
                       children: [
