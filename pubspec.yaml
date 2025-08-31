@@ -100,7 +100,6 @@ dependencies:
 # 强制覆盖依赖版本 (关键修复)
 # ----------------------------
 dependency_overrides:
-  # ✅ 强制使用 Flutter SDK 提供的 material_color_utilities 版本
   material_color_utilities: 0.8.0
 
 dev_dependencies:
