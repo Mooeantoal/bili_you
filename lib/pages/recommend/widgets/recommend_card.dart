@@ -51,7 +51,6 @@ class RecommendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 格式化数字
     String formattedPlayNum =
         StringFormatUtils.numFormat(int.tryParse(playNum) ?? 0);
     String formattedDanmakuNum =
@@ -105,7 +104,7 @@ class RecommendCard extends StatelessWidget {
             ],
           ),
 
-          // 标题
+          // 标题（调整了字体大小，使信息更紧凑）
           Padding(
             padding: const EdgeInsets.fromLTRB(6, 6, 6, 0),
             child: Text(
@@ -113,16 +112,16 @@ class RecommendCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 13, // 小字号，增加空间利用率
                 fontWeight: FontWeight.w500,
-                height: 1.2,
+                height: 1.3,
               ),
             ),
           ),
 
-          // 播放量 + 弹幕数 + up主
+          // 播放量 + 弹幕数
           Padding(
-            padding: const EdgeInsets.fromLTRB(6, 3, 6, 6),
+            padding: const EdgeInsets.fromLTRB(6, 3, 6, 0),
             child: Row(
               children: [
                 Text("▶ $formattedPlayNum",
@@ -132,17 +131,19 @@ class RecommendCard extends StatelessWidget {
                 Text("💬 $formattedDanmakuNum",
                     style: TextStyle(
                         fontSize: 11, color: Colors.grey.shade600)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    upName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade600),
-                  ),
-                ),
               ],
+            ),
+          ),
+          
+          // UP 主信息
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 3, 6, 6),
+            child: Text(
+              upName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 11, color: Colors.grey.shade600),
             ),
           ),
         ],
