@@ -1,7 +1,6 @@
 import 'package:bili_you/common/values/hero_tag_id.dart';
 import 'package:bili_you/common/widget/cached_network_image.dart';
 import 'package:flutter/material.dart';
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:bili_you/pages/bili_video/view.dart';
 import 'package:get/get.dart';
@@ -39,13 +38,6 @@ class RecommendCard extends StatelessWidget {
   final int heroTagId;
 
   void onTap(BuildContext context) {
-    // Get.to(
-    //   () => BiliVideoPage(
-    //     key: ValueKey('BiliVideoPage:${bvid}'),
-    //     bvid: bvid,
-    //     cid: cid,
-    //   ),
-    // );
     HeroTagId.lastId = heroTagId;
     Navigator.of(context).push(GetPageRoute(
       page: () => BiliVideoPage(
@@ -60,7 +52,7 @@ class RecommendCard extends StatelessWidget {
   Widget build(BuildContext context) {
     TextStyle playInfoTextStyle = TextStyle(
         color: Theme.of(context).hintColor,
-        fontSize: 12,
+        fontSize: 10,  // 缩小字体
         overflow: TextOverflow.ellipsis);
     Color iconColor = Theme.of(context).hintColor;
     return Card(
@@ -70,7 +62,7 @@ class RecommendCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),  // 减小圆角
                 child: AspectRatio(
                   aspectRatio: 16 / 10,
                   child: LayoutBuilder(builder: (context, boxConstraints) {
@@ -99,16 +91,16 @@ class RecommendCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(6.0),
+                padding: const EdgeInsets.all(4.0),  // 减小内边距
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: 40 * MediaQuery.of(context).textScaleFactor,
+                      height: 32 * MediaQuery.of(context).textScaleFactor,  // 减小高度
                       child: Text(
                         title,
                         maxLines: 2,
-                        style: const TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 12),  // 缩小标题字体
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -119,7 +111,7 @@ class RecommendCard extends StatelessWidget {
                             child: Icon(
                               Icons.slideshow_rounded,
                               color: iconColor,
-                              size: 12 * MediaQuery.of(context).textScaleFactor,
+                              size: 10 * MediaQuery.of(context).textScaleFactor,  // 缩小图标
                             )),
                         TextSpan(
                           text: " $playNum  ",
@@ -129,7 +121,7 @@ class RecommendCard extends StatelessWidget {
                           child: Icon(
                             Icons.format_list_bulleted_rounded,
                             color: iconColor,
-                            size: 12 * MediaQuery.of(context).textScaleFactor,
+                            size: 10 * MediaQuery.of(context).textScaleFactor,  // 缩小图标
                           ),
                         ),
                         TextSpan(
@@ -140,7 +132,7 @@ class RecommendCard extends StatelessWidget {
                           child: Icon(
                             Icons.timer_outlined,
                             color: iconColor,
-                            size: 12 * MediaQuery.of(context).textScaleFactor,
+                            size: 10 * MediaQuery.of(context).textScaleFactor,  // 缩小图标
                           ),
                         ),
                         TextSpan(
@@ -165,7 +157,7 @@ class RecommendCard extends StatelessWidget {
           Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),  // 减小圆角
                 onTap: () => onTap(context),
               ))
         ]));
