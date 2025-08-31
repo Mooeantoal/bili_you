@@ -17,8 +17,8 @@ dependencies:
   # get
   get: ^4.6.5
 
-  # Material You 动态配色
-  dynamic_color: ^1.6.3
+  # Material You 动态配色 - ✅ 修复版本
+  dynamic_color: ^1.1.2
 
   # 网络相关 
   dio: ^5.3.2
@@ -41,8 +41,8 @@ dependencies:
   # 控件
   ns_danmaku:
     git: 
-      url: https://github.com/lucinhu/flutter_ns_danmaku.git
-  cached_network_image: ^3.2.3
+      url: https://github.com/lucinhu/flutter_ns_danmaku.git 
+  cached_network_image: ^3.3.1 # ✅ 修复版本
   photo_view: ^0.14.0  
   card_swiper: ^3.0.1  
 
