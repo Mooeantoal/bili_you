@@ -1,2 +1,2 @@
 export 'common/index.dart';
-export 'main.darmt';
+export 'main.dart';
