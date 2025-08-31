@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:bili_you/pages/bili_video/view.dart';
 import 'package:get/get.dart';
+import 'package:bili_you/common/utils/string_format_utils.dart';
 
 class RecommendCard extends StatelessWidget {
   const RecommendCard(
@@ -52,19 +53,25 @@ class RecommendCard extends StatelessWidget {
   Widget build(BuildContext context) {
     TextStyle playInfoTextStyle = TextStyle(
         color: Theme.of(context).hintColor,
-        fontSize: 10,  // 缩小字体
+        fontSize: 10,
         overflow: TextOverflow.ellipsis);
     Color iconColor = Theme.of(context).hintColor;
+    
+    // 优化：格式化数字，例如10000显示为1万
+    String formattedPlayNum = StringFormatUtils.numFormat(int.tryParse(playNum) ?? 0);
+    String formattedDanmakuNum = StringFormatUtils.numFormat(int.tryParse(danmakuNum) ?? 0);
+
     return Card(
         margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Stack(children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),  // 减小圆角
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
                 child: AspectRatio(
-                  aspectRatio: 16 / 10,
+                  aspectRatio: 16 / 9, // 从16/10改为16/9，更符合主流视频比例
                   child: LayoutBuilder(builder: (context, boxConstraints) {
                     return Hero(
                         tag: heroTagId,
@@ -91,63 +98,104 @@ class RecommendCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(4.0),  // 减小内边距
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 6), // 优化内边距，底部减少
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 32 * MediaQuery.of(context).textScaleFactor,  // 减小高度
-                      child: Text(
-                        title,
-                        maxLines: 2,
-                        style: const TextStyle(fontSize: 12),  // 缩小标题字体
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text.rich(
-                      TextSpan(children: [
-                        WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Icon(
-                              Icons.slideshow_rounded,
-                              color: iconColor,
-                              size: 10 * MediaQuery.of(context).textScaleFactor,  // 缩小图标
-                            )),
-                        TextSpan(
-                          text: " $playNum  ",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Icon(
-                            Icons.format_list_bulleted_rounded,
-                            color: iconColor,
-                            size: 10 * MediaQuery.of(context).textScaleFactor,  // 缩小图标
-                          ),
-                        ),
-                        TextSpan(
-                          text: " $danmakuNum ",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Icon(
-                            Icons.timer_outlined,
-                            color: iconColor,
-                            size: 10 * MediaQuery.of(context).textScaleFactor,  // 缩小图标
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' $timeLength',
-                        ),
-                      ]),
-                      style: playInfoTextStyle,
+                    // 优化标题：限制为单行，避免占用过多空间
+                    Text(
+                      title,
                       maxLines: 1,
+                      style: const TextStyle(fontSize: 13),
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 2), // 减少标题与信息行的间距
+                    // 优化信息行：将所有信息放在一行，更紧凑
+                    Row(
+                      children: [
+                        // 播放量
+                        Expanded(
+                          flex: 2,
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Icon(
+                                    Icons.slideshow_rounded,
+                                    color: iconColor,
+                                    size: 10,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' $formattedPlayNum',
+                                  style: playInfoTextStyle,
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // 弹幕数
+                        Expanded(
+                          flex: 1,
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Icon(
+                                    Icons.format_list_bulleted_rounded,
+                                    color: iconColor,
+                                    size: 10,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' $formattedDanmakuNum',
+                                  style: playInfoTextStyle,
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // 时长
+                        Expanded(
+                          flex: 1,
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Icon(
+                                    Icons.timer_outlined,
+                                    color: iconColor,
+                                    size: 10,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' $timeLength',
+                                  style: playInfoTextStyle,
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // 作者名 - 使用更小的字体
                     Text(
                       upName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: playInfoTextStyle,
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Theme.of(context).hintColor,
+                      ),
                     )
                   ],
                 ),
@@ -157,7 +205,7 @@ class RecommendCard extends StatelessWidget {
           Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(8),  // 减小圆角
+                borderRadius: BorderRadius.circular(8),
                 onTap: () => onTap(context),
               ))
         ]));
