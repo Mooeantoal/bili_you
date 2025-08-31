@@ -193,18 +193,21 @@ class _BiliVideoPageState extends State<BiliVideoPage>
         child: Scaffold(
           body: Column(
             children: [
-              BiliVideoPlayerWidget(
-                controller.biliVideoPlayerController,
-                heroTagId: HeroTagId.lastId,
-                buildControllPanel: () {
-                  return BiliVideoPlayerPanel(
-                    controller.biliVideoPlayerPanelController,
-                  );
-                },
-                buildDanmaku: () {
-                  return BiliDanmaku(
-                      controller: controller.biliDanmakuController);
-                },
+              SizedBox(
+                height: MediaQuery.of(context).size.width * 9 / 16, // 16:9比例
+                child: BiliVideoPlayerWidget(
+                  controller.biliVideoPlayerController,
+                  heroTagId: HeroTagId.lastId,
+                  buildControllPanel: () {
+                    return BiliVideoPlayerPanel(
+                      controller.biliVideoPlayerPanelController,
+                    );
+                  },
+                  buildDanmaku: () {
+                    return BiliDanmaku(
+                        controller: controller.biliDanmakuController);
+                  },
+                ),
               ),
               Expanded(child: _buildView(context, controller)),
             ],
