@@ -1,7 +1,7 @@
 import 'package:bili_you/common/utils/string_format_utils.dart';
 import 'package:bili_you/common/values/hero_tag_id.dart';
 import 'package:bili_you/common/widget/simple_easy_refresher.dart';
-import 'package:bili_you/pages/recommend/widgets/recommend_card.dart';
+import 'package:bili_you/common/widgets/piliplus_video_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'index.dart';
@@ -73,18 +73,20 @@ class _RecommendPageState extends State<RecommendPage>
           itemCount: controller.recommendItems.length,
           itemBuilder: (context, index) {
             var i = controller.recommendItems[index];
-            return RecommendCard(
-                key: ValueKey("${i.bvid}:RecommendCard"),
-                heroTagId: HeroTagId.id++,
-                cacheManager: controller.cacheManager,
-                imageUrl: i.coverUrl,
-                playNum: StringFormatUtils.numFormat(i.playNum),
-                danmakuNum: StringFormatUtils.numFormat(i.danmakuNum),
-                timeLength: StringFormatUtils.timeLengthFormat(i.timeLength),
-                title: i.title,
-                upName: i.upName,
-                bvid: i.bvid,
-                cid: i.cid);
+            return PiliPlusVideoCard(
+              key: ValueKey("${i.bvid}:PiliPlusVideoCard"),
+              item: i,
+              heroTag: 'recommend_${i.bvid}',
+              onTap: () {
+                Get.toNamed(
+                  '/video?bvid=${i.bvid}&cid=${i.cid}',
+                  arguments: {
+                    'videoItem': i,
+                    'heroTag': 'recommend_${i.bvid}',
+                  },
+                );
+              },
+            );
           },
         ),
       );
