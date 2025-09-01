@@ -1,421 +1,257 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:bili_you/common/api/video_play_api.dart';
-import 'package:bili_you/common/models/local/video/audio_play_item.dart';
-import 'package:bili_you/common/models/local/video/video_play_info.dart';
-import 'package:bili_you/common/models/local/video/video_play_item.dart';
-import 'package:bili_you/common/utils/index.dart';
-import 'package:bili_you/common/widget/video_audio_player.dart';
-import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_danmaku.dart';
+import 'package:biliyou/common/api/videoplayapi.dart';
+import 'package:biliyou/common/models/local/video/audioplayitem.dart';
+import 'package:biliyou/common/models/local/video/videoplayinfo.dart';
+import 'package:biliyou/common/models/local/video/videoplayitem.dart';
+import 'package:biliyou/common/utils/index.dart';
+import 'package:biliyou/pages/bilivideo/widgets/bilivideoplayer/bilivideoplayer_cubit.dart';
+import 'package:biliyou/pages/bilivideo/widgets/bilivideoplayer/bilivideoplayer_state.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mediakit/mediakit.dart';
+import 'package:mediakit_video/mediakit_video.dart';
 
-class BiliVideoPlayerWidget extends StatefulWidget {
-  const BiliVideoPlayerWidget(this.controller,
-      {super.key,
-      this.buildDanmaku,
-      this.buildControllPanel,
-      required this.heroTagId});
-  final BiliVideoPlayerController controller;
-  final BiliDanmaku Function()? buildDanmaku;
-  final Widget Function()? buildControllPanel;
-  final int heroTagId;
+class BiliVideoPlayer extends StatefulWidget {
+  final VideoPlayInfo videoPlayInfo;
+  final VideoPlayItem videoPlayItem;
+  final AudioPlayItem? audioPlayItem;
+  final String? cid;
+  final bool autoPlay;
+
+  const BiliVideoPlayer({
+    super.key,
+    required this.videoPlayInfo,
+    required this.videoPlayItem,
+    this.audioPlayItem,
+    this.cid,
+    this.autoPlay = true,
+  });
 
   @override
-  State<BiliVideoPlayerWidget> createState() => _BiliVideoPlayerWidgetState();
+  State<BiliVideoPlayer> createState() => _BiliVideoPlayerState();
 }
 
-class _BiliVideoPlayerWidgetState extends State<BiliVideoPlayerWidget> {
-  BiliDanmaku? danmaku;
-  Widget? controllPanel;
-
-  updateWidget() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
+class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
+  late final VideoController _controller;
+  late final BiliVideoPlayerCubit _cubit;
+  Timer? _positionUpdateTimer;
 
   @override
   void initState() {
-    danmaku = widget.buildDanmaku?.call();
-    controllPanel = widget.buildControllPanel?.call();
-    if (!widget.controller._isInitializedState) {
-      //是否进入时即播放
-      widget.controller._playWhenInitialize = SettingsUtil.getValue(
-          SettingsStorageKeys.autoPlayOnInit,
-          defaultValue: true);
-      widget.controller.buildDanmaku = widget.buildDanmaku;
-      widget.controller.biliDanmakuController = danmaku!.controller;
-      widget.controller.buildControllPanel = widget.buildControllPanel;
-    }
-    widget.controller._isInitializedState = true;
     super.initState();
+    _cubit = BiliVideoPlayerCubit(
+      videoPlayInfo: widget.videoPlayInfo,
+      videoPlayItem: widget.videoPlayItem,
+      audioPlayItem: widget.audioPlayItem,
+    );
+
+    // 初始化mediakit控制器
+    _controller = VideoController(
+      VideoSource.uri(
+        Uri.parse(widget.videoPlayItem.url),
+        type: VideoType.network,
+      ),
+    );
+
+    if (widget.autoPlay) {
+      _controller.player.play();
+    }
+
+    // 启动位置更新定时器
+    _positionUpdateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_controller.player.value.isPlaying) {
+        _cubit.updatePosition(_controller.player.value.position);
+      }
+    });
   }
 
   @override
-  void dispose() async {
-    if (widget.controller.isFullScreen) {
-      await widget.controller.toggleFullScreen();
-    }
+  void dispose() {
+    _positionUpdateTimer?.cancel();
+    _controller.dispose();
+    _cubit.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    widget.controller.updateWidget = updateWidget;
-    return Hero(
-      tag: widget.heroTagId,
-      child: Container(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-        color: Colors.black,
-        child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: FutureBuilder(
-              future: widget.controller
-                  .initPlayer(widget.controller.bvid, widget.controller.cid),
-              builder: (context, snapshot) {
-                late Widget centrolWidget;
-                if (snapshot.connectionState == ConnectionState.done) {
-                  if (snapshot.data == true) {
-                    centrolWidget = VideoAudioPlayer(
-                      widget.controller._videoAudioController!,
-                      asepectRatio:
-                          (widget.controller.videoPlayItem!.width.toDouble() /
-                                  widget.controller.videoPlayItem!.height
-                                      .toDouble()) *
-                              widget.controller.videoPlayItem!.sar,
-                    );
-                  } else {
-                    //加载失败,重试按钮
-                    centrolWidget = IconButton(
-                        onPressed: () async {
-                          await widget.controller._videoAudioController?.play();
-                          setState(() {});
-                        },
-                        icon: const Icon(Icons.refresh_rounded));
-                  }
-                  return Stack(fit: StackFit.expand, children: [
-                    Center(
-                      child: centrolWidget,
+    return BlocProvider.value(
+      value: _cubit,
+      child: BlocBuilder<BiliVideoPlayerCubit, BiliVideoPlayerState>(
+        builder: (context, state) {
+          return Scaffold(
+            body: Stack(
+              children: [
+                // 视频播放器
+                Positioned.fill(
+                  child: Video(
+                    controller: _controller,
+                    fit: state.fit,
+                    aspectRatio: state.aspectRatio,
+                    controls: (state) => AdaptiveVideoControls(state),
+                  ),
+                ),
+                
+                // 弹幕层
+                if (state.showDanmaku)
+                  Positioned.fill(
+                    child: DanmakuView(
+                      cid: widget.cid,
+                      fontSize: state.danmakuFontSize,
+                      opacity: state.danmakuOpacity,
+                      showArea: state.danmakuShowArea,
                     ),
-                    Center(
-                      child: danmaku,
-                    ),
-                    Center(
-                      child: controllPanel,
-                    ),
-                  ]);
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              },
-            )),
+                  ),
+                
+                // 顶部控制栏
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildTopControls(context, state),
+                ),
+                
+                // 底部控制栏
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildBottomControls(context, state),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
-}
 
-class BiliVideoPlayerController {
-  BiliVideoPlayerController(
-      {required this.bvid,
-      required this.cid,
-      this.initVideoPosition = Duration.zero});
-  String bvid;
-  int cid;
-  bool _isInitializedState = false;
-  bool isFullScreen = false;
-  bool _playWhenInitialize = true;
-  //初始进度
-  Duration initVideoPosition;
-
-  late Function() updateWidget;
-  late BiliDanmaku Function()? buildDanmaku;
-  late Widget Function()? buildControllPanel;
-  VideoAudioController? _videoAudioController;
-  BiliDanmakuController? biliDanmakuController;
-  VideoPlayInfo? videoPlayInfo;
-  //当前播放的视频信息
-  VideoPlayItem? _videoPlayItem;
-  //当前播放的音频信息
-  AudioPlayItem? _audioPlayItem;
-  // //当前的视频画质
-  // VideoQuality? _videoQuality;
-  // //当前的音质
-  // AudioQuality? _audioQuality;
-
-  VideoPlayItem? get videoPlayItem => _videoPlayItem;
-  AudioPlayItem? get audioPlayItem => _audioPlayItem;
-  // VideoQuality? get videoQuality => _videoQuality;
-  // AudioQuality? get audioQuality => _audioQuality;
-
-  Future<void> reloadWidget() async {
-    updateWidget();
-    await _videoAudioController?.refresh();
-    biliDanmakuController?.reloadDanmaku?.call();
+  Widget _buildTopControls(BuildContext context, BiliVideoPlayerState state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: Icon(
+              state.showDanmaku ? Icons.comment : Icons.comment_outlined,
+              color: Colors.white,
+            ),
+            onPressed: () => _cubit.toggleDanmaku(),
+          ),
+          PopupMenuButton<VideoFit>(
+            icon: const Icon(Icons.aspect_ratio, color: Colors.white),
+            onSelected: (fit) => _cubit.updateFit(fit),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: VideoFit.contain,
+                child: Text('适应'),
+              ),
+              const PopupMenuItem(
+                value: VideoFit.cover,
+                child: Text('填充'),
+              ),
+              const PopupMenuItem(
+                value: VideoFit.fill,
+                child: Text('拉伸'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<void> changeCid(String bvid, int cid) async {
-    videoPlayInfo = null;
-    _videoPlayItem = null;
-    _audioPlayItem = null;
-    initVideoPosition = Duration.zero;
-    this.bvid = bvid;
-    this.cid = cid;
-    await loadVideoInfo(bvid, cid);
-    _videoAudioController?.audioUrl = audioPlayItem!.urls.first;
-    _videoAudioController?.videoUrl = videoPlayItem!.urls.first;
-    _videoAudioController?.state.position = Duration.zero;
-    await reloadWidget();
-  }
-
-  Future<bool> loadVideoInfo(String bvid, int cid) async {
-    if (videoPlayInfo == null) {
-      try {
-        //加载视频播放信息
-        videoPlayInfo = await VideoPlayApi.getVideoPlay(bvid: bvid, cid: cid);
-      } catch (e) {
-        log("bili_video_player.loadVideo:$e");
-        return false;
-      }
-    }
-    if (_videoPlayItem == null) {
-      //根据偏好选择画质
-      List<VideoPlayItem> tempMatchVideos = [];
-      //先匹配编码
-      for (var i in videoPlayInfo!.videos) {
-        if (i.codecs.contains(SettingsUtil.getValue(
-            SettingsStorageKeys.preferVideoCodec,
-            defaultValue: 'hev'))) {
-          tempMatchVideos.add(i);
-        }
-      }
-      //如果编码没有匹配上，就只能不匹配编码了
-      if (tempMatchVideos.isEmpty) {
-        tempMatchVideos = videoPlayInfo!.videos;
-      }
-      //根据VideoQuality下标判断最接近的画质
-      var matchedVideo = tempMatchVideos.isNotEmpty
-          ? tempMatchVideos.first
-          : VideoPlayItem.zero;
-      var preferVideoQualityIndex = SettingsUtil.getPreferVideoQuality().index;
-      for (var i in tempMatchVideos) {
-        if ((i.quality.index - preferVideoQualityIndex).abs() <
-            (matchedVideo.quality.index - preferVideoQualityIndex).abs()) {
-          matchedVideo = i;
-        }
-      }
-      _videoPlayItem = matchedVideo;
-    }
-    if (_audioPlayItem == null) {
-      //根据偏好选择音质
-      //根据AudioQuality下标判断最接近的音质
-      var matchedAudio = videoPlayInfo!.audios.isNotEmpty
-          ? videoPlayInfo!.audios.first
-          : AudioPlayItem.zero;
-      var preferAudioQualityIndex = SettingsUtil.getPreferAudioQuality().index;
-      for (var i in videoPlayInfo!.audios) {
-        if ((i.quality.index - preferAudioQualityIndex).abs() <
-            (matchedAudio.quality.index - preferAudioQualityIndex).abs()) {
-          matchedAudio = i;
-        }
-      }
-      _audioPlayItem = matchedAudio;
-    }
-    return true;
-  }
-
-  Future<bool> initPlayer(String bvid, int cid) async {
-    //如果不是第一次的话就跳过
-    if (_videoAudioController != null) {
-      return true;
-    }
-    //加载视频播放信息
-    if (await loadVideoInfo(bvid, cid) == false) return false;
-    //获取视频，音频的url
-    String videoUrl =
-        _videoPlayItem!.urls.isNotEmpty ? _videoPlayItem!.urls.first : '';
-    String audioUrl =
-        _audioPlayItem!.urls.isNotEmpty ? _audioPlayItem!.urls.first : '';
-    //创建播放器
-    _videoAudioController = VideoAudioController(
-        videoUrl: videoUrl,
-        audioUrl: audioUrl,
-        headers: VideoPlayApi.videoPlayerHttpHeaders,
-        autoWakelock: true,
-        initStart: _playWhenInitialize,
-        initSpeed: SettingsUtil.getValue(
-            SettingsStorageKeys.defaultVideoPlaybackSpeed,
-            defaultValue: 1.0),
-        initDuration: initVideoPosition);
-
-    await _videoAudioController!.init();
-
-    //是否进入就全屏
-    bool isFullScreenPlayOnEnter = SettingsUtil.getValue(
-        SettingsStorageKeys.fullScreenPlayOnEnter,
-        defaultValue: false);
-    if (isFullScreenPlayOnEnter) {
-      isFullScreen = false;
-      toggleFullScreen();
-    }
-    var lastTime = DateTime.now().millisecondsSinceEpoch;
-    addListener(() async {
-      //每帧更新历史播放进度
-      //限制一秒更新进度一次，防止频繁更新
-      if (DateTime.now().millisecondsSinceEpoch - lastTime >= 1000) {
-        await _reportHistory();
-        lastTime = DateTime.now().millisecondsSinceEpoch;
-      }
-    });
-    //当播放状态改变时更新历史播放进度
-    addStateChangedListener((state) async {
-      await _reportHistory();
-    });
-    return true;
-  }
-
-  ///切换视频播放源/视频画质
-  void changeVideoItem(VideoPlayItem videoPlayItem) {
-    _videoPlayItem = videoPlayItem;
-    _videoAudioController!.videoUrl = videoPlayItem.urls.first;
-    _videoAudioController!.refresh();
-    // reloadWidget();
-  }
-
-  ///切换音频播放源/音质
-  void changeAudioItem(AudioPlayItem audioPlayItem) {
-    _audioPlayItem = audioPlayItem;
-    _videoAudioController!.audioUrl = audioPlayItem.urls.first;
-    _videoAudioController!.refresh();
-    // reloadWidget();
-  }
-
-  //汇报一次历史记录
-  Future<void> _reportHistory() async {
-    try {
-      if (_videoAudioController!.state.isEnd) {
-        //看完时
-        await VideoPlayApi.reportHistory(bvid: bvid, cid: cid, playedTime: -1);
-      } else {
-        //未看完时
-        await VideoPlayApi.reportHistory(
-            bvid: bvid, cid: cid, playedTime: position.inSeconds);
-      }
-    } catch (e) {
-      log(e.toString());
-    }
-  }
-
-  Future<void> refreshPlayer() async {
-    await _videoAudioController?.refresh();
-  }
-
-  Future<void> toggleFullScreen() async {
-    if (isFullScreen) {
-      //退出全屏
-      isFullScreen = false;
-      await exitFullScreen();
-      await portraitUp();
-    } else {
-      //进入全屏
-      isFullScreen = true;
-      await enterFullScreen();
-      if (videoAspectRatio >= 1) {
-        await landScape();
-      } else {
-        await portraitUp();
-      }
-      showDialog(
-        context: Get.context!,
-        useSafeArea: false,
-        builder: (context) => Dialog.fullscreen(
-            backgroundColor: Colors.black,
-            child: BiliVideoPlayerWidget(
-              this,
-              heroTagId: -1,
-              buildControllPanel: buildControllPanel,
-              buildDanmaku: buildDanmaku,
-            )),
-      );
-    }
-  }
-
-  void addListener(VoidCallback listener) {
-    _videoAudioController?.addListener(listener);
-  }
-
-  void removeListener(VoidCallback listener) {
-    _videoAudioController?.removeListener(listener);
-  }
-
-  void addStateChangedListener(Function(VideoAudioState state) listener) {
-    _videoAudioController?.addStateChangedListener(listener);
-  }
-
-  void removeStateChangedListener(Function(VideoAudioState state) listener) {
-    _videoAudioController?.removeStateChangedListener(listener);
-  }
-
-  void addSeekToListener(Function(Duration position) listener) {
-    _videoAudioController?.addSeekToListener(listener);
-  }
-
-  void removeSeekToListener(Function(Duration position) listener) {
-    _videoAudioController?.addSeekToListener(listener);
-  }
-
-  Future<void> dispose() async {
-    await _videoAudioController?.dispose();
-  }
-
-  Duration get position {
-    return _videoAudioController?.state.position ?? Duration.zero;
-  }
-
-  Duration get duration {
-    return _videoAudioController?.state.duration ?? Duration.zero;
-  }
-
-  double get speed => _videoAudioController?.state.speed ?? 1;
-
-  double get videoAspectRatio =>
-      (_videoAudioController?.state.width ?? 1) /
-      (_videoAudioController?.state.height ?? 1);
-
-  bool get isPlaying {
-    return _videoAudioController?.state.isPlaying ?? false;
-  }
-
-  bool get isBuffering {
-    return _videoAudioController?.state.isBuffering ?? false;
-  }
-
-  bool get hasError {
-    return _videoAudioController?.state.hasError ?? false;
-  }
-
-  Duration get fartherestBuffered {
-    if (_videoAudioController == null) {
-      return Duration.zero;
-    }
-
-    return _videoAudioController!.state.buffered;
-  }
-
-  Future<void> play() async {
-    await _videoAudioController?.play();
-  }
-
-  Future<void> pause() async {
-    await _videoAudioController?.pause();
-  }
-
-  Future<void> seekTo(Duration position) async {
-    await _videoAudioController?.seekTo(position);
-  }
-
-  Future<void> setPlayBackSpeed(double speed) async {
-    await _videoAudioController?.setPlayBackSpeed(speed);
+  Widget _buildBottomControls(BuildContext context, BiliVideoPlayerState state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 进度条
+          VideoProgressBar(
+            controller: _controller,
+            bufferedColor: Colors.white.withOpacity(0.3),
+            playedColor: Theme.of(context).primaryColor,
+            backgroundColor: Colors.white.withOpacity(0.1),
+          ),
+          const SizedBox(height: 8),
+          // 控制按钮
+          Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  _controller.player.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  if (_controller.player.value.isPlaying) {
+                    _controller.player.pause();
+                  } else {
+                    _controller.player.play();
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${formatDuration(_controller.player.value.position)} / ${formatDuration(_controller.player.value.duration)}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              const Spacer(),
+              // 清晰度选择
+              PopupMenuButton<VideoPlayItem>(
+                icon: const Icon(Icons.high_quality, color: Colors.white),
+                onSelected: (item) => _cubit.changeQuality(item),
+                itemBuilder: (context) => state.videoPlayInfo.qualityList
+                    .map((item) => PopupMenuItem(
+                          value: item,
+                          child: Text(item.quality),
+                        ))
+                    .toList(),
+              ),
+              // 播放速度
+              PopupMenuButton<double>(
+                icon: const Icon(Icons.speed, color: Colors.white),
+                onSelected: (speed) => _controller.player.setPlaybackSpeed(speed),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 0.5, child: Text('0.5x')),
+                  const PopupMenuItem(value: 0.75, child: Text('0.75x')),
+                  const PopupMenuItem(value: 1.0, child: Text('1.0x')),
+                  const PopupMenuItem(value: 1.25, child: Text('1.25x')),
+                  const PopupMenuItem(value: 1.5, child: Text('1.5x')),
+                  const PopupMenuItem(value: 2.0, child: Text('2.0x')),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.fullscreen, color: Colors.white),
+                onPressed: () {
+                  // 实现全屏逻辑
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
