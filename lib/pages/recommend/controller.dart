@@ -36,10 +36,15 @@ class RecommendController extends GetxController {
 //加载并追加视频推荐
   Future<bool> _addRecommendItems() async {
     try {
+      print('开始加载推荐视频，refreshIdx: $refreshIdx');
       var items = await HomeApi.getRecommendVideoItems(
           num: 30, refreshIdx: refreshIdx);
+      print('成功加载到${items.length}条推荐视频');
       for (var item in items) {
         print('视频: ${item.title}, 播放量: ${item.playNum}');
+      }
+      if (items.isEmpty) {
+        print('警告: 推荐视频列表为空');
       }
       recommendItems.addAll(items);
     } catch (e) {

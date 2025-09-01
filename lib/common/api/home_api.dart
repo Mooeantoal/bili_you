@@ -8,13 +8,28 @@ import 'package:bili_you/common/api/api_constants.dart';
 class HomeApi {
   static Future<RecommendVideoResponse> _requestRecommendVideos(
       int num, int refreshIdx) async {
-    var response = await HttpUtils().get(
-      ApiConstants.recommendItems,
-      queryParameters: await WbiSign.encodeParams(
-          {'feed_version': "V3", 'ps': num, 'fresh_idx': refreshIdx}),
-    );
-    print('API返回数据: ${response.data}'); // 添加打印日志
-    return RecommendVideoResponse.fromJson(response.data);
+    try {
+      print('准备请求推荐视频API，参数: num=$num, refreshIdx=$refreshIdx');
+      var params = await WbiSign.encodeParams(
+          {'feed_version': "V3", 'ps': num, 'fresh_idx': refreshIdx});
+      print('生成的请求参数: $params');
+      
+      var response = await HttpUtils().get(
+        ApiConstants.recommendItems,
+        queryParameters: params,
+      );
+      print('API请求成功，状态码: ${response.statusCode}');
+      print('API返回原始数据: ${response.data}');
+      
+      if (response.statusCode != 200) {
+        throw "API请求失败，状态码: ${response.statusCode}";
+      }
+      
+      return RecommendVideoResponse.fromJson(response.data);
+    } catch (e) {
+      print('API请求异常: $e');
+      rethrow;
+    }
   }
 
   ///#### 获取首页推荐

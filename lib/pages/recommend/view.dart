@@ -32,41 +32,63 @@ class _RecommendPageState extends State<RecommendPage>
 
   // 主视图
   Widget _buildView(BuildContext context) {
-    return SimpleEasyRefresher(
-      easyRefreshController: controller.refreshController,
-      onLoad: controller.onLoad,
-      onRefresh: controller.onRefresh,
-      childBuilder: (context, physics) => GridView.builder(
-        controller: controller.scrollController,
-        physics: physics,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            crossAxisCount: controller.recommendColumnCount,
-            mainAxisExtent: (MediaQuery.of(context).size.width /
-                        controller.recommendColumnCount) *
-                    9 /
-                    16 +
-                70 * MediaQuery.of(context).textScaleFactor),
-        itemCount: controller.recommendItems.length,
-        itemBuilder: (context, index) {
-          var i = controller.recommendItems[index];
-          return RecommendCard(
-              key: ValueKey("${i.bvid}:RecommendCard"),
-              heroTagId: HeroTagId.id++,
-              cacheManager: controller.cacheManager,
-              imageUrl: i.coverUrl,
-              playNum: StringFormatUtils.numFormat(i.playNum),
-              danmakuNum: StringFormatUtils.numFormat(i.danmakuNum),
-              timeLength: StringFormatUtils.timeLengthFormat(i.timeLength),
-              title: i.title,
-              upName: i.upName,
-              bvid: i.bvid,
-              cid: i.cid);
-        },
-      ),
-    );
+    return Obx(() {
+      if (controller.recommendItems.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.video_library, size: 48, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(
+                '暂无推荐视频',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              TextButton(
+                onPressed: controller.onRefresh,
+                child: const Text('点击刷新'),
+              ),
+            ],
+          ),
+        );
+      }
+      
+      return SimpleEasyRefresher(
+        easyRefreshController: controller.refreshController,
+        onLoad: controller.onLoad,
+        onRefresh: controller.onRefresh,
+        childBuilder: (context, physics) => GridView.builder(
+          controller: controller.scrollController,
+          physics: physics,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              crossAxisCount: controller.recommendColumnCount,
+              mainAxisExtent: (MediaQuery.of(context).size.width /
+                          controller.recommendColumnCount) *
+                      9 /
+                      16 +
+                  70 * MediaQuery.of(context).textScaleFactor),
+          itemCount: controller.recommendItems.length,
+          itemBuilder: (context, index) {
+            var i = controller.recommendItems[index];
+            return RecommendCard(
+                key: ValueKey("${i.bvid}:RecommendCard"),
+                heroTagId: HeroTagId.id++,
+                cacheManager: controller.cacheManager,
+                imageUrl: i.coverUrl,
+                playNum: StringFormatUtils.numFormat(i.playNum),
+                danmakuNum: StringFormatUtils.numFormat(i.danmakuNum),
+                timeLength: StringFormatUtils.timeLengthFormat(i.timeLength),
+                title: i.title,
+                upName: i.upName,
+                bvid: i.bvid,
+                cid: i.cid);
+          },
+        ),
+      );
+    });
   }
 
   @override
