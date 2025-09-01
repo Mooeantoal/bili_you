@@ -44,9 +44,30 @@ class _RecommendPageState extends State<RecommendPage>
                 '暂无推荐视频',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              TextButton(
-                onPressed: controller.onRefresh,
-                child: const Text('点击刷新'),
+              Column(
+                children: [
+                  TextButton(
+                    onPressed: controller.onRefresh,
+                    child: const Text('点击刷新'),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      try {
+                        final testItems = await HomeApi.getRecommendVideoItems(
+                          num: 5, 
+                          refreshIdx: 0
+                        );
+                        print('测试加载成功，获取到${testItems.length}条数据');
+                        if (testItems.isNotEmpty) {
+                          print('第一条数据标题: ${testItems.first.title}');
+                        }
+                      } catch (e) {
+                        print('测试加载失败: $e');
+                      }
+                    },
+                    child: const Text('测试API'),
+                  ),
+                ],
               ),
             ],
           ),
