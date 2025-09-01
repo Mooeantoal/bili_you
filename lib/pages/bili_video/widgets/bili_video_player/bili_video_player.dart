@@ -47,17 +47,18 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
   void initState() {
     super.initState();
     _cubit = BiliVideoPlayerCubit(
+      videoPlayInfo: VideoPlayInfo(), // 需要传入实际VideoPlayInfo
       videoPlayItem: widget.videoPlayItem,
       audioPlayItem: widget.audioPlayItem,
-      autoPlay: widget.autoPlay,
-      showDanmaku: widget.showDanmaku,
-      danmakuFontSize: widget.danmakuFontSize,
-      danmakuOpacity: widget.danmakuOpacity,
-      danmakuShowArea: widget.danmakuShowArea,
-      fit: widget.fit,
-      aspectRatio: widget.aspectRatio,
-      quality: widget.quality,
     );
+    
+    // 初始化控制器
+    _cubit.initializeController();
+    
+    // 设置初始播放状态
+    if (widget.autoPlay) {
+      _cubit.togglePlayPause();
+    }
   }
 
   @override
@@ -80,8 +81,9 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
                   fit: state.fit,
                 ),
               if (state.showDanmaku && state.videoController != null)
-                // 弹幕组件
-                Container(),
+                BiliDanmaku(
+                  controller: BiliDanmakuController(state.videoController!),
+                ),
               BiliVideoPlayerPanel(
                 controller: state.videoController!,
                 cubit: _cubit,
@@ -91,129 +93,5 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
         },
       ),
     );
-  }
-}
-
-class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
-  BiliVideoPlayerCubit({
-    required VideoPlayItem videoPlayItem,
-    AudioPlayItem? audioPlayItem,
-    bool autoPlay = true,
-    bool showDanmaku = true,
-    double danmakuFontSize = 16,
-    double danmakuOpacity = 1,
-    double danmakuShowArea = 1,
-    BoxFit fit = BoxFit.contain,
-    double aspectRatio = 16 / 9,
-    VideoQuality quality = VideoQuality.auto,
-  }) : super(BiliVideoPlayerState(
-          videoPlayItem: videoPlayItem,
-          audioPlayItem: audioPlayItem,
-          showDanmaku: showDanmaku,
-          danmakuFontSize: danmakuFontSize,
-          danmakuOpacity: danmakuOpacity,
-          danmakuShowArea: danmakuShowArea,
-          fit: fit,
-          aspectRatio: aspectRatio,
-          quality: quality,
-        )) {
-    _initialize();
-  }
-
-  Future<void> _initialize() async {
-    final videoController = VideoController(
-      VideoPlayerController.networkUrl(
-        Uri.parse(state.videoPlayItem.urls[state.quality]!),
-      ),
-    );
-    await videoController.initialize();
-    if (state.autoPlay) {
-      videoController.play();
-    }
-
-    // 监听播放状态
-    videoController.position.listen((position) {
-      if (!state.isDragging) {
-        emit(state.copyWith(position: position));
-      }
-    });
-
-    // 监听缓冲状态
-    videoController.buffered.listen((buffered) {
-      emit(state.copyWith(bufferedPosition: buffered));
-    });
-
-    // 监听播放完成
-    videoController.completed.listen((_) {
-      emit(state.copyWith(isPlaying: false));
-    });
-
-    emit(state.copyWith(
-      videoController: videoController,
-      isInitialized: true,
-      isPlaying: state.autoPlay,
-      duration: videoController.value.duration,
-    ));
-  }
-
-  void togglePlayPause() {
-    if (state.videoController == null) return;
-    if (state.isPlaying) {
-      state.videoController!.pause();
-    } else {
-      state.videoController!.play();
-    }
-    emit(state.copyWith(isPlaying: !state.isPlaying));
-  }
-
-  void startDragging() {
-    emit(state.copyWith(isDragging: true));
-  }
-
-  void updateDragPosition(Duration position) {
-    emit(state.copyWith(dragPosition: position));
-  }
-
-  void endDragging() {
-    if (state.videoController == null) return;
-    state.videoController!.seekTo(state.dragPosition);
-    emit(state.copyWith(
-      isDragging: false,
-      position: state.dragPosition,
-    ));
-  }
-
-  void setPlaybackSpeed(double speed) {
-    if (state.videoController == null) return;
-    state.videoController!.setPlaybackSpeed(speed);
-  }
-
-  void setVolume(double volume) {
-    if (state.videoController == null) return;
-    state.videoController!.setVolume(volume);
-  }
-
-  void setBrightness(double brightness) {
-    // 设置屏幕亮度，需要平台特定实现
-  }
-
-  void setQuality(VideoQuality quality) {
-    // 切换画质，需要重新初始化播放器
-  }
-
-  void setShowDanmaku(bool show) {
-    emit(state.copyWith(showDanmaku: show));
-  }
-
-  void setDanmakuFontSize(double size) {
-    emit(state.copyWith(danmakuFontSize: size));
-  }
-
-  void setDanmakuOpacity(double opacity) {
-    emit(state.copyWith(danmakuOpacity: opacity));
-  }
-
-  void setDanmakuShowArea(double area) {
-    emit(state.copyWith(danmakuShowArea: area));
   }
 }
