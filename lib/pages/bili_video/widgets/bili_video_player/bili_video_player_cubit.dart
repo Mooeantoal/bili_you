@@ -1,7 +1,7 @@
-import 'package:biliyou/common/models/local/video/audioplayitem.dart';
-import 'package:biliyou/common/models/local/video/videoplayinfo.dart';
-import 'package:biliyou/common/models/local/video/videoplayitem.dart';
-import 'package:biliyou/pages/bilivideo/widgets/bilivideoplayer/bilivideoplayer_state.dart';
+import 'package:bili_you/common/models/local/video/audioplayitem.dart';
+import 'package:bili_you/common/models/local/video/videoplayinfo.dart';
+import 'package:bili_you/common/models/local/video/videoplayitem.dart';
+import 'package:bili_you/pages/bilivideo/widgets/bilivideoplayer/bilivideoplayer_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mediakit/mediakit.dart';
 
