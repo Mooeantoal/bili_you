@@ -12,6 +12,9 @@ class BiliVideoPlayerState extends Equatable {
   final double danmakuOpacity;
   final double danmakuShowArea;
   final Duration position;
+  final Duration duration; // 新增：视频总时长
+  final bool isPlaying; // 新增：播放状态
+  final bool isDragging; // 新增：拖动状态
 
   const BiliVideoPlayerState({
     required this.videoPlayItem,
@@ -23,6 +26,9 @@ class BiliVideoPlayerState extends Equatable {
     required this.danmakuOpacity,
     required this.danmakuShowArea,
     required this.position,
+    required this.duration, // 新增
+    required this.isPlaying, // 新增
+    required this.isDragging, // 新增
   });
 
   factory BiliVideoPlayerState.initial() {
@@ -36,6 +42,9 @@ class BiliVideoPlayerState extends Equatable {
       danmakuOpacity: 1.0,
       danmakuShowArea: 1.0,
       position: Duration.zero,
+      duration: Duration.zero, // 新增
+      isPlaying: false, // 新增
+      isDragging: false, // 新增
     );
   }
 
@@ -49,6 +58,9 @@ class BiliVideoPlayerState extends Equatable {
     double? danmakuOpacity,
     double? danmakuShowArea,
     Duration? position,
+    Duration? duration, // 新增
+    bool? isPlaying, // 新增
+    bool? isDragging, // 新增
   }) {
     return BiliVideoPlayerState(
       videoPlayItem: videoPlayItem ?? this.videoPlayItem,
@@ -60,6 +72,9 @@ class BiliVideoPlayerState extends Equatable {
       danmakuOpacity: danmakuOpacity ?? this.danmakuOpacity,
       danmakuShowArea: danmakuShowArea ?? this.danmakuShowArea,
       position: position ?? this.position,
+      duration: duration ?? this.duration, // 新增
+      isPlaying: isPlaying ?? this.isPlaying, // 新增
+      isDragging: isDragging ?? this.isDragging, // 新增
     );
   }
 
@@ -74,5 +89,8 @@ class BiliVideoPlayerState extends Equatable {
         danmakuOpacity,
         danmakuShowArea,
         position,
+        duration, // 新增
+        isPlaying, // 新增
+        isDragging, // 新增
       ];
 }
