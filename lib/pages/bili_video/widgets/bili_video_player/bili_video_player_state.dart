@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:mediakit/mediakit.dart';
-import 'package:biliyou/common/models/local/video/audioplayitem.dart';
-import 'package:biliyou/common/models/local/video/videoplayitem.dart';
+import 'package:bili_you/common/models/local/video/audioplayitem.dart';
+import 'package:bili_you/common/models/local/video/videoplayitem.dart';
 
 class BiliVideoPlayerState extends Equatable {
   final VideoPlayItem videoPlayItem;
