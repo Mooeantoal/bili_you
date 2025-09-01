@@ -51,4 +51,32 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
   void updatePosition(Duration position) {
     emit(state.copyWith(position: position));
   }
+
+  // 新增方法：更新视频总时长
+  void updateDuration(Duration duration) {
+    emit(state.copyWith(duration: duration));
+  }
+
+  // 新增方法：更新播放状态
+  void updatePlayingState(bool isPlaying) {
+    emit(state.copyWith(isPlaying: isPlaying));
+  }
+
+  // 新增方法：开始拖动
+  void startDragging() {
+    emit(state.copyWith(isDragging: true));
+  }
+
+  // 新增方法：更新拖动位置
+  void updateDragPosition(Duration position) {
+    emit(state.copyWith(dragPosition: position));
+  }
+
+  // 新增方法：结束拖动
+  void endDragging(Duration position) {
+    emit(state.copyWith(
+      isDragging: false,
+      position: position,
+    ));
+  }
 }
