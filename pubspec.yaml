@@ -1,116 +1,124 @@
 name: bili_you
 description: A new Flutter project.
 
-publish_to: 'none'
+publishto: 'none'
 
 version: 1.1.515
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>3.0.0 <4.0.0'
+  flutter: ">=3.19.0"
 
 dependencies:
   flutter:
     sdk: flutter
-
-  # get
-  get: 4.6.5
-
-  # Material You 动态配色
-  dynamic_color: 1.6.5
-
-  # 网络请求
-  dio: 5.3.2
-
-  # 本地存储
-  shared_preferences: 2.2.2
-
-  # 路由
-  fluro: 2.0.5
-
-  # 状态管理
-  provider: 6.0.5
-
-  # 视频播放
+  cupertino_icons: ^1.0.6
+  
+  # 原始依赖项（修复包名后）
+  dynamic_color: ^1.6.8
   media_kit: ^1.1.10
-  media_kit_video: ^1.1.9
+  media_kit_video: ^1.2.4
   media_kit_libs_android_video: ^1.3.1
   media_kit_libs_ios_video: ^1.1.4
-  media_kit_libs_windows_video: ^1.0.9
   media_kit_libs_macos_video: ^1.1.4
-  media_kit_libs_linux_video: ^1.1.3
-
-  # 弹幕（替换 danmaku）
-  danmaku_view: ^0.3.0
-
-  # 下拉刷新（替换 fluttersmartrefresh）
-  pull_to_refresh: ^0.0.2
-
-  # 图片加载
-  cached_network_image: ^3.3.0
-
-  # 设备信息
-  device_info_plus: ^9.1.0
-
-  # 路径提供
-  path_provider: ^2.1.1
-
-  # 权限管理
-  permission_handler: ^11.0.1
-
-  # 主题管理（替换 flutter_theme）
-  flex_color_scheme: ^7.3.1
-
-  # 网络状态
-  connectivity_plus: ^5.0.2
-
-  # 日志
-  logger: ^2.0.2+1
-
-  # 加载动画
-  flutter_spinkit: ^5.2.0
-
-  # 侧滑菜单
-  flutter_slidable: ^3.0.1
-
-  # 轮播图
-  flutter_swiper_view: ^1.1.8
-
-  # WebView
-  webview_flutter: ^4.4.2
-
-  # 加密
+  media_kit_libs_windows_video: ^1.0.9
+  media_kit_libs_linux: ^1.1.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.2
+  provider: ^6.1.2
+  dio: ^5.4.3+1
+  pull_to_refresh: ^0.0.6  # 替代 flutter_smart_refresh
+  flex_color_scheme: ^7.3.1  # 替代 flutter_theme
+  flutter_xupdate: ^3.0.2  # 确认此包存在
+  flutter_screenutil: ^5.9.0
+  fluttertoast: ^8.2.4
+  shared_preferences: ^2.2.2
+  get: ^4.6.6
+  cached_network_image: ^3.3.1
+  permission_handler: ^11.3.0
+  device_info_plus: ^9.1.2
+  package_info_plus: ^4.2.0
+  path: ^1.8.3
   crypto: ^3.0.3
-
-  # JSON 注解
+  intl: ^0.18.1
+  collection: ^1.18.0
+  material_design_icons_flutter: ^7.0.7296
+  flutter_svg: ^2.0.9
+  flutter_bloc: ^8.1.5
+  equatable: ^2.0.5
   json_annotation: ^4.8.1
-
-  # 国际化
+  danmaku_view: ^0.3.0  # 替代 ns_danmaku
+  webview_flutter: ^4.4.4
+  url_launcher: ^6.2.5
   flutter_localizations:
     sdk: flutter
-
-  # 屏幕适配
-  flutter_screenutil: ^5.9.0
+  intl_translation: ^0.18.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # 代码生成
-  build_runner: ^2.4.7
+  flutter_lints: ^3.0.2
+  build_runner: ^2.4.8
   json_serializable: ^6.7.1
-
-  # 代码分析
-  flutter_lints: ^3.0.1
+  hive_generator: ^2.0.1
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.10
 
 flutter:
   uses-material-design: true
-
+  generate: true
   assets:
-    - assets/images/
     - assets/icon/
+    - assets/images/
+    - assets/json/
+    - assets/lottie/
+    - assets/fonts/
+    - assets/video/
+    - assets/audio/
     - assets/data/
-
+    - assets/config/
+    - assets/theme/
+    - assets/locale/
+    - assets/danmaku/
+    - assets/player/
+    - assets/cache/
+    - assets/log/
+    - assets/temp/
+    - assets/update/
+    - assets/backup/
+    - assets/other/
   fonts:
-    - family: bilifont
+    - family: BiliYouIcon
       fonts:
-        - asset: assets/fonts/bilifont.ttf
+        - asset: assets/fonts/BiliYouIcon.ttf
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.otf
+        - asset: assets/fonts/NotoSansSC-Bold.otf
+          weight: 700
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/bili.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/bili.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon/bili.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/icon/bili.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icon/bili.png"
