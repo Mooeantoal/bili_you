@@ -1,7 +1,7 @@
 name: bili_you
 description: A new Flutter project.
 
-publishto: 'none'
+publish_to: 'none'
 
 version: 1.1.515
 
@@ -34,47 +34,65 @@ dependencies:
   media_kit: ^1.1.10
   media_kit_video: ^1.2.4
   media_kit_libs_android_video: ^1.3.1
-  media_kit_libs_ios_video: ^1.3.1
+  media_kit_libs_ios_video: ^1.1.2
+  media_kit_libs_windows_video: ^1.0.8
+  media_kit_libs_macos_video: ^1.1.2
+  media_kit_libs_linux_video: ^1.1.2
 
-  # 视频弹幕
-  danmaku: ^0.0.2
+  # 弹幕
+  flutter_danmaku: ^0.0.3
+
+  # 状态管理
+  provider: ^6.0.5
 
   # UI组件
-  flutter_platform_widgets: ^1.0.0
   flutter_staggered_grid_view: ^0.6.2
+  cached_network_image: ^3.2.3
   extended_image: ^8.2.0
-  flutter_inappwebview: ^6.0.0
-  pull_to_refresh_flutter3: ^2.0.2
-  waterfall_flow: ^3.0.2
-  visibility_detector: ^0.4.0+2
-  scrollable_positioned_list: ^0.3.8
   flutter_svg: ^2.0.7
   lottie: ^2.6.0
-  shimmer: ^3.0.0
-  flutter_colorpicker: ^1.0.3
 
   # 工具类
-  logger: ^1.4.0
+  logger: ^2.0.2+1
+  uuid: ^3.0.7
   intl: ^0.18.1
-  url_launcher: ^6.1.14
+  json_annotation: ^4.8.1
+
+  # 设备信息
   device_info_plus: ^9.0.3
   package_info_plus: ^4.1.0
-  battery_plus: ^4.1.0  # 修改为存在的版本
-  network_info_plus: ^4.0.2
-  connectivity_plus: ^5.0.2
-  path: ^1.8.3
-  archive: ^3.3.7
-  crypto: ^3.0.3
-  convert: ^3.1.1
-  collection: ^1.17.2
-  xml: ^6.3.0
-  html: ^0.15.4
-  json_annotation: ^4.8.1
+  battery_plus: ^4.1.0
+
+  # 权限
+  permission_handler: ^10.4.3
+
+  # 路由
+  go_router: ^10.1.2
+
+  # 平台交互
+  platform_device_id: ^1.0.1
+  flutter_platform_widgets: ^1.0.0
+
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_analytics: ^10.7.4
+  firebase_crashlytics: ^3.4.8
+  firebase_remote_config: ^4.3.8
+  firebase_messaging: ^14.7.9
+  firebase_performance: ^0.9.3+8
+  firebase_app_check: ^0.2.1+8
+
+  # 其他
+  url_launcher: ^6.1.14
+  share_plus: ^7.2.1
+  webview_flutter: ^4.4.2
+  in_app_review: ^2.0.6
+  connectivity_plus: ^5.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^3.0.1
   build_runner: ^2.4.6
   json_serializable: ^6.7.1
   hive_generator: ^2.0.1
