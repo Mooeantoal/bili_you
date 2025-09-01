@@ -1,124 +1,64 @@
 name: bili_you
 description: A new Flutter project.
-
-publishto: 'none'
-
+publish_to: 'none'
 version: 1.1.515
 
 environment:
-  sdk: '>3.0.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
   flutter: ">=3.19.0"
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  
-  # 原始依赖项（修复包名后）
+
+  # 以下为根据错误日志添加的依赖
   dynamic_color: ^1.6.8
   media_kit: ^1.1.10
   media_kit_video: ^1.2.4
-  media_kit_libs_android_video: ^1.3.1
-  media_kit_libs_ios_video: ^1.1.4
-  media_kit_libs_macos_video: ^1.1.4
-  media_kit_libs_windows_video: ^1.0.9
-  media_kit_libs_linux: ^1.1.3
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  path_provider: ^2.1.2
-  provider: ^6.1.2
+  path_provider: ^2.1.1
+  connectivity_plus: ^5.0.2
+  cookie_jar: ^4.0.8
   dio: ^5.4.3+1
-  pull_to_refresh: ^0.0.6  # 替代 flutter_smart_refresh
-  flex_color_scheme: ^7.3.1  # 替代 flutter_theme
-  flutter_xupdate: ^3.0.2  # 确认此包存在
-  flutter_screenutil: ^5.9.0
-  fluttertoast: ^8.2.4
-  shared_preferences: ^2.2.2
-  get: ^4.6.6
-  cached_network_image: ^3.3.1
-  permission_handler: ^11.3.0
-  device_info_plus: ^9.1.2
+  dio_cookie_manager: ^3.1.1
+  device_info_plus: ^9.1.1
   package_info_plus: ^4.2.0
-  path: ^1.8.3
-  crypto: ^3.0.3
-  intl: ^0.18.1
-  collection: ^1.18.0
-  material_design_icons_flutter: ^7.0.7296
-  flutter_svg: ^2.0.9
-  flutter_bloc: ^8.1.5
+  url_launcher: ^6.2.2
+  encrypt: ^5.0.3
+  flutter_bloc: ^8.1.3
   equatable: ^2.0.5
-  json_annotation: ^4.8.1
-  danmaku_view: ^0.3.0  # 替代 ns_danmaku
+  screen_brightness: ^0.2.2+1
+  volume_controller: ^3.2.0
+  fluttertoast: ^8.2.4
+  easy_refresh: ^3.3.4
+  flutter_cache_manager: ^3.3.1
+  appscheme: ^0.7.0
+  fixnum: ^1.1.0
+  protobuf: ^3.1.0
+  crypto: ^3.0.3
+  wakelock_plus: ^1.2.5
+  auto_orientation: ^3.0.0
+  share_plus: ^7.2.2
+  cached_network_image: ^3.3.1
+  image_gallery_saver: ^2.0.3
+  photo_view: ^0.14.0
   webview_flutter: ^4.4.4
-  url_launcher: ^6.2.5
-  flutter_localizations:
-    sdk: flutter
-  intl_translation: ^0.18.2
+  qr_flutter: ^4.1.0
+  webview_cookie_manager: ^2.0.6
+  card_swiper: ^3.0.1
+  gt3_flutter_plugin: ^0.0.1
+
+  # 弹幕相关
+  ns_danmaku: ^0.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.2
-  build_runner: ^2.4.8
-  json_serializable: ^6.7.1
+  flutter_lints: ^3.0.0
   hive_generator: ^2.0.1
-  flutter_launcher_icons: ^0.13.1
-  flutter_native_splash: ^2.3.10
+  build_runner: ^2.4.8
 
 flutter:
   uses-material-design: true
-  generate: true
-  assets:
-    - assets/icon/
-    - assets/images/
-    - assets/json/
-    - assets/lottie/
-    - assets/fonts/
-    - assets/video/
-    - assets/audio/
-    - assets/data/
-    - assets/config/
-    - assets/theme/
-    - assets/locale/
-    - assets/danmaku/
-    - assets/player/
-    - assets/cache/
-    - assets/log/
-    - assets/temp/
-    - assets/update/
-    - assets/backup/
-    - assets/other/
-  fonts:
-    - family: BiliYouIcon
-      fonts:
-        - asset: assets/fonts/BiliYouIcon.ttf
-    - family: Roboto
-      fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
-    - family: NotoSansSC
-      fonts:
-        - asset: assets/fonts/NotoSansSC-Regular.otf
-        - asset: assets/fonts/NotoSansSC-Bold.otf
-          weight: 700
-
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/icon/bili.png"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icon/bili.png"
-  min_sdk_android: 21
-  web:
-    generate: true
-    image_path: "assets/icon/bili.png"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
-  windows:
-    generate: true
-    image_path: "assets/icon/bili.png"
-    icon_size: 48
-  macos:
-    generate: true
-    image_path: "assets/icon/bili.png"
