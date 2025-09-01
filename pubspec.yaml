@@ -1,98 +1,92 @@
 name: bili_you
 description: A new Flutter project.
 
-publishto: ‘none’
+publish_to: 'none'
 
 version: 1.1.515
 
 environment:
-sdk: ‘>3.0.0-417.0.dev’
+  sdk: '>3.0.0-417.0.dev'
 
 dependencies:
-flutter:
-sdk: flutter
+  flutter:
+    sdk: flutter
 
-get
-get: 4.6.5
+  # get
+  get: 4.6.5
 
-Material You 动态配色
-dynamiccolor: 1.6.5
+  # Material You 动态配色
+  dynamic_color: 1.6.5
 
-网络相关
-dio: 5.4.0
-diocookiemanager: 3.1.1
-cookiejar: 4.0.2
+  # 网络请求
+  dio: 5.3.2
 
-视频播放
-media_kit: 1.1.10
-media_kit_video: 1.2.4
-media_kit_libs_android_video: 1.3.1
-media_kit_libs_ios_video: 1.1.4
-media_kit_libs_windows_video: 1.0.10
-media_kit_libs_macos_video: 1.1.4
-media_kit_libs_linux_video: 1.1.3
+  # 本地存储
+  shared_preferences: 2.2.2
 
-弹幕
-danmakuview: 0.1.1
+  # 路由
+  fluro: 2.0.5
 
-下拉刷新
-pull_to_refresh: 2.0.0
+  # 状态管理
+  provider: 6.0.5
 
-本地存储
-shared_preferences: 2.2.2
-path_provider: 2.1.1
+  # 视频播放
+  media_kit: 1.1.10
+  media_kit_video: 1.1.10
+  media_kit_libs_android_video: 1.3.1
+  media_kit_libs_ios_video: 1.1.4
+  media_kit_libs_windows_video: 1.0.9
+  media_kit_libs_macos_video: 1.1.3
+  media_kit_libs_linux_video: 1.1.3
 
-状态管理
-provider: 6.1.1
+  # 弹幕
+  danmaku: ^0.0.1
 
-UI组件
-flutter_staggered_grid_view: 0.7.0
-extended_image: 8.2.0
-flutter_easyloading: 3.0.5
-marquee: 2.2.3
-lottie: 3.0.0
-flutter_screenutil: 5.9.0
+  # 下拉刷新
+  pull_to_refresh: 2.0.0
 
-工具类
-logger: 2.0.2+1
-uuid: 4.2.1
-intl: 0.19.0
-device_info_plus: 10.1.0
-package_info_plus: 5.0.1
+  # 图片加载
+  cached_network_image: 3.3.0
 
-平台相关
-window_manager: 0.3.8
-screen_retriever: 0.1.9
+  # 其他UI组件
+  flutter_staggered_grid_view: 0.7.0
+  extended_image: 8.2.0
+  flutter_svg: 2.0.9
+
+  # 工具类
+  logger: 2.0.2+1
+  path_provider: 2.1.1
+  package_info_plus: 4.2.0
+  device_info_plus: 9.1.0
 
 dev_dependencies:
-flutter_test:
-sdk: flutter
-flutter_lints: 3.0.1
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
 
 flutter:
-uses-material-design: true
+  uses-material-design: true
 
-assets:
+  assets:
+    - assets/images/
+    - assets/icon/
 
-assets/images/
-assets/icon/
-assets/lottie/
-assets/fonts/
-fonts:
+  fonts:
+    - family: bili
+      fonts:
+        - asset: assets/fonts/bili.ttf
 
-family: bilifont
-fonts:
-asset: assets/fonts/bilifont.ttf
-fluttericons:
-android: true
-ios: true
-imagepath: “assets/icon/bili.png”
-backgroundcolor: “#hexcode”
-themecolor: “#hexcode”
-windows:
-generate: true
-imagepath: “assets/icon/bili.png”
-iconsize: 48
-macos:
-generate: true
-imagepath: “assets/icon/bili.png”
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/bili.png"
+  background_color: "#hexcode"
+  theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/icon/bili.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icon/bili.png"
