@@ -81,11 +81,10 @@ class SearchApi {
     // ✅ 修复：使用 keyWordTitleToRawTitle 移除 HTML 标签
     final cleanName = StringFormatUtils.keyWordTitleToRawTitle(i.name ?? "");
     
-    list.add(
-        SearchSuggestItem(
-          showWord: cleanName, // ✅ 已清理 HTML 标签
-          realWord: i.value ?? ""
-        ));
+    list.add(SearchSuggestItem(
+  showWord: StringFormatUtils.keyWordTitleToRawTitle(i.name ?? ""), // 清理HTML标签
+  realWord: i.value ?? ""
+));
   }
   return list;
 }

@@ -81,13 +81,64 @@ class BiliVideoPlayer extends StatelessWidget {
   const BiliVideoPlayer({super.key});
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BiliMediaContentCubit, BiliMediaContent>(
-      builder: (context, playInfo) {
-        return WebViewPlayer(
-          bvid: playInfo.bvid,
-          aspectRatio: 16 / 9,
-        );
-      },
-    );
+    return BlocBuilder<BiliVideoPlayerCubit, BiliVideoPlayerState>(
+        builder: (context, playerState) =>
+            BlocBuilder<BiliMediaContentCubit, BiliMediaContent>(
+                builder: (context, playInfo) {
+              context.read<BiliVideoPlayerCubit>().playMedia(
+                  playInfo.videos.first.urls.first,
+                  playInfo.audios.first.urls.first);
+              if (Platform.isAndroid || Platform.isIOS) {
+                var materialThemeData = const MaterialVideoControlsThemeData(
+                  volumeGesture: true,
+                  topButtonBar: [
+                    SafeArea(
+                      bottom: false,
+                      left: false,
+                      right: false,
+                      child: BackButton(
+                        color: Colors.white,
+                      ),
+                    ),
+                    Spacer()
+                  ],
+                  brightnessGesture: true,
+                  seekOnDoubleTap: false,
+                );
+                return MaterialVideoControlsTheme(
+                    normal: materialThemeData,
+                    fullscreen: materialThemeData,
+                    child: Video(
+                      controller: playerState.videoController,
+                      controls: (state) {
+                        return AdaptiveVideoControls(state);
+                      },
+                    ));
+              } else {
+                var materialDesktopThemeData =
+                    const MaterialDesktopVideoControlsThemeData(
+                  topButtonBar: [
+                    SafeArea(
+                      bottom: false,
+                      left: false,
+                      right: false,
+                      child: BackButton(
+                        color: Colors.white,
+                      ),
+                    ),
+                    Spacer()
+                  ],
+                );
+                return MaterialDesktopVideoControlsTheme(
+                    normal: materialDesktopThemeData,
+                    fullscreen: materialDesktopThemeData,
+                    child: Video(
+                      controller: playerState.videoController,
+                      controls: (state) {
+                        return AdaptiveVideoControls(state);
+                      },
+                    ));
+              }
+            }));
   }
 }

@@ -26,13 +26,6 @@ class RecommendController extends GetxController {
         SettingsStorageKeys.recommendColumnCount,
         defaultValue: 2);
     super.onInit();
-    // 初始加载数据
-    _addRecommendItems().then((success) {
-      if (!success) {
-        // 首次加载失败后自动重试一次
-        _addRecommendItems();
-      }
-    });
   }
 
   void animateToTop() {
@@ -43,39 +36,19 @@ class RecommendController extends GetxController {
 //加载并追加视频推荐
   Future<bool> _addRecommendItems() async {
     try {
-      final timestamp = DateTime.now().toIso8601String();
-      print('[$timestamp] 开始加载推荐视频，refreshIdx: $refreshIdx');
-      var items = await HomeApi.getRecommendVideoItems(
-          num: 30, refreshIdx: refreshIdx)
-          .timeout(const Duration(seconds: 10));
-      print('[$timestamp] 成功加载到${items.length}条推荐视频');
-      if (items.isNotEmpty) {
-        print('[$timestamp] 示例视频: ${items.first.title}');
-      } else {
-        print('[$timestamp] 警告: 推荐视频列表为空');
-      }
-      recommendItems.addAll(items);
+      recommendItems.addAll(await HomeApi.getRecommendVideoItems(
+          num: 30, refreshIdx: refreshIdx));
     } catch (e) {
-      final timestamp = DateTime.now().toIso8601String();
-      log("[$timestamp] 加载推荐视频失败: ${e.toString()}");
-      print('[$timestamp] 错误详情: ${e.runtimeType}');
-      if (e is Error) {
-        print('[$timestamp] 堆栈跟踪: ${e.stackTrace}');
-      }
+      log("加载推荐视频失败:${e.toString()}");
       return false;
     }
     refreshIdx += 1;
     return true;
   }
 
-  Future<void> clearCache() async {
-    await cacheManager.emptyCache();
-    recommendItems.clear();
-    refreshIdx = 0;
-  }
-
   Future<void> onRefresh() async {
-    await clearCache();
+    recommendItems.clear();
+    await cacheManager.emptyCache();
     if (await _addRecommendItems()) {
       refreshController.finishRefresh(IndicatorResult.success);
     } else {
