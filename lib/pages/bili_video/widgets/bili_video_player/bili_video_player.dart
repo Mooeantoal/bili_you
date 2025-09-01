@@ -14,7 +14,23 @@ import 'package:mediakit/mediakit.dart';
 import 'package:mediakit_video/mediakit_video.dart';
 
 class BiliVideoPlayer extends StatefulWidget {
-  // ... 现有代码 ...
+  final VideoPlayInfo videoPlayInfo;
+  final VideoPlayItem videoPlayItem;
+  final AudioPlayItem? audioPlayItem;
+  final String cid;
+  final bool autoPlay;
+
+  const BiliVideoPlayer({
+    Key? key,
+    required this.videoPlayInfo,
+    required this.videoPlayItem,
+    required this.cid,
+    this.audioPlayItem,
+    this.autoPlay = false,
+  }) : super(key: key);
+
+  @override
+  _BiliVideoPlayerState createState() => _BiliVideoPlayerState();
 }
 
 class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
@@ -44,7 +60,7 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
     _controller.player.stream.listen((event) {
       // 更新播放状态
       _cubit.updatePlayingState(event.isPlaying);
-      
+
       // 更新视频时长
       if (event.duration != null) {
         _cubit.updateDuration(event.duration!);
@@ -93,7 +109,7 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
     final position = Duration(milliseconds: value.toInt());
     _controller.player.seek(position);
     _cubit.endDragging(position);
-    
+
     if (_wasPlayingBeforeDrag) {
       _controller.player.play();
     }
@@ -162,7 +178,33 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
   }
 
   Widget _buildTopControls(BuildContext context, BiliVideoPlayerState state) {
-    // ... 保持不变 ...
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              widget.videoPlayItem.title ?? '视频播放',
+              style: const TextStyle(color: Colors.white),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBottomControls(BuildContext context, BiliVideoPlayerState state) {
