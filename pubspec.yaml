@@ -84,8 +84,8 @@ dependencies:
   # 状态栏
   flutter_statusbarcolor_ns: 0.5.0
 
-  # 日志
-  logger: 2.0.21
+  # 日志 - 修改为存在的版本
+  logger: ^2.0.2+1
 
   # 加载动画
   flutter_spinkit: 5.2.0
