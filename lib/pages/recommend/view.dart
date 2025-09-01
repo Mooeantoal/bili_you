@@ -1,7 +1,7 @@
 import 'package:bili_you/common/utils/string_format_utils.dart';
 import 'package:bili_you/common/values/hero_tag_id.dart';
 import 'package:bili_you/common/widget/simple_easy_refresher.dart';
-import 'package:bili_you/common/widgets/web_style_video_card.dart';
+import 'package:bili_you/common/widgets/bili_video_card.dart';
 import 'package:bili_you/common/api/home_api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -95,8 +95,8 @@ class _RecommendPageState extends State<RecommendPage>
           itemCount: controller.recommendItems.length,
           itemBuilder: (context, index) {
             var i = controller.recommendItems[index];
-            return WebStyleVideoCard(
-              key: ValueKey("${i.bvid}:WebStyleVideoCard"),
+            return BiliVideoCard(
+              key: ValueKey("${i.bvid}:BiliVideoCard"),
               item: i,
               width: (MediaQuery.of(context).size.width - 24) / 2,
             );
