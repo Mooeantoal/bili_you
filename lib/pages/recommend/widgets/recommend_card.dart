@@ -76,18 +76,16 @@ class RecommendCard extends StatelessWidget {
                     placeholder: () => Container(
                       color: Theme.of(context).colorScheme.surfaceVariant,
                     ),
-                    errorWidget: () =>
-                        const Center(child: Icon(Icons.error)),
+                    errorWidget: () => const Center(child: Icon(Icons.error)),
                   ),
                 ),
               ),
-              // 右下角时长
+              // 视频时长
               Positioned(
                 right: 4,
                 bottom: 4,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(4),
@@ -103,47 +101,68 @@ class RecommendCard extends StatelessWidget {
               ),
             ],
           ),
-
-          // 标题（调整了字体大小，使信息更紧凑）
-          Padding(
-            padding: const EdgeInsets.fromLTRB(6, 6, 6, 0),
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13, // 小字号，增加空间利用率
-                fontWeight: FontWeight.w500,
-                height: 1.3,
-              ),
-            ),
-          ),
-
-          // 播放量 + 弹幕数
-          Padding(
-            padding: const EdgeInsets.fromLTRB(6, 3, 6, 0),
-            child: Row(
-              children: [
-                Text("▶ $formattedPlayNum",
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade600)),
-                const SizedBox(width: 8),
-                Text("💬 $formattedDanmakuNum",
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade600)),
-              ],
-            ),
-          ),
           
-          // UP 主信息
-          Padding(
-            padding: const EdgeInsets.fromLTRB(6, 3, 6, 6),
+          // UP主信息 (保持在封面图上)
+          Positioned(
+            left: 6,
+            bottom: 6,
             child: Text(
               upName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 11, color: Colors.grey.shade600),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                shadows: [
+                  Shadow(
+                    blurRadius: 2,
+                    color: Colors.black,
+                    offset: Offset(1, 1),
+                  )
+                ],
+              ),
+            ),
+          ),
+
+          // 封面下方信息区域
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 标题
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // 播放量和弹幕数
+                Row(
+                  children: [
+                    Text(
+                      "▶ $formattedPlayNum",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "💬 $formattedDanmakuNum",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

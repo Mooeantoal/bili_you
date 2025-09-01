@@ -10,6 +10,13 @@ import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 
 void main() async {
+  // 启用详细日志输出
+  debugPrint = (String? message, {int? wrapWidth}) {
+    if (message != null) {
+      print('[DEBUG] $message');
+      developer.log(message, name: 'BiliYou');
+    }
+  };
   WidgetsFlutterBinding.ensureInitialized();
   await BiliYouStorage.ensureInitialized();
   MediaKit.ensureInitialized();

@@ -13,6 +13,7 @@ class HomeApi {
       queryParameters: await WbiSign.encodeParams(
           {'feed_version': "V3", 'ps': num, 'fresh_idx': refreshIdx}),
     );
+    print('API返回数据: ${response.data}'); // 添加打印日志
     return RecommendVideoResponse.fromJson(response.data);
   }
 

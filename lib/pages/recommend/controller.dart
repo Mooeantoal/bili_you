@@ -36,8 +36,12 @@ class RecommendController extends GetxController {
 //加载并追加视频推荐
   Future<bool> _addRecommendItems() async {
     try {
-      recommendItems.addAll(await HomeApi.getRecommendVideoItems(
-          num: 30, refreshIdx: refreshIdx));
+      var items = await HomeApi.getRecommendVideoItems(
+          num: 30, refreshIdx: refreshIdx);
+      for (var item in items) {
+        print('视频: ${item.title}, 播放量: ${item.playNum}');
+      }
+      recommendItems.addAll(items);
     } catch (e) {
       log("加载推荐视频失败:${e.toString()}");
       return false;
@@ -46,9 +50,14 @@ class RecommendController extends GetxController {
     return true;
   }
 
-  Future<void> onRefresh() async {
-    recommendItems.clear();
+  Future<void> clearCache() async {
     await cacheManager.emptyCache();
+    recommendItems.clear();
+    refreshIdx = 0;
+  }
+
+  Future<void> onRefresh() async {
+    await clearCache();
     if (await _addRecommendItems()) {
       refreshController.finishRefresh(IndicatorResult.success);
     } else {
