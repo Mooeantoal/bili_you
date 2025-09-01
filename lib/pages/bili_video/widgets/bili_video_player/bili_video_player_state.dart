@@ -1,73 +1,77 @@
 import 'package:equatable/equatable.dart';
 import 'package:mediakit/mediakit.dart';
+import 'package:biliyou/common/models/local/video/audioplayitem.dart';
 import 'package:biliyou/common/models/local/video/videoplayitem.dart';
 
 class BiliVideoPlayerState extends Equatable {
   final VideoPlayItem videoPlayItem;
-  final String quality;
-  final VideoFit fit;
+  final AudioPlayItem? audioPlayItem;
+  final VideoController? videoController;
+  final bool isInitialized;
+  final bool isPlaying;
+  final bool isDragging;
+  final Duration position;
+  final Duration duration;
+  final Duration dragPosition;
+  final Duration bufferedPosition;
+  final VideoQuality quality;
+  final BoxFit fit;
   final double aspectRatio;
   final bool showDanmaku;
   final double danmakuFontSize;
   final double danmakuOpacity;
   final double danmakuShowArea;
-  final Duration position;
-  final Duration duration; // 视频总时长
-  final bool isPlaying; // 播放状态
-  final bool isDragging; // 拖动状态
-  final Duration dragPosition; // 拖动时的临时位置
 
   const BiliVideoPlayerState({
     required this.videoPlayItem,
-    required this.quality,
-    required this.fit,
-    required this.aspectRatio,
-    required this.showDanmaku,
-    required this.danmakuFontSize,
-    required this.danmakuOpacity,
-    required this.danmakuShowArea,
-    required this.position,
-    required this.duration,
-    required this.isPlaying,
-    required this.isDragging,
-    required this.dragPosition,
+    this.audioPlayItem,
+    this.videoController,
+    this.isInitialized = false,
+    this.isPlaying = false,
+    this.isDragging = false,
+    this.position = Duration.zero,
+    this.duration = Duration.zero,
+    this.dragPosition = Duration.zero,
+    this.bufferedPosition = Duration.zero,
+    this.quality = VideoQuality.auto,
+    this.fit = BoxFit.contain,
+    this.aspectRatio = 16 / 9,
+    this.showDanmaku = true,
+    this.danmakuFontSize = 16,
+    this.danmakuOpacity = 1,
+    this.danmakuShowArea = 1,
   });
-
-  factory BiliVideoPlayerState.initial() {
-    return const BiliVideoPlayerState(
-      videoPlayItem: VideoPlayItem.empty,
-      quality: '720P',
-      fit: VideoFit.contain,
-      aspectRatio: 16 / 9,
-      showDanmaku: true,
-      danmakuFontSize: 16,
-      danmakuOpacity: 1.0,
-      danmakuShowArea: 1.0,
-      position: Duration.zero,
-      duration: Duration.zero,
-      isPlaying: false,
-      isDragging: false,
-      dragPosition: Duration.zero,
-    );
-  }
 
   BiliVideoPlayerState copyWith({
     VideoPlayItem? videoPlayItem,
-    String? quality,
-    VideoFit? fit,
+    AudioPlayItem? audioPlayItem,
+    VideoController? videoController,
+    bool? isInitialized,
+    bool? isPlaying,
+    bool? isDragging,
+    Duration? position,
+    Duration? duration,
+    Duration? dragPosition,
+    Duration? bufferedPosition,
+    VideoQuality? quality,
+    BoxFit? fit,
     double? aspectRatio,
     bool? showDanmaku,
     double? danmakuFontSize,
     double? danmakuOpacity,
     double? danmakuShowArea,
-    Duration? position,
-    Duration? duration,
-    bool? isPlaying,
-    bool? isDragging,
-    Duration? dragPosition,
   }) {
     return BiliVideoPlayerState(
       videoPlayItem: videoPlayItem ?? this.videoPlayItem,
+      audioPlayItem: audioPlayItem ?? this.audioPlayItem,
+      videoController: videoController ?? this.videoController,
+      isInitialized: isInitialized ?? this.isInitialized,
+      isPlaying: isPlaying ?? this.isPlaying,
+      isDragging: isDragging ?? this.isDragging,
+      position: position ?? this.position,
+      duration: duration ?? this.duration,
+      dragPosition: dragPosition ?? this.dragPosition,
+      bufferedPosition: bufferedPosition ?? this.bufferedPosition,
       quality: quality ?? this.quality,
       fit: fit ?? this.fit,
       aspectRatio: aspectRatio ?? this.aspectRatio,
@@ -75,17 +79,21 @@ class BiliVideoPlayerState extends Equatable {
       danmakuFontSize: danmakuFontSize ?? this.danmakuFontSize,
       danmakuOpacity: danmakuOpacity ?? this.danmakuOpacity,
       danmakuShowArea: danmakuShowArea ?? this.danmakuShowArea,
-      position: position ?? this.position,
-      duration: duration ?? this.duration,
-      isPlaying: isPlaying ?? this.isPlaying,
-      isDragging: isDragging ?? this.isDragging,
-      dragPosition: dragPosition ?? this.dragPosition,
     );
   }
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         videoPlayItem,
+        audioPlayItem,
+        videoController,
+        isInitialized,
+        isPlaying,
+        isDragging,
+        position,
+        duration,
+        dragPosition,
+        bufferedPosition,
         quality,
         fit,
         aspectRatio,
@@ -93,10 +101,5 @@ class BiliVideoPlayerState extends Equatable {
         danmakuFontSize,
         danmakuOpacity,
         danmakuShowArea,
-        position,
-        duration,
-        isPlaying,
-        isDragging,
-        dragPosition,
       ];
 }
