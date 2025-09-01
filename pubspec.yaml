@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   # get
-  get: 4.6.5
+  get: ^4.6.5
 
   # Material You 动态配色
   dynamic_color: ^1.6.5
