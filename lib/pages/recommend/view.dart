@@ -2,6 +2,7 @@ import 'package:bili_you/common/utils/string_format_utils.dart';
 import 'package:bili_you/common/values/hero_tag_id.dart';
 import 'package:bili_you/common/widget/simple_easy_refresher.dart';
 import 'package:bili_you/common/widgets/dual_column_video_card.dart';
+import 'package:bili_you/common/api/home_api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'index.dart';
