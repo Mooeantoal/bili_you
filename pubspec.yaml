@@ -42,7 +42,7 @@ dependencies:
   media_kit_libs_windows_video: ^1.0.9
 
   # 弹幕
-  flutter_barrage: ^0.5.5 # 使用兼容null-safety的 flutter_barrage
+  flutter_danmaku: ^0.0.5
 
   # HTML渲染
   flutter_widget_from_html: ^0.15.2
@@ -53,7 +53,7 @@ dependencies:
   cached_network_image: ^3.3.0
 
   # Firebase 官方插件（版本锁定，保证兼容性）
-  firebase_core: ^2.24.2
+  firebase_core: ^3.10.0 # 升级版本
   firebase_analytics: ^10.8.0
   firebase_crashlytics: ^3.5.0
   firebase_remote_config: ^5.3.0
@@ -65,7 +65,7 @@ dependencies:
   package_info_plus: ^4.2.0
 
   # 电池信息
-  battery_plus: ^6.0.2
+  battery_plus: ^6.1.0
 
   # 网络状态
   connectivity_plus: ^5.0.2
