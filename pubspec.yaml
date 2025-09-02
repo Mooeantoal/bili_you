@@ -65,7 +65,7 @@ dependencies:
   package_info_plus: ^4.2.0
 
   # 电池信息
-  battery_plus: ^6.1.0
+  battery_plus: ^6.0.2
 
   # 网络状态
   connectivity_plus: ^5.0.2
