@@ -42,7 +42,7 @@ dependencies:
   media_kit_libs_windows_video: ^1.0.9
 
   # 弹幕
-  flutter_barrage: ^0.1.0 # 使用兼容null-safety的 flutter_barrage
+  flutter_barrage: ^0.5.5 # 使用兼容null-safety的 flutter_barrage
 
   # HTML渲染
   flutter_widget_from_html: ^0.15.2
