@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_barrage/flutter_barrage.dart';
 
 class DanmakuView extends StatelessWidget {
   final String? cid;
@@ -16,17 +17,13 @@ class DanmakuView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 这里实现弹幕显示逻辑
-    // 可以使用第三方弹幕库如 flutter_danmaku
     return Container(
-      // 弹幕实现占位符
       child: Center(
-        child: Text(
-          '弹幕区域 (CID: $cid)',
-          style: TextStyle(
-            color: Colors.white.withOpacity(opacity),
-            fontSize: fontSize,
-          ),
+        child: BarrageView(
+          cid: cid,
+          fontSize: fontSize,
+          opacity: opacity,
+          showArea: showArea,
         ),
       ),
     );
