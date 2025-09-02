@@ -18,13 +18,19 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.19.5'
+          flutter-version: '3.19.6'   # <- 可改成最新 stable
 
-      - name: Clean pub cache
-        run: flutter pub cache repair
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            ~/.flutter-plugins
+            ~/.flutter-plugins-dependencies
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
 
       - name: Get dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get
 
       - name: Build APK
         run: flutter build apk --release --split-per-abi
@@ -33,6 +39,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: flutter-apk
-          path: |
-            build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/flutter-apk/*.apk
           if-no-files-found: error
