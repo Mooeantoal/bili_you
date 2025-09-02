@@ -59,7 +59,7 @@ dependencies:
   flutter_custom_tabs: ^2.0.0
   flutter_platform_widgets: ^6.0.2
   flutter_composited_transform: ^0.0.3
-  flutter_composited_transform_fader: ^0.0.3
+  
 
   # Firebase 官方插件
   firebase_core: ^2.24.2
