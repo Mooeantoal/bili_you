@@ -18,19 +18,29 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.19.6'   # <- 可改成最新 stable
+          flutter-version: '3.19.6'
 
-      - name: Cache Flutter dependencies
+      - name: Enable Flutter caching
         uses: actions/cache@v3
         with:
           path: |
             ~/.pub-cache
-            ~/.flutter-plugins
-            ~/.flutter-plugins-dependencies
+            build
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Upgrade dependencies
+        run: flutter pub upgrade
 
       - name: Get dependencies
         run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test --coverage
 
       - name: Build APK
         run: flutter build apk --release --split-per-abi
