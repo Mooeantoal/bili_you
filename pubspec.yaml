@@ -6,29 +6,29 @@ publish_to: 'none'
 version: 1.1.515
 
 environment:
-  sdk: '>3.0.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
   # get
-  get: 4.6.5
+  get: ^4.6.5
 
   # Material You 动态配色
-  dynamic_color: 1.6.5
+  dynamic_color: ^1.6.5
 
   # 网络请求
-  dio: 5.3.2
-  dio_http2_adapter: 2.3.1
-  dio_cookie_manager: 3.1.0
-  cookie_jar: 4.0.8
+  dio: ^5.3.2
+  dio_http2_adapter: ^2.3.1
+  dio_cookie_manager: ^3.1.0
+  cookie_jar: ^4.0.8
 
   # 本地存储
-  shared_preferences: 2.2.2
-  path_provider: 2.1.1
-  hive_flutter: 1.1.0
-  hive: 2.2.3
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
 
   # 视频播放
   media_kit: ^1.1.10
@@ -41,74 +41,74 @@ dependencies:
   media_kit_libs_web: ^1.0.9
 
   # 弹幕
-  flutter_danmaku: 0.0.3
+  flutter_danmaku: ^0.0.3
 
   # HTML渲染
   flutter_widget_from_html: ^0.14.0
   flutter_widget_from_html_svg: ^0.13.0
 
   # 图片加载
-  extended_image: 8.2.0
-  photo_view: 0.14.0
-  cached_network_image: 3.3.0
+  extended_image: ^8.2.0
+  photo_view: ^0.14.0
+  cached_network_image: ^3.3.0
 
   # UI组件
-  flutter_staggered_grid_view: 0.7.0
-  flutter_custom_tabs: 2.0.0
-  flutter_platform_widgets: 6.0.2
-  flutter_composited_transform: 0.0.3
-  flutter_composited_transform_fader: 0.0.3
-  flutter_back_button_interceptor: 7.0.0
-  flutter_platform_channel: 1.0.0
-  flutter_smart_refresh: 0.0.1
+  flutter_staggered_grid_view: ^0.7.0
+  flutter_custom_tabs: ^2.0.0
+  flutter_platform_widgets: ^6.0.2
+  flutter_composited_transform: ^0.0.3
+  flutter_composited_transform_fader: ^0.0.3
+  flutter_back_button_interceptor: ^7.0.0
+  flutter_platform_channel: ^1.0.0
+  flutter_smart_refresh: ^0.0.1
 
   # 应用分析
-  firebase_analytics_dart: 0.1.08
+  firebase_analytics_dart: ^0.1.08
 
   # 应用崩溃
-  firebase_crashlytics_dart: 0.1.08
+  firebase_crashlytics_dart: ^0.1.08
 
   # 应用配置
-  firebase_remote_config_dart: 0.1.08
+  firebase_remote_config_dart: ^0.1.08
 
   # 应用性能
-  firebase_performance_dart: 0.1.08
+  firebase_performance_dart: ^0.1.08
 
   # 应用检查
-  firebase_app_check_dart: 0.1.08
+  firebase_app_check_dart: ^0.1.08
 
   # 设备信息
-  device_info_plus: 9.1.0
-  package_info_plus: 4.2.0
+  device_info_plus: ^9.1.0
+  package_info_plus: ^4.2.0
 
-  # 电池信息
-  battery_plus: 4.1.2
+  # 电池信息 (修复: 更新为可用版本)
+  battery_plus: ^6.1.0
 
   # 网络状态
-  connectivity_plus: 5.0.2
+  connectivity_plus: ^5.0.2
 
   # 主题
-  flex_color_scheme: 7.3.1
+  flex_color_scheme: ^7.3.1
 
   # 其他
-  logger: 2.0.2+1
-  intl: 0.18.1
-  url_launcher: 6.2.2
-  share_plus: 7.2.2
-  permission_handler: 11.1.0
-  fluttertoast: 8.2.4
-  lottie: 2.7.0
-  flutter_svg: 2.0.9
-  webview_flutter: 4.4.2
-  in_app_purchase: 3.1.13
-  collection: 1.18.0
+  logger: ^2.0.2+1
+  intl: ^0.18.1
+  url_launcher: ^6.2.2
+  share_plus: ^7.2.2
+  permission_handler: ^11.1.0
+  fluttertoast: ^8.2.4
+  lottie: ^2.7.0
+  flutter_svg: ^2.0.9
+  webview_flutter: ^4.4.2
+  in_app_purchase: ^3.1.13
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: 3.0.1
-  hive_generator: 2.0.1
-  build_runner: 2.4.8
+  flutter_lints: ^3.0.1
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.8
 
 flutter:
   uses-material-design: true
