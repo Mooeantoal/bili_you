@@ -69,8 +69,8 @@ dependencies:
   firebase_analytics: ^10.7.4
   firebase_crashlytics: ^3.4.8
   firebase_remote_config: ^5.2.8
-  firebase_performance: ^0.9.5+10
-  firebase_app_check: ^0.4.0+1
+  firebase_performance: ^0.9.4+8
+  firebase_app_check: ^0.2.2+8
 
   # 设备信息
   device_info_plus: ^9.1.0
