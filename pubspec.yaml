@@ -61,7 +61,6 @@ dependencies:
   flutter_composited_transform: ^0.0.3
   flutter_composited_transform_fader: ^0.0.3
   flutter_back_button_interceptor: ^7.0.0
-  flutter_platform_channel: ^1.0.0
   pull_to_refresh: ^2.0.0
 
   # Firebase 官方插件
