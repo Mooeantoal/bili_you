@@ -11,15 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 拉取代码
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 安装 Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           flutter-version: '3.19.6'
 
+      # 缓存依赖和 Flutter SDK，加快构建速度
       - name: Enable flutter caching
         uses: actions/cache@v3
         with:
@@ -30,18 +33,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-flutter-
 
+      # 获取依赖
       - name: Get dependencies
         run: flutter pub get
 
+      # 静态分析
       - name: Analyze code
         run: flutter analyze
 
+      # 单元测试
       - name: Run tests
         run: flutter test
 
+      # 构建 APK（Release）
       - name: Build APK
         run: flutter build apk --release --split-per-abi
 
+      # 上传构建产物
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
