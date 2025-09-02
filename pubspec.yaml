@@ -50,22 +50,22 @@ dependencies:
   # 图片加载
   extended_image: ^8.2.0
   photo_view: ^0.14.0
-  cached_network_image: ^3.3.1
+  cached_network_image: ^3.3.0
 
-  # Firebase 官方插件（已确认兼容 firebase_core ^2.24.2）
+  # Firebase 官方插件（版本锁定，保证兼容性）
   firebase_core: ^2.24.2
-  firebase_analytics: ^10.10.6
-  firebase_crashlytics: ^3.5.6
-  firebase_remote_config: ^5.4.0
-  firebase_performance: ^0.9.4+12
+  firebase_analytics: ^10.8.0
+  firebase_crashlytics: ^3.5.0
+  firebase_remote_config: ^5.3.0
+  firebase_performance: ^0.9.4+10
   firebase_app_check: ^0.2.2+1
 
   # 设备信息
-  device_info_plus: ^9.1.2
+  device_info_plus: ^9.1.0
   package_info_plus: ^4.2.0
 
   # 电池信息
-  battery_plus: ^6.1.1
+  battery_plus: ^6.1.0
 
   # 网络状态
   connectivity_plus: ^5.0.2
@@ -75,12 +75,12 @@ dependencies:
   intl: ^0.18.1
   url_launcher: ^6.2.2
   share_plus: ^7.2.2
-  permission_handler: ^11.3.1
+  permission_handler: ^11.1.0
   fluttertoast: ^8.2.4
   lottie: ^2.7.0
-  flutter_svg: ^2.0.10+1
-  webview_flutter: ^4.7.0
-  in_app_purchase: ^3.2.0
+  flutter_svg: ^2.0.9
+  webview_flutter: ^4.4.2
+  in_app_purchase: ^3.1.13
   collection: ^1.18.0
 
 dev_dependencies:
@@ -88,7 +88,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^3.0.1
   hive_generator: ^2.0.1
-  build_runner: ^2.4.11
+  build_runner: ^2.4.8
 
 flutter:
   uses-material-design: true
