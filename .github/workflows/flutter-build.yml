@@ -20,8 +20,11 @@ jobs:
           channel: 'stable'
           flutter-version: '3.19.5'
 
+      - name: Clean pub cache
+        run: flutter pub cache repair
+
       - name: Get dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
 
       - name: Build APK
         run: flutter build apk --release --split-per-abi
