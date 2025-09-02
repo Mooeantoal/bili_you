@@ -47,7 +47,6 @@ dependencies:
 
   # HTML渲染
   flutter_widget_from_html: ^0.15.2
-  flutter_widget_from_html_svg: ^0.15.2
 
   # 图片加载
   extended_image: ^8.2.0
