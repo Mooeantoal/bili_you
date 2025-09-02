@@ -44,8 +44,8 @@ dependencies:
   flutter_danmaku: ^0.0.3
 
   # HTML渲染
-  flutter_widget_from_html: ^0.14.0
-  flutter_widget_from_html_svg: ^0.13.0
+  flutter_widget_from_html: ^0.15.0
+  flutter_widget_from_html_svg: ^0.15.0
 
   # 图片加载
   extended_image: ^8.2.0
@@ -62,26 +62,19 @@ dependencies:
   flutter_platform_channel: ^1.0.0
   flutter_smart_refresh: ^0.0.1
 
-  # 应用分析
-  firebase_analytics_dart: ^0.1.08
-
-  # 应用崩溃
-  firebase_crashlytics_dart: ^0.1.08
-
-  # 应用配置
-  firebase_remote_config_dart: ^0.1.08
-
-  # 应用性能
-  firebase_performance_dart: ^0.1.08
-
-  # 应用检查
-  firebase_app_check_dart: ^0.1.08
+  # Firebase 官方插件
+  firebase_core: ^2.24.2
+  firebase_analytics: ^10.7.4
+  firebase_crashlytics: ^3.4.8
+  firebase_remote_config: ^5.2.8
+  firebase_performance: ^0.9.4+8
+  firebase_app_check: ^0.2.2+8
 
   # 设备信息
   device_info_plus: ^9.1.0
   package_info_plus: ^4.2.0
 
-  # 电池信息 (修复: 更新为可用版本)
+  # 电池信息
   battery_plus: ^6.1.0
 
   # 网络状态
