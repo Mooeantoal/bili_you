@@ -14,28 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: flutter-tooling/setup-flutter@v1
-        with:
-          version: '3.35.2'
-          channel: 'stable'
-
-      - name: Cache Flutter pub cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-flutter-
-
-      - name: Validate Flutter SDK and download tools
-        run: flutter precache
-
-      - name: Accept Android licenses
-        run: yes | flutter doctor --android-licenses
-
-# ... 上一步是 Checkout code
-      
       # 这是一个完整且独立的步骤，包含了所有依赖获取和构建命令
       - name: Build Flutter App
         run: |
@@ -49,7 +27,7 @@ jobs:
           # 验证SDK安装并下载所有工具
           flutter doctor
           flutter precache
-
+          
           # 获取Dart和Flutter依赖
           flutter pub get
 
@@ -61,3 +39,10 @@ jobs:
 
           # 构建APK
           flutter build apk --release --split-per-abi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-apk
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
