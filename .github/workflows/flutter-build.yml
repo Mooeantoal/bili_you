@@ -33,6 +33,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Generate protobuf files
+        run: flutter pub run build_runner build
+
+      - name: Run tests
+        run: flutter test
+
       - name: Build APK
         run: flutter build apk --release --split-per-abi
 
