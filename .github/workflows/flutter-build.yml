@@ -27,7 +27,7 @@ jobs:
           # 验证SDK安装并下载所有工具
           flutter doctor
           flutter precache
-          
+
           # 获取Dart和Flutter依赖
           flutter pub get
 
