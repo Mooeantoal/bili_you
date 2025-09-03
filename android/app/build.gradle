@@ -91,5 +91,5 @@ flutter {
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0"
 }
