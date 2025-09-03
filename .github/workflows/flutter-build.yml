@@ -14,18 +14,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 强制清除Flutter缓存，以解决SDK文件损坏问题
-      - name: Clear Flutter cache
-        run: |
-          sudo rm -rf /opt/hostedtoolcache/flutter
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           flutter-version: '3.35.2'
+          cache: false # 明确禁用缓存以强制重新安装SDK
 
-      # 新增这一步，用于重新生成protobuf文件
+      - name: Enable flutter caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            ~/.flutter
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Get dependencies
+        run: flutter pub get
+
       - name: Generate protobuf files
         run: flutter pub run build_runner build
 
