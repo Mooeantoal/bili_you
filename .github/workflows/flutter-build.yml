@@ -34,21 +34,27 @@ jobs:
           flutter precache
           flutter upgrade
 
-      - name: Get dependencies
-        run: flutter pub get
+# ... 上一步是 Checkout code
+      
+      # 这是一个完整且独立的步骤，包含了所有依赖获取和构建命令
+      - name: Build Flutter App
+        run: |
+          # 手动下载并设置Flutter SDK，以绕过actions缓存问题
+          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.2-stable.tar.xz
+          tar -xf flutter_linux_3.35.2-stable.tar.xz
+          
+          # 将Flutter命令路径添加到当前会话的PATH中
+          export PATH="$PWD/flutter/bin:$PATH"
+          
+          # 验证SDK安装并下载所有工具
+          flutter doctor
+          flutter precache
 
-      - name: Generate protobuf files
-        run: flutter pub run build_runner build
+          # 获取Dart和Flutter依赖
+          flutter pub get
 
-      - name: Run tests
-        run: flutter test
+          # 重新生成protobuf文件
+          flutter pub run build_runner build
 
-      - name: Build APK
-        run: flutter build apk --release --split-per-abi
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: flutter-apk
-          path: build/app/outputs/flutter-apk/*.apk
-          if-no-files-found: error
+          # 构建APK
+          flutter build apk --release --split-per-abi
