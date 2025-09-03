@@ -28,11 +28,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-flutter-
 
-      # 验证Flutter SDK安装，并下载所有缺失的工具
-      - name: Validate Flutter SDK
+      - name: Validate Flutter SDK and update
         run: |
           flutter doctor
           flutter precache
+          flutter upgrade
 
       - name: Get dependencies
         run: flutter pub get
