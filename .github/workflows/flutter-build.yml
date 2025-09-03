@@ -19,7 +19,6 @@ jobs:
         with:
           channel: 'stable'
           flutter-version: '3.35.2'
-          cache: true
 
       - name: Cache Flutter pub cache
         uses: actions/cache@v3
@@ -28,10 +27,12 @@ jobs:
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             ${{ runner.os }}-flutter-
-      
-      # 确保所有Flutter工具都已下载并缓存
-      - name: Precache Flutter SDK
-        run: flutter precache
+
+      # 验证Flutter SDK安装，并下载所有缺失的工具
+      - name: Validate Flutter SDK
+        run: |
+          flutter doctor
+          flutter precache
 
       - name: Get dependencies
         run: flutter pub get
