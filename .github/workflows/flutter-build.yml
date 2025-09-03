@@ -16,12 +16,15 @@ jobs:
 
       - name: Build Flutter App
         run: |
-          # 手动下载一个已知稳定的Flutter SDK版本
-          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.19.0-stable.tar.xz
-          tar -xf flutter_linux_3.19.0-stable.tar.xz
+          # 手动下载并设置Flutter SDK，以绕过actions缓存问题
+          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.2-stable.tar.xz
+          tar -xf flutter_linux_3.35.2-stable.tar.xz
           
           # 将Flutter命令路径添加到当前会话的PATH中
           export PATH="$PWD/flutter/bin:$PATH"
+          
+          # 清理旧的构建文件
+          flutter clean
           
           # 验证SDK安装并下载所有工具
           flutter doctor
@@ -32,11 +35,6 @@ jobs:
 
           # 接受Android许可证
           yes | flutter doctor --android-licenses
-
-          # ---- 新增诊断步骤 ----
-          echo "Checking for frontend_server.dart.snapshot..."
-          ls -la "$PWD/flutter/bin/cache/dart-sdk/bin/snapshots/"
-          # ---------------------
 
           # 重新生成protobuf文件
           flutter pub run build_runner build
