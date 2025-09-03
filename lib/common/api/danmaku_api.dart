@@ -1,18 +1,36 @@
-import 'package:bili_you/common/api/api_constants.dart';
+import 'package:bili_you/common/api/danmaku_api.dart';
 import 'package:bili_you/common/models/network/proto/danmaku/danmaku.pb.dart';
-import 'package:bili_you/common/utils/http_utils.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
-class DanmakuApi {
-  static Future<DmSegMobileReply> requestDanmaku(
-      {int type = 1, required int cid, required int segmentIndex}) async {
-    var ret = await compute((Map<String, int> params) async {
-      var response = await HttpUtils().get(ApiConstants.danmaku,
-          queryParameters: params,
-          options: Options(responseType: ResponseType.bytes));
-      return DmSegMobileReply.fromBuffer(response.data);
-    }, {'type': type, 'oid': cid, 'segment_index': segmentIndex});
-    return ret;
+class SomePage extends StatefulWidget {
+  @override
+  State<SomePage> createState() => _SomePageState();
+}
+
+class _SomePageState extends State<SomePage> {
+  DmSegMobileReply? _danmakuData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDanmaku();
+  }
+
+  void _loadDanmaku() async {
+    try {
+      final data = await DanmakuApi.requestDanmaku(
+        cid: 12345,
+        segmentIndex: 0,
+      );
+      setState(() => _danmakuData = data);
+    } catch (e) {
+      debugPrint("加载弹幕失败：$e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _danmakuData == null
+        ? const Center(child: CircularProgressIndicator())
+        : Text('已加载弹幕，数量：${_danmakuData!.elems.length}');
   }
 }
