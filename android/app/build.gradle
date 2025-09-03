@@ -36,6 +36,7 @@ def _keyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties.getProperty("ke
 def _keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProperty("keyPassword")
 
 android {
+    namespace "com.lucinhu.bili_you" // <-- 添加了这一行
     // compileSdkVersion flutter.compileSdkVersion
     compileSdk 34
     ndkVersion flutter.ndkVersion
