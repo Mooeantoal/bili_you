@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_barrage/flutter_barrage.dart';
+import '../common/api/danmu_api.dart';
 
 class DanmakuView extends StatefulWidget {
   final String? cid;
@@ -20,53 +20,82 @@ class DanmakuView extends StatefulWidget {
 }
 
 class _DanmakuViewState extends State<DanmakuView> {
-  late BarrageWallController _barrageWallController;
+  final _controller = TextEditingController();
+  final _service = BiliDanmuService();
+  bool _sending = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _barrageWallController = BarrageWallController();
-    // 这里可以先添加几条测试弹幕
-    Future.delayed(Duration(seconds: 1), () {
-      _barrageWallController.send([
-        Bullet(child: _buildText("欢迎进入弹幕区")),
-        Bullet(child: _buildText("CID: ${widget.cid ?? "未知"}")),
-      ]);
-    });
-  }
+  Future<void> _sendDanmu() async {
+    if (_controller.text.isEmpty || widget.cid == null) return;
 
-  Text _buildText(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: Colors.white.withOpacity(widget.opacity),
-        fontSize: widget.fontSize,
-        shadows: const [
-          Shadow(
-            blurRadius: 2,
-            color: Colors.black,
-            offset: Offset(1, 1),
-          ),
-        ],
-      ),
-    );
+    setState(() => _sending = true);
+
+    try {
+      await _service.postDanmu(
+        mid: 123456, // TODO: 替换为当前用户ID
+        cid: int.parse(widget.cid!),
+        playTime: 10.0, // TODO: 替换为当前播放进度
+        color: 0xffffff,
+        msg: _controller.text,
+        fontSize: widget.fontSize.toInt(),
+        mode: 1, // 1=滚动
+        accessKey: "你的AccessKey", // TODO: 替换为登录token
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("弹幕发送成功")),
+      );
+      _controller.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("发送失败: $e")),
+      );
+    } finally {
+      setState(() => _sending = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.transparent, // 保持透明覆盖在播放器上
-      child: BarrageWall(
-        barrageWallController: _barrageWallController,
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height * widget.showArea,
-      ),
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            color: Colors.black,
+            child: Center(
+              child: Text(
+                '弹幕区域 (CID: ${widget.cid})',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(widget.opacity),
+                  fontSize: widget.fontSize,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    hintText: "输入弹幕内容",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _sending ? null : _sendDanmu,
+                child: _sending
+                    ? const CircularProgressIndicator()
+                    : const Text("发送"),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
-  }
-
-  @override
-  void dispose() {
-    _barrageWallController.dispose();
-    super.dispose();
   }
 }
