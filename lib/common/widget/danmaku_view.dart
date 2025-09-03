@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../common/api/danmu_api.dart';
+import '../common/api/danmu_api.dart'; // 引用 API
 
 class DanmakuView extends StatefulWidget {
   final String? cid;
@@ -21,50 +21,25 @@ class DanmakuView extends StatefulWidget {
 
 class _DanmakuViewState extends State<DanmakuView> {
   final _controller = TextEditingController();
-  final _service = BiliDanmuService(); // 你自己实现的弹幕服务
   bool _sending = false;
-  List<String> _danmus = []; // 弹幕列表
+  List<String> _danmakuList = []; // 用于存储弹幕内容
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchDanmus();
-  }
-
-  Future<void> _fetchDanmus() async {
-    if (widget.cid == null) return;
-
-    try {
-      // 简化示例：调用API获取弹幕内容
-      final ret = await DanmakuApi.requestDanmaku(
-          cid: int.parse(widget.cid!), segmentIndex: 1);
-      setState(() {
-        _danmus = ret.elems.map((e) => e.content).toList();
-      });
-    } catch (e) {
-      debugPrint("获取弹幕失败: $e");
-    }
-  }
-
+  // 弹幕发送请求
   Future<void> _sendDanmu() async {
     if (_controller.text.isEmpty || widget.cid == null) return;
 
     setState(() => _sending = true);
 
     try {
-      await _service.postDanmu(
-        mid: 123456, // TODO: 替换为当前用户ID
+      await DanmakuApi.requestDanmaku(
         cid: int.parse(widget.cid!),
-        playTime: 10.0, // TODO: 替换为当前播放进度
-        color: 0xffffff,
-        msg: _controller.text,
-        fontSize: widget.fontSize.toInt(),
-        mode: 1, // 1=滚动
-        accessKey: "你的AccessKey", // TODO: 替换为登录token
+        segmentIndex: 1, // TODO: 根据视频分段获取正确的 segmentIndex
       );
 
-      // 发送成功后把弹幕加入显示列表
-      setState(() => _danmus.add(_controller.text));
+      // 假设成功发送弹幕后，将其添加到本地弹幕列表
+      setState(() {
+        _danmakuList.add(_controller.text);
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("弹幕发送成功")),
@@ -86,32 +61,23 @@ class _DanmakuViewState extends State<DanmakuView> {
         Expanded(
           child: Container(
             color: Colors.black,
-            child: Stack(
-              children: [
-                // 展示弹幕文本
-                for (int i = 0; i < _danmus.length; i++)
-                  Positioned(
-                    top: 20.0 * i, // 简单排列
+            child: Center(
+              child: Stack(
+                children: _danmakuList.map((danmu) {
+                  return Positioned(
                     left: 0,
+                    right: 0,
+                    top: (40.0 * _danmakuList.indexOf(danmu)).toDouble(),
                     child: Text(
-                      _danmus[i],
+                      danmu,
                       style: TextStyle(
                         color: Colors.white.withOpacity(widget.opacity),
                         fontSize: widget.fontSize,
                       ),
                     ),
-                  ),
-                if (_danmus.isEmpty)
-                  Center(
-                    child: Text(
-                      '弹幕区域 (CID: ${widget.cid})',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(widget.opacity),
-                        fontSize: widget.fontSize,
-                      ),
-                    ),
-                  ),
-              ],
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),
