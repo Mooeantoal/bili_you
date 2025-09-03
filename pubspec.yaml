@@ -42,7 +42,7 @@ dependencies:
   media_kit_libs_windows_video: ^1.0.9
 
   # 弹幕（先保持旧版本，null safety 暂时放一边）
-  flutter_danmaku: ^0.0.5
+  flutter_barrage: ^0.5.5
 
   # HTML渲染
   flutter_widget_from_html: ^0.15.2
