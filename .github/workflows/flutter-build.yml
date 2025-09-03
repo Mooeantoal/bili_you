@@ -14,23 +14,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          flutter-version: '3.35.2'
-          cache: false # 明确禁用缓存以强制重新安装SDK
+      # 手动下载和设置Flutter SDK，以绕过actions缓存问题
+      - name: Manual Setup Flutter
+        run: |
+          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.2-stable.tar.xz
+          tar -xf flutter_linux_3.35.2-stable.tar.xz
+          echo "$PWD/flutter/bin" >> $GITHUB_PATH
+          flutter doctor
 
-      - name: Enable flutter caching
+      - name: Enable pub caching
         uses: actions/cache@v3
         with:
           path: |
             ~/.pub-cache
-            ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             ${{ runner.os }}-flutter-
-
+      
       - name: Get dependencies
         run: flutter pub get
 
