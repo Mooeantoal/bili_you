@@ -13,7 +13,6 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
-
     signingConfigs {
         release {
             if (System.getenv("KEYSTORE_PASSWORD")) {
@@ -24,7 +23,6 @@ android {
             }
         }
     }
-
     buildTypes {
         release {
             signingConfig System.getenv("KEYSTORE_PASSWORD") ? signingConfigs.release : null
