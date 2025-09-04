@@ -36,22 +36,13 @@ def _keyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties.getProperty("ke
 def _keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProperty("keyPassword")
 
 android {
-    namespace "com.lucinhu.bili_you" // <-- 添加了这一行
-    // compileSdkVersion flutter.compileSdkVersion
     compileSdkVersion 34
-    ndkVersion flutter.ndkVersion
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
+    defaultConfig {
+        applicationId "com.lucinhu.bili_you"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
     }
 
     defaultConfig {
@@ -68,20 +59,19 @@ android {
 
     signingConfigs {
         release {
-            storeFile _storeFile
-            storePassword _storePassword
-            keyAlias _keyAlias
-            keyPassword _keyPassword
-            v1SigningEnabled true
-            v2SigningEnabled true
+            if (System.getenv("KEYSTORE_PASSWORD")) {
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+                storeFile file('keystore.jks')
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         release {
-            if (signingConfigs.release.storePassword != null){
-                signingConfig signingConfigs.release
-            }
+            // Only apply signingConfig if keystore is defined
+            signingConfig System.getenv("KEYSTORE_PASSWORD") ? signingConfigs.release : null
         }
     }
 }
