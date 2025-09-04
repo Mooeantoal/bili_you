@@ -9,38 +9,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 设置超时时间，单位为分钟
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Flutter App
+      - name: Download and setup Flutter SDK
         run: |
-          # 手动下载并设置Flutter SDK，以绕过actions缓存问题
           wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.2-stable.tar.xz
           tar -xf flutter_linux_3.35.2-stable.tar.xz
           
-          # 将Flutter命令路径添加到当前会话的PATH中
-          export PATH="$PWD/flutter/bin:$PATH"
-          
-          # 清理旧的构建文件
-          flutter clean
-          
-          # 验证SDK安装并下载所有工具
-          flutter doctor
-          flutter precache
+      - name: Add Flutter to PATH
+        run: echo "$PWD/flutter/bin" >> $GITHUB_PATH
 
-          # 获取Dart和Flutter依赖
-          flutter pub get
+      - name: Clean Flutter project
+        run: flutter clean
 
-          # 接受Android许可证，使用更可靠的方法
-          echo "y" | flutter doctor --android-licenses
-          
-          # 重新生成protobuf文件
-          flutter pub run build_runner build
+      - name: Get dependencies
+        run: flutter pub get
 
-          # 构建APK
-          flutter build apk --release --split-per-abi
+      - name: Accept Android licenses
+        run: echo "y" | flutter doctor --android-licenses
+
+      - name: Run build_runner
+        run: flutter pub run build_runner build
+
+      - name: Build APK
+        run: flutter build apk --release --split-per-abi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
