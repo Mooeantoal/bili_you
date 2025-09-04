@@ -30,27 +30,36 @@ jobs:
           path: |
             ~/flutter
             ~/.pub-cache
-          key: flutter-sdk-${{ runner.os }}-3.35.2
+          key: flutter-sdk-${{ runner.os }}-3.24.3
           restore-keys: |
             flutter-sdk-${{ runner.os }}-
 
       - name: Set up Flutter
+        id: flutter-setup
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.2'
+          flutter-version: '3.24.3' # Use a known stable version
           channel: 'stable'
           cache: true
-          cache-key: flutter-sdk-${{ runner.os }}-3.35.2
+          cache-key: flutter-sdk-${{ runner.os }}-3.24.3
           cache-path: ~/flutter
 
-      - name: Fix Git permissions
-        run: git config --global --add safe.directory '*'
+      - name: Debug Flutter installation
+        run: |
+          echo "Flutter SDK path:"
+          ls -la ~/flutter
+          ls -la ~/flutter/bin
+          ls -la ~/flutter/bin/cache/dart-sdk/bin/snapshots/ || echo "Snapshots directory not found"
+          echo "PATH:"
+          echo $PATH
+          echo "Flutter version:"
+          ~/flutter/bin/flutter --version || echo "Flutter binary not found"
 
       - name: Verify Flutter installation
         run: |
           export PATH="$HOME/flutter/bin:$PATH"
           flutter doctor -v
-          flutter precache
+          flutter precache --force
           flutter pub cache repair
 
       - name: Install dependencies
@@ -59,8 +68,11 @@ jobs:
       - name: Accept Android licenses
         run: yes | flutter doctor --android-licenses
 
+      - name: Clean build artifacts
+        run: flutter clean
+
       - name: Generate protobuf files
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+        run: flutter pub run build_runner build --delete-conflicting-outputs --verbose
 
       - name: Build APK
         run: flutter build apk --release --split-per-abi --verbose
