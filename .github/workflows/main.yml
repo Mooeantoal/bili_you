@@ -57,40 +57,40 @@ jobs:
           ls -la /home/runner/flutter/bin/cache/dart-sdk/bin/snapshots/ || echo "Snapshots directory not found"
           echo "PATH before update:"
           echo $PATH
-          export PATH="/home/runner/flutter/bin:$PATH"
+          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
           echo "PATH after update:"
           echo $PATH
           echo "Flutter version:"
-          /home/runner/flutter/bin/flutter --version || echo "Flutter binary not found"
+          flutter --version || echo "Flutter binary not found"
           echo "Dart version:"
-          /home/runner/flutter/bin/dart --version || echo "Dart binary not found"
+          dart --version || echo "Dart binary not found"
 
       - name: Verify Flutter installation
         run: |
-          export PATH="/home/runner/flutter/bin:$PATH"
+          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
           flutter doctor -v
           flutter precache --force
           flutter pub cache repair
 
       - name: Install dependencies
         run: |
-          export PATH="/home/runner/flutter/bin:$PATH"
-          flutter pub get
+          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
+          flutter pub get --verbose
         continue-on-error: false
 
       - name: Accept Android licenses
         run: |
-          export PATH="/home/runner/flutter/bin:$PATH"
+          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
           yes | flutter doctor --android-licenses
 
       - name: Clean build artifacts
         run: |
-          export PATH="/home/runner/flutter/bin:$PATH"
+          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
           flutter clean
 
       - name: Generate code with build_runner
         run: |
-          export PATH="/home/runner/flutter/bin:$PATH"
+          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
           flutter pub run build_runner build --delete-conflicting-outputs --verbose
         continue-on-error: false
 
@@ -100,10 +100,11 @@ jobs:
           echo "${{ secrets.KEYSTORE }}" | base64 -di > android/app/keystore.jks
         env:
           ENCODED_KEYSTORE: ${{ secrets.KEYSTORE }}
+        continue-on-error: true
 
       - name: Build APK
         run: |
-          export PATH="/home/runner/flutter/bin:$PATH"
+          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
           flutter build apk --release --split-per-abi --verbose
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
