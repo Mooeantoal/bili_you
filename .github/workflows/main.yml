@@ -75,8 +75,16 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
-          flutter pub get --verbose
-        continue-on-error: false
+          flutter pub get --verbose || (cat /home/runner/.pub-cache/log/pub_log.txt && exit 1)
+        continue-on-error: true
+
+      - name: Upload pub log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pub-log
+          path: /home/runner/.pub-cache/log/pub_log.txt
+          if-no-files-found: warn
 
       - name: Accept Android licenses
         run: |
