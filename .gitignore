@@ -29,6 +29,11 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 build/
+android/app/keystore.jks
+*.g.dart
+firebase_options.dart
+*.apk
+*.aab
 flutter_*.png
 flutter_*.snapshot
 flutter_*.stamp
