@@ -12,17 +12,27 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # 状态管理
   get: ^4.6.6
+
+  # Material You 动态配色
   dynamic_color: ^1.7.0
   flex_color_scheme: ^7.3.1
+
+  # 网络请求
   dio: ^5.7.0
   dio_http2_adapter: ^2.5.3
   dio_cookie_manager: ^3.1.1
   cookie_jar: ^4.0.8
+
+  # 本地存储
   shared_preferences: ^2.3.0
   path_provider: ^2.1.4
   hive_flutter: ^1.1.0
   hive: ^2.2.3
+
+  # 视频播放
   media_kit: ^1.1.10+1
   media_kit_video: ^1.2.4
   media_kit_libs_android_video: ^1.3.6
@@ -30,21 +40,41 @@ dependencies:
   media_kit_libs_linux: ^1.1.3
   media_kit_libs_macos_video: ^1.1.3
   media_kit_libs_windows_video: ^1.0.9
+
+  # 弹幕（注释掉以避免 null-safety 问题）
   # flutter_barrage: ^0.5.5
+  # ns_danmaku:
+  #   git:
+  #     url: https://github.com/lucinhu/flutter_ns_danmaku.git
+  #     ref: 0ebdc129f331f8227fe07d616dcf822a359f8a0c
+
+  # HTML渲染
   flutter_widget_from_html: ^0.15.2
+
+  # 图片加载
   extended_image: ^8.2.1
   photo_view: ^0.15.0
   cached_network_image: ^3.4.1
-  firebase_core: ^4.1.0
-  firebase_analytics: ^12.0.1
-  firebase_crashlytics: ^5.0.1
+
+  # Firebase 官方插件（放宽版本约束）
+  firebase_core: ^4.0.0
+  firebase_analytics: ^12.0.0
+  firebase_crashlytics: ^5.0.0
   firebase_remote_config: ^6.0.0
-  firebase_performance: ^0.11.0+1
-  firebase_app_check: ^0.4.0+1
+  firebase_performance: ^0.11.0
+  firebase_app_check: ^0.4.0
+
+  # 设备信息
   device_info_plus: ^10.1.2
   package_info_plus: ^8.0.2
+
+  # 电池信息
   battery_plus: ^6.0.3
+
+  # 网络状态
   connectivity_plus: ^6.0.5
+
+  # 其他
   logger: ^2.4.0
   intl: ^0.19.0
   url_launcher: ^6.3.0
