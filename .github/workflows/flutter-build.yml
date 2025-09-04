@@ -19,13 +19,13 @@ jobs:
           # 手动下载并设置Flutter SDK，以绕过actions缓存问题
           wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.2-stable.tar.xz
           tar -xf flutter_linux_3.35.2-stable.tar.xz
-
+          
           # 将Flutter命令路径添加到当前会话的PATH中
           export PATH="$PWD/flutter/bin:$PATH"
-
+          
           # 清理旧的构建文件
           flutter clean
-
+          
           # 验证SDK安装并下载所有工具
           flutter doctor
           flutter precache
@@ -33,9 +33,9 @@ jobs:
           # 获取Dart和Flutter依赖
           flutter pub get
 
-          # 接受Android许可证
+          # 使用 yes 命令来接受所有 Android 许可证，这可以解决多重提示的问题
           yes | flutter doctor --android-licenses
-
+          
           # 重新生成protobuf文件
           flutter pub run build_runner build
 
