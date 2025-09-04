@@ -38,7 +38,7 @@ def _keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProper
 android {
     namespace "com.lucinhu.bili_you" // <-- 添加了这一行
     // compileSdkVersion flutter.compileSdkVersion
-    compileSdk 34
+    compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
