@@ -72,11 +72,14 @@ jobs:
           flutter precache --force
           flutter pub cache repair
 
-      - name: Install dependencies
-        run: |
-          export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
-          flutter pub get --verbose || (cat /home/runner/.pub-cache/log/pub_log.txt && exit 1)
-        continue-on-error: true
+      - name: Install dependencies with retry
+        uses: nick-invision/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          command: |
+            export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
+            flutter pub get --verbose || (cat /home/runner/.pub-cache/log/pub_log.txt && exit 1)
 
       - name: Upload pub log on failure
         if: failure()
@@ -100,7 +103,6 @@ jobs:
         run: |
           export PATH="/home/runner/flutter/bin:/home/runner/flutter/bin/cache/dart-sdk/bin:$PATH"
           flutter pub run build_runner build --delete-conflicting-outputs --verbose
-        continue-on-error: false
 
       - name: Decode keystore
         if: startsWith(github.ref, 'refs/tags/v')
