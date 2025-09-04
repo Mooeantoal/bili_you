@@ -14,33 +14,56 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Flutter App
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Cache Flutter SDK
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/flutter
+            ~/.pub-cache
+          key: flutter-sdk-${{ runner.os }}-3.35.2
+          restore-keys: |
+            flutter-sdk-${{ runner.os }}-
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.2'
+          channel: 'stable'
+          cache: true
+          cache-key: flutter-sdk-${{ runner.os }}-3.35.2
+          cache-path: ~/flutter
+
+      - name: Fix Git permissions
+        run: git config --global --add safe.directory '*'
+
+      - name: Verify Flutter installation
         run: |
-          # 手动下载并设置Flutter SDK，以绕过actions缓存问题
-          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.2-stable.tar.xz
-          tar -xf flutter_linux_3.35.2-stable.tar.xz
-          
-          # 将Flutter命令路径添加到当前会话的PATH中
-          export PATH="$PWD/flutter/bin:$PATH"
-          
-          # 清理旧的构建文件
-          flutter clean
-          
-          # 验证SDK安装并下载所有工具
-          flutter doctor
+          export PATH="$HOME/flutter/bin:$PATH"
+          flutter doctor -v
           flutter precache
+          flutter pub cache repair
 
-          # 获取Dart和Flutter依赖
-          flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-          # 使用 yes 命令来接受所有 Android 许可证，这可以解决多重提示的问题
-          yes | flutter doctor --android-licenses
-          
-          # 重新生成protobuf文件
-          flutter pub run build_runner build
+      - name: Accept Android licenses
+        run: yes | flutter doctor --android-licenses
 
-          # 构建APK
-          flutter build apk --release --split-per-abi
+      - name: Generate protobuf files
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK
+        run: flutter build apk --release --split-per-abi --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
