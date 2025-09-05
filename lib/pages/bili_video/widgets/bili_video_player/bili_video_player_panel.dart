@@ -653,21 +653,18 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                         .duration.inMilliseconds
                                         .toDouble()),
                                 onChanged: (value) {
-                                  if (widget.controller._isSliderDraging) {
-                                    widget.controller._position =
-                                        Duration(milliseconds: value.toInt());
-                                  }
+                                  widget.controller._position =
+                                      Duration(milliseconds: value.toInt());
+                                  widget.controller._isSliderDraging = true;
                                 },
                                 onChangeStart: (value) {
                                   widget.controller._isSliderDraging = true;
                                 },
                                 onChangeEnd: (value) {
-                                  if (widget.controller._isSliderDraging) {
-                                    widget.controller._biliVideoPlayerController
-                                        .seekTo(Duration(
-                                            milliseconds: value.toInt()));
-                                    widget.controller._isSliderDraging = false;
-                                  }
+                                  widget.controller._biliVideoPlayerController
+                                      .seekTo(Duration(
+                                          milliseconds: value.toInt()));
+                                  widget.controller._isSliderDraging = false;
                                 },
                               );
                             }),
