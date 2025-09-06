@@ -180,10 +180,12 @@ class VideoAudioController {
   final List<Function(Duration position)> _seekToListeners = [];
 
   Future<void> init() async {
+    // 如果已经初始化过，先重置状态
     if (_initialized) {
-      log('当前播放器控制器已经初始化过了');
-      return;
+      await dispose();
+      _initialized = false;
     }
+    
     //如果还没有播放器实例就创建
     if (PlayersSingleton().count == 0) {
       await PlayersSingleton().init();

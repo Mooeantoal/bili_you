@@ -31,137 +31,142 @@ class _ReplyPageState extends State<ReplyPage>
 
   @override
   void initState() {
-    controller = Get.put(
-        ReplyController(
-          bvid: widget.replyId,
-          replyType: widget.replyType,
-        ),
-        tag: widget.tag);
+    controller = Get.put(ReplyController(
+      bvid: widget.replyId,
+      replyType: widget.replyType,
+    ));
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  // 主视图
-  Widget _buildView(ReplyController controller) {
-    controller.updateWidget = () => setState(() => ());
-    return SimpleEasyRefresher(
-      childBuilder: (context, physics) => ListView.builder(
-        addAutomaticKeepAlives: false,
-        addRepaintBoundaries: false,
-        controller: controller.scrollController,
-        physics: physics,
-        padding: const EdgeInsets.all(0),
-        itemCount: controller.replyItems.length +
-            controller.newReplyItems.length +
-            controller.topReplyItems.length,
-        itemBuilder: (context, index) {
-          late ReplyItem item;
-          if (index < controller.topReplyItems.length) {
-            //置顶评论
-            item = controller.topReplyItems[index];
-          } else if (index >= controller.topReplyItems.length &&
-              index <
-                  controller.topReplyItems.length +
-                      controller.newReplyItems.length) {
-            //新增的评论
-            item = controller
-                .newReplyItems[index - controller.topReplyItems.length];
-          } else if (index >=
-              controller.topReplyItems.length +
-                  controller.newReplyItems.length) {
-            //普通评论
-            item = controller.replyItems[index -
-                (controller.topReplyItems.length +
-                    controller.newReplyItems.length)];
-          }
-          if (index == 0) {
-            //在首个元素前放置排列方式切换控件
-            return Column(
-              children: [
-                SortReplyItemWidget(replyController: controller),
-                ReplyItemWidget(
-                  reply: item,
-                  isTop: controller.topReplyItems.contains(item),
-                  isUp: item.member.mid == controller.upperMid,
-                  officialVerifyType: item.member.officialVerify.type,
-                ),
-              ],
-            );
-          } else {
-            return ReplyItemWidget(
-              reply: item,
-              isTop: controller.topReplyItems.contains(item),
-              isUp: item.member.mid == controller.upperMid,
-              officialVerifyType: item.member.officialVerify.type,
-            );
-          }
-        },
-      ),
-      onLoad: controller.onReplyLoad,
-      onRefresh: controller.onReplyRefresh,
-      easyRefreshController: controller.refreshController,
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: controller.showAddReplySheet,
-        tooltip: '发表评论',
-        label:const Row(
-          children: [
-            Icon(Icons.reply),
-            Text("   发表评论")
-          ],
-        )
-      ),
-      body: _buildView(controller),
-    );
+    return GetBuilder<ReplyController>(
+        tag: controller.tag,
+        builder: (context) {
+          return Column(
+            children: [
+              // 添加提示信息
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    const Text(
+                      "未登录用户默认仅显示3条评论",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        controller.toggleApiMode();
+                      },
+                      child: Obx(
+                        () => Text(
+                          controller.useUnlimitedApi ? "标准模式" : "扩展模式",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: controller.useUnlimitedApi 
+                              ? Colors.blue 
+                              : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 16, right: 16),
+                child: Row(
+                  children: [
+                    Obx(
+                      () => Text(
+                        "${controller.sortInfoText}(${controller.replyCount})",
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                        onPressed: () {
+                          controller.toggleSort();
+                        },
+                        child: Obx(
+                          () => Text(controller.sortTypeText.value),
+                        )),
+                  ],
+                ),
+              ),
+              const Divider(
+                height: 1,
+              ),
+              Expanded(
+                  child: SimpleEasyRefresh(
+                controller: controller.refreshController,
+                onLoad: () async {
+                  controller.newReplyItems.clear();
+                  if (await controller._addReplyItems()) {
+                    controller.refreshController.finishLoad();
+                    controller.refreshController.resetFooter();
+                  } else {
+                    controller.refreshController.finishLoad(
+                        IndicatorResult.fail);
+                  }
+                },
+                onRefresh: () async {
+                  controller.replyItems.clear();
+                  controller.topReplyItems.clear();
+                  controller.pageNum = 1;
+                  if (await controller._addReplyItems()) {
+                    controller.refreshController.finishRefresh();
+                  } else {
+                    controller.refreshController.finishRefresh(
+                        IndicatorResult.fail);
+                  }
+                },
+                child: CustomScrollView(
+                  controller: controller.scrollController,
+                  slivers: [
+                    SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                      if (index < controller.topReplyItems.length) {
+                        return ReplyItemWidget(
+                          reply: controller.topReplyItems[index],
+                          isTop: true,
+                          isUp: controller.topReplyItems[index].member.mid ==
+                              controller.upperMid,
+                        );
+                      } else {
+                        var i = index - controller.topReplyItems.length;
+                        if (i < controller.newReplyItems.length) {
+                          return ReplyItemWidget(
+                            reply: controller.newReplyItems[i],
+                            isUp: controller.newReplyItems[i].member.mid ==
+                                controller.upperMid,
+                          );
+                        } else {
+                          i = i - controller.newReplyItems.length;
+                          return ReplyItemWidget(
+                            reply: controller.replyItems[i],
+                            isUp: controller.replyItems[i].member.mid ==
+                                controller.upperMid,
+                          );
+                        }
+                      }
+                    },
+                            childCount: controller.topReplyItems.length +
+                                controller.newReplyItems.length +
+                                controller.replyItems.length)),
+                  ],
+                ),
+              ))
+            ],
+          );
+        });
   }
-}
-
-class SortReplyItemWidget extends StatelessWidget {
-  const SortReplyItemWidget({super.key, required this.replyController});
-  final ReplyController replyController;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Padding(
-            padding: const EdgeInsets.only(left: 12, right: 12),
-            child: Obx(
-              () => Text(
-                  "${replyController.sortInfoText.value} ${StringFormatUtils.numFormat(replyController.replyCount)}"),
-            )),
-        const Spacer(),
-        //排列方式按钮
-        MaterialButton(
-          child: Row(
-            children: [
-              Icon(Icons.sort_rounded,
-                  size: 16, color: Get.textTheme.bodyMedium!.color),
-              Obx(
-                () => Text(
-                  replyController.sortTypeText.value,
-                  style: TextStyle(color: Get.textTheme.bodyMedium!.color),
-                ),
-              )
-            ],
-          ),
-          //点击切换评论排列方式
-          onPressed: () {
-            replyController.toggleSort();
-          },
-        ),
-      ],
-    );
-  }
+  bool get wantKeepAlive => true;
 }

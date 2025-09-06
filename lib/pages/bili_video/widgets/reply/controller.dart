@@ -29,6 +29,9 @@ class ReplyController extends GetxController {
   ReplySort _replySort = ReplySort.like;
   Function()? updateWidget;
 
+  // 添加一个标志，用于跟踪是否使用无登录限制API
+  bool useUnlimitedApi = false;
+
   //切换排列方式
   void toggleSort() {
     if (_replySort == ReplySort.like) {
@@ -46,12 +49,25 @@ class ReplyController extends GetxController {
     refreshController.callRefresh();
   }
 
+  // 切换API模式
+  void toggleApiMode() {
+    useUnlimitedApi = !useUnlimitedApi;
+    refreshController.callRefresh();
+  }
+
 //加载评论区控件条目
   Future<bool> _addReplyItems() async {
     late ReplyInfo replyInfo;
     try {
-      replyInfo = await ReplyApi.getReply(
-          oid: bvid, pageNum: pageNum, type: replyType, sort: _replySort);
+      if (useUnlimitedApi) {
+        // 使用无登录限制的API
+        replyInfo = await ReplyApi.getReplyWithoutLoginLimit(
+            oid: bvid, pageNum: pageNum, type: replyType, sort: _replySort);
+      } else {
+        // 使用原来的API
+        replyInfo = await ReplyApi.getReply(
+            oid: bvid, pageNum: pageNum, type: replyType, sort: _replySort);
+      }
       replyCount = replyInfo.replyCount;
       upperMid = replyInfo.upperMid;
     } catch (e) {
