@@ -26,6 +26,10 @@ class ReplyPage extends StatefulWidget {
 class _ReplyPageState extends State<ReplyPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   _ReplyPageState();
+  
+  @override
+  bool get wantKeepAlive => true;
+  
   late ReplyController controller;
 
   @override
@@ -126,41 +130,44 @@ class _ReplyPageState extends State<ReplyPage>
                         IndicatorResult.fail);
                   }
                 },
-                child: CustomScrollView(
-                  controller: controller.scrollController,
-                  slivers: [
-                    SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                      if (index < controller.topReplyItems.length) {
-                        return ReplyItemWidget(
-                          reply: controller.topReplyItems[index],
-                          isTop: true,
-                          isUp: controller.topReplyItems[index].member.mid ==
-                              controller.upperMid,
-                        );
-                      } else {
-                        var i = index - controller.topReplyItems.length;
-                        if (i < controller.newReplyItems.length) {
+                childBuilder: (context, physics) {
+                  return CustomScrollView(
+                    controller: controller.scrollController,
+                    physics: physics,
+                    slivers: [
+                      SliverList(
+                          delegate: SliverChildBuilderDelegate((context, index) {
+                        if (index < controller.topReplyItems.length) {
                           return ReplyItemWidget(
-                            reply: controller.newReplyItems[i],
-                            isUp: controller.newReplyItems[i].member.mid ==
+                            reply: controller.topReplyItems[index],
+                            isTop: true,
+                            isUp: controller.topReplyItems[index].member.mid ==
                                 controller.upperMid,
                           );
                         } else {
-                          i = i - controller.newReplyItems.length;
-                          return ReplyItemWidget(
-                            reply: controller.replyItems[i],
-                            isUp: controller.replyItems[i].member.mid ==
-                                controller.upperMid,
-                          );
+                          var i = index - controller.topReplyItems.length;
+                          if (i < controller.newReplyItems.length) {
+                            return ReplyItemWidget(
+                              reply: controller.newReplyItems[i],
+                              isUp: controller.newReplyItems[i].member.mid ==
+                                  controller.upperMid,
+                            );
+                          } else {
+                            i = i - controller.newReplyItems.length;
+                            return ReplyItemWidget(
+                              reply: controller.replyItems[i],
+                              isUp: controller.replyItems[i].member.mid ==
+                                  controller.upperMid,
+                            );
+                          }
                         }
-                      }
-                    },
-                            childCount: controller.topReplyItems.length +
-                                controller.newReplyItems.length +
-                                controller.replyItems.length)),
-                  ],
-                ),
+                      },
+                              childCount: controller.topReplyItems.length +
+                                  controller.newReplyItems.length +
+                                  controller.replyItems.length)),
+                    ],
+                  );
+                },
               ))
             ],
           );

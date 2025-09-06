@@ -15,6 +15,9 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+// 添加 SettingsStorageKeys 导入
+import 'package:bili_you/common/utils/settings_util.dart';
+
 class BiliVideoPlayerPanel extends StatefulWidget {
   const BiliVideoPlayerPanel(this.controller, {super.key});
   final BiliVideoPlayerPanelController controller;
@@ -378,11 +381,11 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                   ],
                                 ),
                               ),
-                              PopupMenuItem(
+                              PopupMenuItem<String>(
                                   value: "画质",
                                   child: Text(
                                       "画质: ${widget.controller._biliVideoPlayerController.videoPlayItem!.quality.description ?? "未知"}")),
-                              PopupMenuItem(
+                              PopupMenuItem<String>(
                                   value: "音质",
                                   child: Text(
                                       "音质: ${widget.controller._biliVideoPlayerController.audioPlayItem!.quality.description ?? "未知"}")),
@@ -582,7 +585,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                 widget.controller._biliVideoPlayerController.toggleFullScreen();
                                 break;
                               default:
-                                log(value);
+                                log(value.toString());
                             }
                           },
                         ))

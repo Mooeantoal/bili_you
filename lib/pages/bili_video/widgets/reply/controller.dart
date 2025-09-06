@@ -155,7 +155,7 @@ class ReplyController extends GetxController {
     pageNum = 1;
     replyItems.clear();
     newReplyItems.clear();
-    await _addReplyItems().then((value) {
+    await addReplyItems().then((value) {
       if (value) {
         refreshController.finishRefresh();
       } else {
@@ -167,7 +167,7 @@ class ReplyController extends GetxController {
   //评论加载中
   onReplyLoad() async {
     newReplyItems.clear();
-    await _addReplyItems().then((value) {
+    await addReplyItems().then((value) {
       if (value) {
         refreshController.finishLoad();
         refreshController.resetFooter();
