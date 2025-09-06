@@ -33,6 +33,52 @@ class ReplyController extends GetxController {
   // 添加一个标志，用于跟踪是否使用无登录限制API
   bool useUnlimitedApi = false;
 
+  void onInit() {
+    tag = "ReplyPage:$bvid";
+    refreshController = EasyRefreshController(
+        controlFinishLoad: true, controlFinishRefresh: true);
+    super.onInit();
+  }
+
+  void onReady() async {
+    await addReplyItems().then((value) {
+      refreshController.finishRefresh();
+      update();
+    });
+    super.onReady();
+  }
+
+  void onClose() {
+    refreshController.dispose();
+    super.onClose();
+  }
+
+  Future<void> onLoad() async {
+    await addReplyItems().then((value) {
+      if (value) {
+        refreshController.finishLoad(IndicatorResult.success);
+        refreshController.resetFooter();
+      } else {
+        refreshController.finishLoad(IndicatorResult.fail);
+      }
+      update();
+    });
+  }
+
+  Future<void> onRefresh() async {
+    replyItems.clear();
+    topReplyItems.clear();
+    pageNum = 1;
+    await addReplyItems().then((value) {
+      if (value) {
+        refreshController.finishRefresh(IndicatorResult.success);
+      } else {
+        refreshController.finishRefresh(IndicatorResult.fail);
+      }
+      update();
+    });
+  }
+
   //切换排列方式
   void toggleSort() {
     if (_replySort == ReplySort.like) {

@@ -399,7 +399,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                           onSelected: (value) {
                             switch (value) {
                               case "弹幕":
-                                widget.controller._biliVideoPlayerController.biliDanmakuController?.toggleDanmaku();
+                                toggleDanmaku();
                                 break;
                               case "播放速度":
                                 showDialog(
@@ -585,7 +585,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                 log(value);
                             }
                           },
-                        )
+                        ))
                       ],
                     ),
                   ),
@@ -708,7 +708,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       IconButton(
                           onPressed: () {
                             // log("full:${widget.controller.isFullScreen}");
-                            toggleFullScreen();
+                            widget.controller._biliVideoPlayerController.toggleFullScreen();
                           },
                           icon: const Icon(
                             Icons.fullscreen_rounded,

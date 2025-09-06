@@ -2,6 +2,7 @@ import 'package:bili_you/common/models/local/reply/reply_item.dart';
 import 'package:bili_you/common/utils/string_format_utils.dart';
 import 'package:bili_you/common/widget/simple_easy_refresher.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/widgets/reply_item.dart';
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -25,8 +26,6 @@ class ReplyPage extends StatefulWidget {
 class _ReplyPageState extends State<ReplyPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   _ReplyPageState();
-  @override
-  bool get wantKeepAlive => true;
   late ReplyController controller;
 
   @override
@@ -105,7 +104,7 @@ class _ReplyPageState extends State<ReplyPage>
               ),
               Expanded(
                   child: SimpleEasyRefresher(
-                controller: controller.refreshController,
+                easyRefreshController: controller.refreshController,
                 onLoad: () async {
                   controller.newReplyItems.clear();
                   if (await controller.addReplyItems()) {
@@ -168,6 +167,4 @@ class _ReplyPageState extends State<ReplyPage>
         });
   }
 
-  @override
-  bool get wantKeepAlive => true;
 }
