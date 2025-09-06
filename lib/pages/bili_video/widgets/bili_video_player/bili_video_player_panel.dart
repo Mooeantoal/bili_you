@@ -585,12 +585,12 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                 log(value);
                             }
                           },
-                        ))
+                        )
                     ]),
                   )
                 ],
               ),
-            ))
+            )
       ],
     );
   }
