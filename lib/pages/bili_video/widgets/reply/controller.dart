@@ -14,6 +14,7 @@ class ReplyController extends GetxController {
     required this.replyType,
   });
   String bvid;
+  late String tag; // 添加tag属性
   EasyRefreshController refreshController = EasyRefreshController(
       controlFinishLoad: true, controlFinishRefresh: true);
   ScrollController scrollController = ScrollController();
@@ -56,7 +57,7 @@ class ReplyController extends GetxController {
   }
 
 //加载评论区控件条目
-  Future<bool> _addReplyItems() async {
+  Future<bool> addReplyItems() async {
     late ReplyInfo replyInfo;
     try {
       if (useUnlimitedApi) {

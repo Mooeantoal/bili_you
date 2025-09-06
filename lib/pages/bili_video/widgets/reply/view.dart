@@ -35,6 +35,7 @@ class _ReplyPageState extends State<ReplyPage>
       bvid: widget.replyId,
       replyType: widget.replyType,
     ));
+    controller.tag = widget.tag; // 初始化tag属性
     super.initState();
   }
 
@@ -103,11 +104,11 @@ class _ReplyPageState extends State<ReplyPage>
                 height: 1,
               ),
               Expanded(
-                  child: SimpleEasyRefresh(
+                  child: SimpleEasyRefresher(
                 controller: controller.refreshController,
                 onLoad: () async {
                   controller.newReplyItems.clear();
-                  if (await controller._addReplyItems()) {
+                  if (await controller.addReplyItems()) {
                     controller.refreshController.finishLoad();
                     controller.refreshController.resetFooter();
                   } else {
@@ -119,7 +120,7 @@ class _ReplyPageState extends State<ReplyPage>
                   controller.replyItems.clear();
                   controller.topReplyItems.clear();
                   controller.pageNum = 1;
-                  if (await controller._addReplyItems()) {
+                  if (await controller.addReplyItems()) {
                     controller.refreshController.finishRefresh();
                   } else {
                     controller.refreshController.finishRefresh(

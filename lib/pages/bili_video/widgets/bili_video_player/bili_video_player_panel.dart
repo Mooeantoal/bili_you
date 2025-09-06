@@ -33,10 +33,18 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   static const gestureEdgeDeadZone = 0.1;
   var isInDeadZone = (x, bound) =>
       math.min<double>(x, bound - x) < gestureEdgeDeadZone * bound;
+  Timer? _sliderDragTimer; // 添加定时器变量
 
   final panelDecoration = const BoxDecoration(boxShadow: [
     BoxShadow(color: Colors.black45, blurRadius: 15, spreadRadius: 5)
   ]);
+  
+  void toggleDanmaku() {
+    setState(() {
+      // 切换弹幕状态
+      widget.controller._biliVideoPlayerController.biliDanmakuController?.toggleDanmaku();
+    });
+  }
   static const Color textColor = Colors.white;
   static const Color iconColor = Colors.white;
 
@@ -86,7 +94,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
           widget.controller._biliVideoPlayerController.position != Duration.zero) {
         // 如果超过一定时间仍在拖动状态，则重置状态
         // 这可以防止因异常情况导致的状态锁定
-        if (DateTime.now().millisecondsSinceSinceEpoch - 
+        if (DateTime.now().millisecondsSinceEpoch - 
             widget.controller._lastSliderInteractionTime > 5000) { // 5秒超时
           _resetSliderDraggingState();
         }
@@ -383,13 +391,15 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                               const PopupMenuItem(
                                   value: "弹幕不透明度", child: Text("弹幕不透明度")),
                               const PopupMenuItem(
-                                  value: "弹幕速度", child: Text("弹幕速度"))
+                                  value: "弹幕速度", child: Text("弹幕速度")),
+                              const PopupMenuItem(
+                                  value: "全屏", child: Text("全屏")),
                             ];
                           },
                           onSelected: (value) {
                             switch (value) {
                               case "弹幕":
-                                toggleDanmaku();
+                                widget.controller._biliVideoPlayerController.biliDanmakuController?.toggleDanmaku();
                                 break;
                               case "播放速度":
                                 showDialog(
@@ -567,6 +577,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                     },
                                   ),
                                 );
+                                break;
+                              case '全屏':
+                                widget.controller._biliVideoPlayerController.toggleFullScreen();
                                 break;
                               default:
                                 log(value);
