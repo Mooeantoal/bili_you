@@ -73,8 +73,7 @@ class ReplyController extends GetxController {
           oid: bvid,
           pageNum: pageNum,
           sort: _replySort,
-          type: replyType,
-          useUnlimitedApi: useUnlimitedApi);
+          type: replyType);
       //更新up主mid
       upperMid = replyInfo.upperMid;
       //更新评论数量
