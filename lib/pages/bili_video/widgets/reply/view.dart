@@ -1,10 +1,8 @@
+import 'package:bili_you/common/api/video_info_api.dart';
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
-import 'package:bili_you/common/utils/string_format_utils.dart';
-import 'package:bili_you/common/widget/simple_easy_refresher.dart';
-import 'package:bili_you/pages/bili_video/widgets/reply/widgets/reply_item.dart';
-import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'index.dart';
 
@@ -30,104 +28,66 @@ class _ReplyPageState extends State<ReplyPage>
   @override
   bool get wantKeepAlive => true;
 
-  late ReplyController controller;
+  late final WebViewController _webViewController;
 
   @override
   void initState() {
-    controller = Get.put(ReplyController(
-      bvid: widget.replyId,
-      replyType: widget.replyType,
-    ));
-    controller.tag = widget.tag;
     super.initState();
+    
+    // 初始化WebView控制器
+    _webViewController = WebViewController()
+      ..setUserAgent(
+          'Mozilla/5.0 (iPhone13,3; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1')
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (String url) {
+            // 页面加载完成后隐藏加载指示器等操作
+          },
+        ),
+      );
+      
+    // 加载评论页面
+    _loadReplyPage();
+  }
+
+  void _loadReplyPage() async {
+    String url;
+    if (widget.replyType == ReplyType.video) {
+      // 对于视频，使用BV号加载评论
+      url = 'https://www.bilibili.com/video/${widget.replyId}/#reply';
+    } else {
+      // 其他类型保持原有逻辑或按需添加
+      url = 'https://www.bilibili.com/video/${widget.replyId}/#reply';
+    }
+    
+    _webViewController.loadRequest(Uri.parse(url));
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Obx(
-      () => Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: const Row(
-              children: [
-                Icon(Icons.info_outline, size: 16, color: Colors.grey),
-                SizedBox(width: 8),
-                Text(
-                  "未登录用户默认仅显示3条评论",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Colors.grey),
+              SizedBox(width: 8),
+              Text(
+                "正在显示网页版评论区",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
           ),
-          Expanded(
-            child: SimpleEasyRefresher(
-              easyRefreshController: controller.refreshController,
-              onLoad: () async {
-                controller.newReplyItems.clear();
-                if (await controller.addReplyItems()) {
-                  controller.refreshController.finishLoad(IndicatorResult.success);
-                  controller.refreshController.resetFooter();
-                } else {
-                  controller.refreshController.finishLoad(IndicatorResult.fail);
-                }
-              },
-              onRefresh: () async {
-                controller.replyItems.clear();
-                controller.topReplyItems.clear();
-                controller.pageNum = 1;
-                if (await controller.addReplyItems()) {
-                  controller.refreshController.finishRefresh(IndicatorResult.success);
-                } else {
-                  controller.refreshController.finishRefresh(IndicatorResult.fail);
-                }
-              },
-              childBuilder: (context, physics) {
-                return CustomScrollView(
-                  controller: controller.scrollController,
-                  physics: physics,
-                  slivers: [
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          if (index < controller.topReplyItems.length) {
-                            return ReplyItemWidget(
-                              reply: controller.topReplyItems[index],
-                              isTop: true,
-                              isUp: controller.topReplyItems[index].member.mid ==
-                                  controller.upperMid,
-                            );
-                          } else {
-                            var i = index - controller.topReplyItems.length;
-                            if (i < controller.newReplyItems.length) {
-                              return ReplyItemWidget(
-                                reply: controller.newReplyItems[i],
-                                isUp: controller.newReplyItems[i].member.mid ==
-                                    controller.upperMid,
-                              );
-                            } else {
-                              i = i - controller.newReplyItems.length;
-                              return ReplyItemWidget(
-                                reply: controller.replyItems[i],
-                                isUp: controller.replyItems[i].member.mid ==
-                                    controller.upperMid,
-                              );
-                            }
-                          }
-                        },
-                        childCount: controller.topReplyItems.length +
-                            controller.newReplyItems.length +
-                            controller.replyItems.length,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          )
-        ],
-      ),
+        ),
+        Expanded(
+          child: WebViewWidget(
+            controller: _webViewController,
+          ),
+        ),
+      ],
     );
   }
 }
