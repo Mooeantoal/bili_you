@@ -38,13 +38,26 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   final panelDecoration = const BoxDecoration(boxShadow: [
     BoxShadow(color: Colors.black45, blurRadius: 15, spreadRadius: 5)
   ]);
-  
-  void toggleDanmaku() {
-    setState(() {
-      // 切换弹幕状态
-      widget.controller._biliVideoPlayerController.biliDanmakuController?.toggleDanmaku();
-    });
+
+  void toggleFullScreen() {
+    widget.controller._biliVideoPlayerController.toggleFullScreen();
   }
+
+  void toggleDanmaku() {
+    widget.controller._biliVideoPlayerController.biliDanmakuController!
+        .toggleDanmaku();
+    //保持弹幕状态
+    if (SettingsUtil.getValue(SettingsStorageKeys.rememberDanmakuSwitch,
+            defaultValue: false) ==
+        true) {
+      SettingsUtil.setValue(
+          SettingsStorageKeys.defaultShowDanmaku,
+          widget.controller._biliVideoPlayerController.biliDanmakuController!
+              .isDanmakuOpened);
+    }
+    danmakuCheckBoxKey.currentState!.setState(() {});
+  }
+
   static const Color textColor = Colors.white;
   static const Color iconColor = Colors.white;
 
@@ -586,12 +599,140 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                             }
                           },
                         )
+                      ],
+                    ),
+                  ),
+                  //中间留空
+                  const Spacer(),
+                  //下面板(播放按钮,进度条...)
+                  Container(
+                    decoration: panelDecoration,
+                    child: Row(children: [
+                      StatefulBuilder(
+                        key: playButtonKey,
+                        builder: (context, setState) {
+                          late final IconData iconData;
+                          if (widget.controller._isPlayerEnd) {
+                            iconData = Icons.refresh_rounded;
+                          } else if (widget.controller._isPlayerPlaying) {
+                            iconData = Icons.pause_rounded;
+                          } else {
+                            iconData = Icons.play_arrow_rounded;
+                          }
+                          return //播放按钮
+                              IconButton(
+                                  color: iconColor,
+                                  onPressed: () async {
+                                    if (widget.controller
+                                        ._biliVideoPlayerController.isPlaying) {
+                                      await widget
+                                          .controller._biliVideoPlayerController
+                                          .pause();
+                                    } else {
+                                      if (widget
+                                          .controller
+                                          ._biliVideoPlayerController
+                                          .hasError) {
+                                        //如果是出错状态, 重新加载
+                                        await widget.controller
+                                            ._biliVideoPlayerController
+                                            .reloadWidget();
+                                      } else {
+                                        //不是出错状态, 就继续播放
+                                        await widget.controller
+                                            ._biliVideoPlayerController
+                                            .play();
+                                      }
+                                    }
+                                    widget.controller._isPlayerPlaying =
+                                        !widget.controller._isPlayerPlaying;
+                                    setState(() {});
+                                  },
+                                  icon: Icon(iconData));
+                        },
+                      ),
+                      //进度条
+                      Expanded(
+                        child: StatefulBuilder(
+                            key: sliderKey,
+                            builder: (context, setState) {
+                              return Listener(
+                                onPointerDown: (_) {
+                                  // 阻止指针事件冒泡到外层的GestureDetector
+                                },
+                                child: Slider(
+                                  min: 0,
+                                  max: widget
+                                      .controller
+                                      ._biliVideoPlayerController
+                                      .duration
+                                      .inMilliseconds
+                                      .toDouble(),
+                                  value: clampDouble(
+                                      widget.controller._position.inMilliseconds
+                                          .toDouble(),
+                                      0,
+                                      widget.controller._biliVideoPlayerController
+                                          .duration.inMilliseconds
+                                          .toDouble()),
+                                  secondaryTrackValue: clampDouble(
+                                      widget.controller._fartherestBuffed
+                                          .inMilliseconds
+                                          .toDouble(),
+                                      0,
+                                      widget.controller._biliVideoPlayerController
+                                          .duration.inMilliseconds
+                                          .toDouble()),
+                                  onChanged: (value) {
+                                    if (widget.controller._isSliderDraging) {
+                                      widget.controller._position =
+                                          Duration(milliseconds: value.toInt());
+                                    }
+                                  },
+                                  onChangeStart: (value) {
+                                    widget.controller._isSliderDraging = true;
+                                    widget.controller._lastSliderInteractionTime = 
+                                        DateTime.now().millisecondsSinceEpoch;
+                                  },
+                                  onChangeEnd: (value) {
+                                    if (widget.controller._isSliderDraging) {
+                                      widget.controller._biliVideoPlayerController
+                                          .seekTo(Duration(
+                                              milliseconds: value.toInt()));
+                                      widget.controller._isSliderDraging = false;
+                                    }
+                                    widget.controller._lastSliderInteractionTime = 
+                                        DateTime.now().millisecondsSinceEpoch;
+                                  },
+                                ),
+                              );
+                            }),
+                      ),
+                      //时长
+                      StatefulBuilder(
+                        key: durationTextKey,
+                        builder: (context, setState) {
+                          return Text(
+                            "${StringFormatUtils.timeLengthFormat(widget.controller._position.inSeconds)}/${StringFormatUtils.timeLengthFormat(widget.controller._biliVideoPlayerController.duration.inSeconds)}",
+                            style: const TextStyle(color: textColor),
+                          );
+                        },
+                      ),
+                      // 全屏按钮
+                      IconButton(
+                          onPressed: () {
+                            // log("full:${widget.controller.isFullScreen}");
+                            widget.controller._biliVideoPlayerController.toggleFullScreen();
+                          },
+                          icon: const Icon(
+                            Icons.fullscreen_rounded,
+                            color: iconColor,
+                          ))
                     ]),
                   )
                 ],
               ),
-            )
-        )
+            ))
       ],
     );
   }
