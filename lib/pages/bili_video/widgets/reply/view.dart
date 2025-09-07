@@ -5,9 +5,9 @@ import 'package:bili_you/pages/bili_video/widgets/reply/widgets/reply_item.dart'
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:easy_refresh/indicator/result.dart'; // 添加IndicatorResult导入
 
 import 'index.dart';
+import 'controller.dart';
 
 class ReplyPage extends StatefulWidget {
   const ReplyPage({
@@ -139,11 +139,10 @@ class _ReplyPageState extends State<ReplyPage>
               onLoad: () async {
                 controller.newReplyItems.clear();
                 if (await controller.addReplyItems()) {
-                  controller.refreshController.finishLoad();
+                  controller.refreshController.finishLoad(IndicatorResult.success);
                   controller.refreshController.resetFooter();
                 } else {
-                  controller.refreshController.finishLoad(
-                      IndicatorResult.fail);
+                  controller.refreshController.finishLoad(IndicatorResult.fail);
                 }
               },
               onRefresh: () async {
@@ -151,10 +150,9 @@ class _ReplyPageState extends State<ReplyPage>
                 controller.topReplyItems.clear();
                 controller.pageNum = 1;
                 if (await controller.addReplyItems()) {
-                  controller.refreshController.finishRefresh();
+                  controller.refreshController.finishRefresh(IndicatorResult.success);
                 } else {
-                  controller.refreshController.finishRefresh(
-                      IndicatorResult.fail);
+                  controller.refreshController.finishRefresh(IndicatorResult.fail);
                 }
               },
               childBuilder: (context, physics) {
@@ -199,7 +197,4 @@ class _ReplyPageState extends State<ReplyPage>
           ],
         ));
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

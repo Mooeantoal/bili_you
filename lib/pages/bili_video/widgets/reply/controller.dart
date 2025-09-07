@@ -8,6 +8,9 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+// 定义ReplySortType枚举
+enum ReplySortType { hot, time }
+
 class ReplyController extends GetxController {
   ReplyController({
     required this.bvid,
@@ -28,6 +31,10 @@ class ReplyController extends GetxController {
   RxString sortTypeText = "按热度".obs;
   RxString sortInfoText = "热门评论".obs;
   ReplySort _replySort = ReplySort.like;
+  
+  // 添加sortType属性
+  Rx<ReplySortType> sortType = ReplySortType.hot.obs;
+  
   Function()? updateWidget;
 
   // 添加一个标志，用于跟踪是否使用无登录限制API
@@ -53,6 +60,40 @@ class ReplyController extends GetxController {
     super.onClose();
   }
 
+  Future<bool> addReplyItems() async {
+    try {
+      ReplyInfo replyInfo = await ReplyApi.getReply(
+          oid: bvid,
+          pn: pageNum,
+          sort: _replySort,
+          type: replyType,
+          useUnlimitedApi: useUnlimitedApi);
+      //更新up主mid
+      upperMid = replyInfo.upper.mid;
+      //更新评论数量
+      replyCount = replyInfo.page.count;
+      //更新排序方式显示文本
+      if (_replySort == ReplySort.like) {
+        sortTypeText.value = "按热度";
+        sortInfoText.value = "热门评论";
+      } else {
+        sortTypeText.value = "按时间";
+        sortInfoText.value = "最新评论";
+      }
+      //添加置顶评论
+      if (pageNum == 1) topReplyItems.addAll(replyInfo.topReplies);
+      //添加普通评论
+      replyItems.addAll(replyInfo.replies);
+      pageNum++;
+      update();
+      return true;
+    } catch (e) {
+      log("reply load failed:$e");
+      update();
+      return false;
+    }
+  }
+  
   Future<void> onLoad() async {
     await addReplyItems().then((value) {
       if (value) {
@@ -100,81 +141,6 @@ class ReplyController extends GetxController {
   void toggleApiMode() {
     useUnlimitedApi = !useUnlimitedApi;
     refreshController.callRefresh();
-  }
-
-//加载评论区控件条目
-  Future<bool> addReplyItems() async {
-    late ReplyInfo replyInfo;
-    try {
-      if (useUnlimitedApi) {
-        // 使用无登录限制的API
-        replyInfo = await ReplyApi.getReplyWithoutLoginLimit(
-            oid: bvid, pageNum: pageNum, type: replyType, sort: _replySort);
-      } else {
-        // 使用原来的API
-        replyInfo = await ReplyApi.getReply(
-            oid: bvid, pageNum: pageNum, type: replyType, sort: _replySort);
-      }
-      replyCount = replyInfo.replyCount;
-      upperMid = replyInfo.upperMid;
-    } catch (e) {
-      log("评论区加载失败,_addReplyItems:$e");
-      return false;
-    }
-    //更新页码
-    //如果当前页不为空的话，下一次加载就进入下一页
-    if (replyInfo.replies.isNotEmpty) {
-      pageNum++;
-    } else {
-      //如果为空的话，下一次加载就返回上一页
-      pageNum--;
-    }
-    //删除重复项
-    final int minIndex = replyItems.length -
-        replyInfo.replies.length; //必须要先求n,因为replyInfo.replies是动态删除的,长度会变
-    for (var i = replyItems.length - 1; i >= minIndex; i--) {
-      if (i < 0) break;
-      replyInfo.replies.removeWhere((element) {
-        if (element.rpid == replyItems[i].rpid) {
-          log('same${replyInfo.replies.length}');
-          return true;
-        } else {
-          return false;
-        }
-      });
-    }
-    if (topReplyItems.isEmpty) {
-      topReplyItems.addAll(replyInfo.topReplies);
-    }
-    replyItems.addAll(replyInfo.replies);
-    return true;
-  }
-
-  //评论区刷新中
-  onReplyRefresh() async {
-    pageNum = 1;
-    replyItems.clear();
-    newReplyItems.clear();
-    await addReplyItems().then((value) {
-      if (value) {
-        refreshController.finishRefresh();
-      } else {
-        refreshController.finishRefresh(IndicatorResult.fail);
-      }
-    });
-  }
-
-  //评论加载中
-  onReplyLoad() async {
-    newReplyItems.clear();
-    await addReplyItems().then((value) {
-      if (value) {
-        refreshController.finishLoad();
-        refreshController.resetFooter();
-      } else {
-        refreshController.finishLoad(IndicatorResult.fail);
-      }
-    });
   }
 
   showAddReplySheet() async {
