@@ -40,10 +40,17 @@ class ReplyController extends GetxController {
   // 添加一个标志，用于跟踪是否使用无登录限制API
   bool useUnlimitedApi = false;
 
+  @override
   void onInit() {
     tag = "ReplyPage:$bvid";
     refreshController = EasyRefreshController(
         controlFinishLoad: true, controlFinishRefresh: true);
+    
+    // 监听sortType变化并更新_replySort
+    sortType.listen((value) {
+      _replySort = value == ReplySortType.hot ? ReplySort.like : ReplySort.time;
+    });
+    
     super.onInit();
   }
 
@@ -64,14 +71,14 @@ class ReplyController extends GetxController {
     try {
       ReplyInfo replyInfo = await ReplyApi.getReply(
           oid: bvid,
-          pn: pageNum,
+          pageNum: pageNum,
           sort: _replySort,
           type: replyType,
           useUnlimitedApi: useUnlimitedApi);
       //更新up主mid
-      upperMid = replyInfo.upper.mid;
+      upperMid = replyInfo.upperMid;
       //更新评论数量
-      replyCount = replyInfo.page.count;
+      replyCount = replyInfo.replyCount;
       //更新排序方式显示文本
       if (_replySort == ReplySort.like) {
         sortTypeText.value = "按热度";

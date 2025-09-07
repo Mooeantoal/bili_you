@@ -106,9 +106,9 @@ class _ReplyPageState extends State<ReplyPage>
                                       () => RadioListTile(
                                         title: const Text("按热度排序"),
                                         value: ReplySortType.hot,
-                                        groupValue: controller.sortType,
+                                        groupValue: controller.sortType.value,
                                         onChanged: (value) {
-                                          controller.sortType = value!;
+                                          controller.sortType.value = value!;
                                           Navigator.of(context).pop();
                                         },
                                       ),
@@ -117,9 +117,9 @@ class _ReplyPageState extends State<ReplyPage>
                                       () => RadioListTile(
                                         title: const Text("按时间排序"),
                                         value: ReplySortType.time,
-                                        groupValue: controller.sortType,
+                                        groupValue: controller.sortType.value,
                                         onChanged: (value) {
-                                          controller.sortType = value!;
+                                          controller.sortType.value = value!;
                                           Navigator.of(context).pop();
                                         },
                                       ),
