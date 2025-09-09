@@ -1,9 +1,8 @@
+import 'package:bili_you/common/api/video_info_api.dart';
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
-import 'package:bili_you/common/utils/string_format_utils.dart';
-import 'package:bili_you/common/widget/simple_easy_refresher.dart';
-import 'package:bili_you/pages/bili_video/widgets/reply/widgets/reply_item.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'index.dart';
 
@@ -25,141 +24,68 @@ class ReplyPage extends StatefulWidget {
 class _ReplyPageState extends State<ReplyPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   _ReplyPageState();
+
   @override
   bool get wantKeepAlive => true;
-  late ReplyController controller;
+
+  late final WebViewController _webViewController;
 
   @override
   void initState() {
-    controller = Get.put(
-        ReplyController(
-          bvid: widget.replyId,
-          replyType: widget.replyType,
-        ),
-        tag: widget.tag);
     super.initState();
+    
+    // 初始化WebView控制器
+    _webViewController = WebViewController()
+      ..setUserAgent(
+          'Mozilla/5.0 (iPhone13,3; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1')
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (String url) {
+            // 页面加载完成后隐藏加载指示器等操作
+          },
+        ),
+      );
+      
+    // 加载评论页面
+    _loadReplyPage();
   }
 
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  // 主视图
-  Widget _buildView(ReplyController controller) {
-    controller.updateWidget = () => setState(() => ());
-    return SimpleEasyRefresher(
-      childBuilder: (context, physics) => ListView.builder(
-        addAutomaticKeepAlives: false,
-        addRepaintBoundaries: false,
-        controller: controller.scrollController,
-        physics: physics,
-        padding: const EdgeInsets.all(0),
-        itemCount: controller.replyItems.length +
-            controller.newReplyItems.length +
-            controller.topReplyItems.length,
-        itemBuilder: (context, index) {
-          late ReplyItem item;
-          if (index < controller.topReplyItems.length) {
-            //置顶评论
-            item = controller.topReplyItems[index];
-          } else if (index >= controller.topReplyItems.length &&
-              index <
-                  controller.topReplyItems.length +
-                      controller.newReplyItems.length) {
-            //新增的评论
-            item = controller
-                .newReplyItems[index - controller.topReplyItems.length];
-          } else if (index >=
-              controller.topReplyItems.length +
-                  controller.newReplyItems.length) {
-            //普通评论
-            item = controller.replyItems[index -
-                (controller.topReplyItems.length +
-                    controller.newReplyItems.length)];
-          }
-          if (index == 0) {
-            //在首个元素前放置排列方式切换控件
-            return Column(
-              children: [
-                SortReplyItemWidget(replyController: controller),
-                ReplyItemWidget(
-                  reply: item,
-                  isTop: controller.topReplyItems.contains(item),
-                  isUp: item.member.mid == controller.upperMid,
-                  officialVerifyType: item.member.officialVerify.type,
-                ),
-              ],
-            );
-          } else {
-            return ReplyItemWidget(
-              reply: item,
-              isTop: controller.topReplyItems.contains(item),
-              isUp: item.member.mid == controller.upperMid,
-              officialVerifyType: item.member.officialVerify.type,
-            );
-          }
-        },
-      ),
-      onLoad: controller.onReplyLoad,
-      onRefresh: controller.onReplyRefresh,
-      easyRefreshController: controller.refreshController,
-    );
+  void _loadReplyPage() async {
+    String url;
+    if (widget.replyType == ReplyType.video) {
+      // 对于视频，使用BV号加载评论
+      url = 'https://www.bilibili.com/video/${widget.replyId}/#reply';
+    } else {
+      // 其他类型保持原有逻辑或按需添加
+      url = 'https://www.bilibili.com/video/${widget.replyId}/#reply';
+    }
+    
+    _webViewController.loadRequest(Uri.parse(url));
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: controller.showAddReplySheet,
-        tooltip: '发表评论',
-        label:const Row(
-          children: [
-            Icon(Icons.reply),
-            Text("   发表评论")
-          ],
-        )
-      ),
-      body: _buildView(controller),
-    );
-  }
-}
-
-class SortReplyItemWidget extends StatelessWidget {
-  const SortReplyItemWidget({super.key, required this.replyController});
-  final ReplyController replyController;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Padding(
-            padding: const EdgeInsets.only(left: 12, right: 12),
-            child: Obx(
-              () => Text(
-                  "${replyController.sortInfoText.value} ${StringFormatUtils.numFormat(replyController.replyCount)}"),
-            )),
-        const Spacer(),
-        //排列方式按钮
-        MaterialButton(
-          child: Row(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: const Row(
             children: [
-              Icon(Icons.sort_rounded,
-                  size: 16, color: Get.textTheme.bodyMedium!.color),
-              Obx(
-                () => Text(
-                  replyController.sortTypeText.value,
-                  style: TextStyle(color: Get.textTheme.bodyMedium!.color),
-                ),
-              )
+              Icon(Icons.info_outline, size: 16, color: Colors.grey),
+              SizedBox(width: 8),
+              Text(
+                "正在显示网页版评论区",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
             ],
           ),
-          //点击切换评论排列方式
-          onPressed: () {
-            replyController.toggleSort();
-          },
+        ),
+        Expanded(
+          child: WebViewWidget(
+            controller: _webViewController,
+          ),
         ),
       ],
     );

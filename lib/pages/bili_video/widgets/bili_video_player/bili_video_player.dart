@@ -71,7 +71,9 @@ class _BiliVideoPlayerWidgetState extends State<BiliVideoPlayerWidget> {
         color: Colors.black,
         child: AspectRatio(
             aspectRatio: 16 / 9,
-            child: FutureBuilder(
+            child: FutureBuilder<bool>(
+              // 为FutureBuilder添加一个唯一的key，确保每次切换视频时都会重新执行future
+              key: ValueKey(widget.controller.bvid + widget.controller.cid.toString()),
               future: widget.controller
                   .initPlayer(widget.controller.bvid, widget.controller.cid),
               builder: (context, snapshot) {
@@ -156,16 +158,22 @@ class BiliVideoPlayerController {
   }
 
   Future<void> changeCid(String bvid, int cid) async {
+    // 完全重置播放器状态
     videoPlayInfo = null;
     _videoPlayItem = null;
     _audioPlayItem = null;
     initVideoPosition = Duration.zero;
     this.bvid = bvid;
     this.cid = cid;
+    
+    // 重置播放器控制器
+    await _videoAudioController?.dispose();
+    _videoAudioController = null;
+    
+    // 重新加载视频信息
     await loadVideoInfo(bvid, cid);
-    _videoAudioController?.audioUrl = audioPlayItem!.urls.first;
-    _videoAudioController?.videoUrl = videoPlayItem!.urls.first;
-    _videoAudioController?.state.position = Duration.zero;
+    
+    // 更新界面
     await reloadWidget();
   }
 
@@ -226,18 +234,21 @@ class BiliVideoPlayerController {
   }
 
   Future<bool> initPlayer(String bvid, int cid) async {
-    //如果不是第一次的话就跳过
-    if (_videoAudioController != null) {
-      return true;
-    }
-    //加载视频播放信息
+    // 加载视频播放信息
     if (await loadVideoInfo(bvid, cid) == false) return false;
-    //获取视频，音频的url
+    
+    // 获取视频，音频的url
     String videoUrl =
         _videoPlayItem!.urls.isNotEmpty ? _videoPlayItem!.urls.first : '';
     String audioUrl =
         _audioPlayItem!.urls.isNotEmpty ? _audioPlayItem!.urls.first : '';
-    //创建播放器
+    
+    // 如果已有播放器控制器，先释放它
+    if (_videoAudioController != null) {
+      await _videoAudioController!.dispose();
+    }
+    
+    // 创建播放器
     _videoAudioController = VideoAudioController(
         videoUrl: videoUrl,
         audioUrl: audioUrl,
