@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:math' as math;
+import 'dart:async';
 
 import 'package:bili_you/common/models/local/video/audio_play_item.dart';
 import 'package:bili_you/common/models/local/video/video_play_item.dart';
@@ -32,10 +33,31 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   static const gestureEdgeDeadZone = 0.1;
   var isInDeadZone = (x, bound) =>
       math.min<double>(x, bound - x) < gestureEdgeDeadZone * bound;
+  Timer? _sliderDragTimer; // 添加定时器变量
 
   final panelDecoration = const BoxDecoration(boxShadow: [
     BoxShadow(color: Colors.black45, blurRadius: 15, spreadRadius: 5)
   ]);
+
+  void toggleFullScreen() {
+    widget.controller._biliVideoPlayerController.toggleFullScreen();
+  }
+
+  void toggleDanmaku() {
+    widget.controller._biliVideoPlayerController.biliDanmakuController!
+        .toggleDanmaku();
+    //保持弹幕状态
+    if (SettingsUtil.getValue(SettingsStorageKeys.rememberDanmakuSwitch,
+            defaultValue: false) ==
+        true) {
+      SettingsUtil.setValue(
+          SettingsStorageKeys.defaultShowDanmaku,
+          widget.controller._biliVideoPlayerController.biliDanmakuController!
+              .isDanmakuOpened);
+    }
+    danmakuCheckBoxKey.currentState!.setState(() {});
+  }
+
   static const Color textColor = Colors.white;
   static const Color iconColor = Colors.white;
 
@@ -57,26 +79,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     durationTextKey.currentState?.setState(() {});
   }
 
-  void toggleFullScreen() {
-    if (widget.controller._biliVideoPlayerController.isFullScreen) {
-      Navigator.of(context).pop();
-    }
-    widget.controller._biliVideoPlayerController.toggleFullScreen();
-  }
-
-  void toggleDanmaku() {
-    widget.controller._biliVideoPlayerController.biliDanmakuController!
-        .toggleDanmaku();
-    //保持弹幕状态
-    if (SettingsUtil.getValue(SettingsStorageKeys.rememberDanmakuSwitch,
-            defaultValue: false) ==
-        true) {
-      SettingsUtil.setValue(
-          SettingsStorageKeys.defaultShowDanmaku,
-          widget.controller._biliVideoPlayerController.biliDanmakuController!
-              .isDanmakuOpened);
-    }
-    danmakuCheckBoxKey.currentState!.setState(() {});
+  void _resetSliderDraggingState() {
+    // 重置拖动状态的辅助方法
+    widget.controller._isSliderDraging = false;
   }
 
   @override
@@ -94,6 +99,21 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
         .addStateChangedListener(playStateChangedCallback);
     widget.controller._biliVideoPlayerController
         .addListener(playerListenerCallback);
+    
+    // 添加一个定时器确保_sliderDraging状态不会被永远锁定
+    _sliderDragTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (widget.controller._isSliderDraging && 
+          mounted && 
+          widget.controller._biliVideoPlayerController.position != Duration.zero) {
+        // 如果超过一定时间仍在拖动状态，则重置状态
+        // 这可以防止因异常情况导致的状态锁定
+        if (DateTime.now().millisecondsSinceEpoch - 
+            widget.controller._lastSliderInteractionTime > 5000) { // 5秒超时
+          _resetSliderDraggingState();
+        }
+      }
+    });
+    
     initControl();
     super.initState();
   }
@@ -111,6 +131,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     widget.controller._biliVideoPlayerController
         .removeListener(playerListenerCallback);
     ScreenBrightness().resetScreenBrightness();
+    _sliderDragTimer?.cancel(); // 取消定时器
     super.dispose();
   }
 
@@ -215,14 +236,16 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                 details.globalPosition.dx, MediaQuery.of(context).size.width)) {
               return;
             }
-            isHorizontalGestureInProgress = true;
-            widget.controller._isPreviousShow = widget.controller._show;
-            widget.controller._isPreviousPlaying =
-                widget.controller._isPlayerPlaying;
-            widget.controller._show = true;
-            widget.controller._biliVideoPlayerController.pause();
-            widget.controller._isSliderDraging = true;
-            setState(() {});
+            // 只有当Slider没有在拖动时才处理水平手势
+            if (!widget.controller._isSliderDraging) {
+              isHorizontalGestureInProgress = true;
+              widget.controller._isPreviousShow = widget.controller._show;
+              widget.controller._isPreviousPlaying =
+                  widget.controller._isPlayerPlaying;
+              widget.controller._show = true;
+              widget.controller._biliVideoPlayerController.pause();
+              setState(() {});
+            }
           },
           onHorizontalDragUpdate: (details) {
             if (!isHorizontalGestureInProgress) {
@@ -251,7 +274,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
             if (!widget.controller._isPreviousShow) {
               widget.controller._show = false;
             }
-            widget.controller._isSliderDraging = false;
             setState(() {});
           },
           onVerticalDragStart: (details) {
@@ -382,7 +404,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                               const PopupMenuItem(
                                   value: "弹幕不透明度", child: Text("弹幕不透明度")),
                               const PopupMenuItem(
-                                  value: "弹幕速度", child: Text("弹幕速度"))
+                                  value: "弹幕速度", child: Text("弹幕速度")),
+                              const PopupMenuItem(
+                                  value: "全屏", child: Text("全屏")),
                             ];
                           },
                           onSelected: (value) {
@@ -567,6 +591,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                   ),
                                 );
                                 break;
+                              case '全屏':
+                                widget.controller._biliVideoPlayerController.toggleFullScreen();
+                                break;
                               default:
                                 log(value);
                             }
@@ -629,46 +656,55 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                         child: StatefulBuilder(
                             key: sliderKey,
                             builder: (context, setState) {
-                              return Slider(
-                                min: 0,
-                                max: widget
-                                    .controller
-                                    ._biliVideoPlayerController
-                                    .duration
-                                    .inMilliseconds
-                                    .toDouble(),
-                                value: clampDouble(
-                                    widget.controller._position.inMilliseconds
-                                        .toDouble(),
-                                    0,
-                                    widget.controller._biliVideoPlayerController
-                                        .duration.inMilliseconds
-                                        .toDouble()),
-                                secondaryTrackValue: clampDouble(
-                                    widget.controller._fartherestBuffed
-                                        .inMilliseconds
-                                        .toDouble(),
-                                    0,
-                                    widget.controller._biliVideoPlayerController
-                                        .duration.inMilliseconds
-                                        .toDouble()),
-                                onChanged: (value) {
-                                  if (widget.controller._isSliderDraging) {
-                                    widget.controller._position =
-                                        Duration(milliseconds: value.toInt());
-                                  }
+                              return Listener(
+                                onPointerDown: (_) {
+                                  // 阻止指针事件冒泡到外层的GestureDetector
                                 },
-                                onChangeStart: (value) {
-                                  widget.controller._isSliderDraging = true;
-                                },
-                                onChangeEnd: (value) {
-                                  if (widget.controller._isSliderDraging) {
-                                    widget.controller._biliVideoPlayerController
-                                        .seekTo(Duration(
-                                            milliseconds: value.toInt()));
-                                    widget.controller._isSliderDraging = false;
-                                  }
-                                },
+                                child: Slider(
+                                  min: 0,
+                                  max: widget
+                                      .controller
+                                      ._biliVideoPlayerController
+                                      .duration
+                                      .inMilliseconds
+                                      .toDouble(),
+                                  value: clampDouble(
+                                      widget.controller._position.inMilliseconds
+                                          .toDouble(),
+                                      0,
+                                      widget.controller._biliVideoPlayerController
+                                          .duration.inMilliseconds
+                                          .toDouble()),
+                                  secondaryTrackValue: clampDouble(
+                                      widget.controller._fartherestBuffed
+                                          .inMilliseconds
+                                          .toDouble(),
+                                      0,
+                                      widget.controller._biliVideoPlayerController
+                                          .duration.inMilliseconds
+                                          .toDouble()),
+                                  onChanged: (value) {
+                                    if (widget.controller._isSliderDraging) {
+                                      widget.controller._position =
+                                          Duration(milliseconds: value.toInt());
+                                    }
+                                  },
+                                  onChangeStart: (value) {
+                                    widget.controller._isSliderDraging = true;
+                                    widget.controller._lastSliderInteractionTime = 
+                                        DateTime.now().millisecondsSinceEpoch;
+                                  },
+                                  onChangeEnd: (value) {
+                                    if (widget.controller._isSliderDraging) {
+                                      widget.controller._biliVideoPlayerController
+                                          .seekTo(Duration(
+                                              milliseconds: value.toInt()));
+                                      widget.controller._isSliderDraging = false;
+                                    }
+                                    widget.controller._lastSliderInteractionTime = 
+                                        DateTime.now().millisecondsSinceEpoch;
+                                  },
+                                ),
                               );
                             }),
                       ),
@@ -686,7 +722,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       IconButton(
                           onPressed: () {
                             // log("full:${widget.controller.isFullScreen}");
-                            toggleFullScreen();
+                            widget.controller._biliVideoPlayerController.toggleFullScreen();
                           },
                           icon: const Icon(
                             Icons.fullscreen_rounded,
@@ -718,6 +754,7 @@ class BiliVideoPlayerPanelController {
   double _volume = 0;
   double _brightness = 0;
   Duration _fartherestBuffed = Duration.zero;
+  int _lastSliderInteractionTime = 0; // 添加这一行
   final BiliVideoPlayerController _biliVideoPlayerController;
   BiliVideoPlayerController get biliVideoPlayerController =>
       _biliVideoPlayerController;

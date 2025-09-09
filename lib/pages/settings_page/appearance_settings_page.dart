@@ -114,7 +114,7 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
             title: const Text('缩放倍数'),
             subtitle: Text(SettingsUtil.getValue(
                     SettingsStorageKeys.textScaleFactor,
-                    defaultValue: 0.75)
+                    defaultValue: 1.0)
                 .toString()),
             onTap: () => showDialog(
               context: context,
@@ -124,7 +124,7 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
                   Slider(
                     value: SettingsUtil.getValue(
                         SettingsStorageKeys.textScaleFactor,
-                        defaultValue: 0.75),
+                        defaultValue: 1.0),
                     min: 0.5,
                     max: 2,
                     divisions: 6,
