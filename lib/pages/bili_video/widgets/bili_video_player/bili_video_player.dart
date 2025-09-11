@@ -105,11 +105,17 @@ class _BiliVideoPlayerWidgetState extends State<BiliVideoPlayerWidget> {
                             '视频加载失败',
                             style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '请检查网络连接或稍后重试',
+                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                          ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
                             onPressed: () async {
                               log('用户点击重试按钮');
-                              setState(() {}); // 重新触发FutureBuilder
+                              // 重新触发FutureBuilder
+                              setState(() {});
                             },
                             icon: const Icon(Icons.refresh_rounded),
                             label: const Text('重试'),
@@ -259,72 +265,90 @@ class BiliVideoPlayerController {
   }
 
   Future<bool> initPlayer(String bvid, int cid) async {
-    // 加载视频播放信息
-    if (await loadVideoInfo(bvid, cid) == false) {
-      log('视频信息加载失败: bvid=$bvid, cid=$cid');
-      return false;
-    }
-    
-    // 获取视频，音频的url
-    String videoUrl =
-        _videoPlayItem!.urls.isNotEmpty ? _videoPlayItem!.urls.first : '';
-    String audioUrl =
-        _audioPlayItem!.urls.isNotEmpty ? _audioPlayItem!.urls.first : '';
-    
-    // 检查URL是否有效
-    if (videoUrl.isEmpty) {
-      log('视频URL为空，无法播放');
-      return false;
-    }
-    
-    log('准备播放视频: videoUrl=$videoUrl, audioUrl=$audioUrl');
-    
-    // 如果已有播放器控制器，先释放它
-    if (_videoAudioController != null) {
-      await _videoAudioController!.dispose();
-    }
-    
-    // 创建播放器
-    _videoAudioController = VideoAudioController(
-        videoUrl: videoUrl,
-        audioUrl: audioUrl,
-        headers: VideoPlayApi.videoPlayerHttpHeaders,
-        autoWakelock: true,
-        initStart: _playWhenInitialize,
-        initSpeed: SettingsUtil.getValue(
-            SettingsStorageKeys.defaultVideoPlaybackSpeed,
-            defaultValue: 1.0),
-        initDuration: initVideoPosition);
-
     try {
-      await _videoAudioController!.init();
+      // 加载视频播放信息
+      if (await loadVideoInfo(bvid, cid) == false) {
+        log('视频信息加载失败: bvid=$bvid, cid=$cid');
+        return false;
+      }
+      
+      // 获取视频，音频的url
+      String videoUrl =
+          _videoPlayItem!.urls.isNotEmpty ? _videoPlayItem!.urls.first : '';
+      String audioUrl =
+          _audioPlayItem!.urls.isNotEmpty ? _audioPlayItem!.urls.first : '';
+      
+      // 检查URL是否有效
+      if (videoUrl.isEmpty) {
+        log('视频URL为空，无法播放');
+        return false;
+      }
+      
+      log('准备播放视频: videoUrl=${videoUrl.substring(0, 50)}..., audioUrl=${audioUrl.isNotEmpty ? audioUrl.substring(0, 50) : "无音频"}...');
+      
+      // 如果已有播放器控制器，先释放它
+      if (_videoAudioController != null) {
+        await _videoAudioController!.dispose();
+      }
+      
+      // 创建播放器
+      _videoAudioController = VideoAudioController(
+          videoUrl: videoUrl,
+          audioUrl: audioUrl,
+          headers: VideoPlayApi.videoPlayerHttpHeaders,
+          autoWakelock: true,
+          initStart: _playWhenInitialize,
+          initSpeed: SettingsUtil.getValue(
+              SettingsStorageKeys.defaultVideoPlaybackSpeed,
+              defaultValue: 1.0),
+          initDuration: initVideoPosition);
+
+      // 初始化播放器，增加重试机制
+      int retryCount = 0;
+      while (retryCount < 3) {
+        try {
+          await _videoAudioController!.init();
+          break; // 成功则跳出循环
+        } catch (e) {
+          retryCount++;
+          log('播放器初始化失败 (尝试 $retryCount/3): $e');
+          if (retryCount >= 3) {
+            log('播放器初始化最终失败，已达最大重试次数');
+            return false;
+          }
+          // 等待一段时间后重试
+          await Future.delayed(Duration(milliseconds: 500 * retryCount));
+        }
+      }
+
+      //是否进入就全屏
+      bool isFullScreenPlayOnEnter = SettingsUtil.getValue(
+          SettingsStorageKeys.fullScreenPlayOnEnter,
+          defaultValue: false);
+      if (isFullScreenPlayOnEnter) {
+        isFullScreen = false;
+        toggleFullScreen();
+      }
+      var lastTime = DateTime.now().millisecondsSinceEpoch;
+      addListener(() async {
+        //每帧更新历史播放进度
+        //限制一秒更新进度一次，防止频繁更新
+        if (DateTime.now().millisecondsSinceEpoch - lastTime >= 1000) {
+          await _reportHistory();
+          lastTime = DateTime.now().millisecondsSinceEpoch;
+        }
+      });
+      //当播放状态改变时更新历史播放进度
+      addStateChangedListener((state) async {
+        await _reportHistory();
+      });
+      
+      log('播放器初始化成功');
+      return true;
     } catch (e) {
-      log('播放器初始化失败: $e');
+      log('播放器初始化过程中发生错误: $e');
       return false;
     }
-
-    //是否进入就全屏
-    bool isFullScreenPlayOnEnter = SettingsUtil.getValue(
-        SettingsStorageKeys.fullScreenPlayOnEnter,
-        defaultValue: false);
-    if (isFullScreenPlayOnEnter) {
-      isFullScreen = false;
-      toggleFullScreen();
-    }
-    var lastTime = DateTime.now().millisecondsSinceEpoch;
-    addListener(() async {
-      //每帧更新历史播放进度
-      //限制一秒更新进度一次，防止频繁更新
-      if (DateTime.now().millisecondsSinceEpoch - lastTime >= 1000) {
-        await _reportHistory();
-        lastTime = DateTime.now().millisecondsSinceEpoch;
-      }
-    });
-    //当播放状态改变时更新历史播放进度
-    addStateChangedListener((state) async {
-      await _reportHistory();
-    });
-    return true;
   }
 
   ///切换视频播放源/视频画质

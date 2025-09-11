@@ -37,10 +37,10 @@ class ReplyController extends GetxController {
     );
     scrollController = ScrollController();
     
-    // 初始化 WebView 控制器
+    // 初始化 WebView 控制器 - 使用PC端UA
     webViewController = WebViewController()
       ..setUserAgent(
-          'Mozilla/5.0 (iPhone13,3; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1')
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
       ..setJavaScriptMode(JavaScriptMode.unrestricted);
     
     super.onInit();

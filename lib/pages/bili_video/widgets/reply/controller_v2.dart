@@ -64,10 +64,21 @@ class ReplyControllerV2 extends GetxController {
         hasMore.value = true;
         isLoading.value = true;
         hasError.value = false;
+        errorMessage.value = '';
       }
       
       // 将bvid转换为avid
-      int avid = BvidAvidUtil.bvid2Av(bvid);
+      int avid;
+      try {
+        avid = BvidAvidUtil.bvid2Av(bvid);
+        if (avid <= 0) {
+          throw Exception('无效的视频ID');
+        }
+      } catch (e) {
+        log('BVID转换失败: bvid=$bvid, error=$e');
+        throw Exception('视频ID转换失败，请检查视频链接');
+      }
+      
       log('加载评论: bvid=$bvid, avid=$avid, page=${currentPage.value}, sort=${sortType.value}');
       
       var data = await ReplyApiV2.getComments(
@@ -122,7 +133,14 @@ class ReplyControllerV2 extends GetxController {
       
       isLoading.value = false;
       hasError.value = true;
-      errorMessage.value = e.toString();
+      
+      // 提供更友好的错误信息
+      String friendlyError = e.toString();
+      if (friendlyError.contains('Exception: ')) {
+        friendlyError = friendlyError.replaceFirst('Exception: ', '');
+      }
+      
+      errorMessage.value = friendlyError;
       
       if (refresh) {
         refreshController.finishRefresh(IndicatorResult.fail);

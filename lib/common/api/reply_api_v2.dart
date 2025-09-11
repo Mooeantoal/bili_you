@@ -15,8 +15,10 @@ class ReplyApiV2 {
   /// - [oid] 目标评论区id（对于视频是avid）
   /// - [sort] 排序方式 (0:按时间, 1:按点赞数, 2:按回复数)
   /// - [nohot] 是否不显示热评 (0:显示, 1:不显示)
-  /// - [ps] 每页项数 (1-20)
+  /// - [ps] 每页项数 (1-20，建议使用20)
   /// - [pn] 页码 (从1开始)
+  /// 
+  /// 注意：API符合B站官方文档规范
   static Future<CommentPageData> getComments({
     required int type,
     required String oid,
@@ -25,43 +27,89 @@ class ReplyApiV2 {
     int ps = 20, // 默认每页20条
     int pn = 1, // 默认第1页
   }) async {
-    try {
-      log('获取评论: type=$type, oid=$oid, sort=$sort, ps=$ps, pn=$pn');
-      
-      var response = await HttpUtils().get(
-        ApiConstants.reply,
-        queryParameters: {
-          'type': type,
-          'oid': oid,
-          'sort': sort,
-          'nohot': nohot,
-          'ps': ps,
-          'pn': pn,
-        },
-        options: Options(
-          headers: {
-            'user-agent': ApiConstants.userAgent,
-            'referer': ApiConstants.bilibiliBase,
-          },
-        ),
-      );
-
-      log('评论API响应: ${response.data}');
-
-      if (response.data['code'] != 0) {
-        throw Exception('获取评论失败: ${response.data['message']}');
-      }
-
-      var data = response.data['data'];
-      if (data == null) {
-        return CommentPageData.empty();
-      }
-
-      return CommentPageData.fromJson(data);
-    } catch (e) {
-      log('获取评论区数据失败: $e');
-      rethrow;
+    // 参数验证
+    if (ps < 1 || ps > 20) {
+      throw ArgumentError('每页项数ps必须在1-20范围内，当前值: $ps');
     }
+    if (pn < 1) {
+      throw ArgumentError('页码pn必须大于0，当前值: $pn');
+    }
+    if (sort < 0 || sort > 2) {
+      throw ArgumentError('排序方式sort必须在0-2范围内，当前值: $sort');
+    }
+    if (nohot < 0 || nohot > 1) {
+      throw ArgumentError('热评参数nohot必须为0或1，当前值: $nohot');
+    }
+    
+    int retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        log('获取评论: type=$type, oid=$oid, sort=$sort, ps=$ps, pn=$pn (尝试 ${retryCount + 1}/$maxRetries)');
+        
+        var response = await HttpUtils().get(
+          ApiConstants.reply,
+          queryParameters: {
+            'type': type,
+            'oid': oid,
+            'sort': sort,
+            'nohot': nohot,
+            'ps': ps,
+            'pn': pn,
+          },
+          options: Options(
+            headers: {
+              'user-agent': ApiConstants.userAgent,
+              'referer': ApiConstants.bilibiliBase,
+            },
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 15),
+          ),
+        );
+
+        log('评论API响应状态: ${response.statusCode}');
+        
+        if (response.data == null) {
+          throw Exception('评论API返回数据为空');
+        }
+
+        if (response.data['code'] != 0) {
+          String errorMsg = response.data['message'] ?? '未知错误';
+          throw Exception('获取评论失败: $errorMsg (code: ${response.data['code']})');
+        }
+
+        var data = response.data['data'];
+        if (data == null) {
+          log('评论数据为空，返回空结果');
+          return CommentPageData.empty();
+        }
+
+        log('评论获取成功: 条数=${(data['replies'] as List?)?.length ?? 0}, 热评=${(data['hots'] as List?)?.length ?? 0}');
+        return CommentPageData.fromJson(data);
+        
+      } catch (e) {
+        retryCount++;
+        log('获取评论区数据失败 (尝试 $retryCount/$maxRetries): $e');
+        
+        if (retryCount >= maxRetries) {
+          // 最后一次尝试失败，抛出更友好的错误信息
+          if (e.toString().contains('SocketException') || e.toString().contains('TimeoutException')) {
+            throw Exception('网络连接失败，请检查网络连接');
+          } else if (e.toString().contains('code:')) {
+            rethrow; // 保持原始错误信息
+          } else {
+            throw Exception('评论加载失败，请稍后重试');
+          }
+        }
+        
+        // 等待一段时间后重试
+        await Future.delayed(Duration(milliseconds: 1000 * retryCount));
+      }
+    }
+    
+    // 这里不会执行到，但为了类型安全
+    return CommentPageData.empty();
   }
 
   /// 获取评论回复（楼中楼）
