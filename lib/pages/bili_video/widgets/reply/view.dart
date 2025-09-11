@@ -28,25 +28,21 @@ class _ReplyPageState extends State<ReplyPage>
   @override
   bool get wantKeepAlive => true;
 
-  late final WebViewController _webViewController;
+  late ReplyController controller;
 
   @override
   void initState() {
     super.initState();
     
-    // 初始化WebView控制器
-    _webViewController = WebViewController()
-      ..setUserAgent(
-          'Mozilla/5.0 (iPhone13,3; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1')
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (String url) {
-            // 页面加载完成后隐藏加载指示器等操作
-          },
-        ),
-      );
-      
+    // 初始化控制器
+    controller = Get.put(
+      ReplyController(
+        bvid: widget.replyId,
+        replyType: widget.replyType,
+      ),
+      tag: widget.tag,
+    );
+    
     // 加载评论页面
     _loadReplyPage();
   }
@@ -61,7 +57,7 @@ class _ReplyPageState extends State<ReplyPage>
       url = 'https://www.bilibili.com/video/${widget.replyId}/#reply';
     }
     
-    _webViewController.loadRequest(Uri.parse(url));
+    controller.webViewController.loadRequest(Uri.parse(url));
   }
 
   @override
@@ -84,7 +80,7 @@ class _ReplyPageState extends State<ReplyPage>
         ),
         Expanded(
           child: WebViewWidget(
-            controller: _webViewController,
+            controller: controller.webViewController,
           ),
         ),
       ],

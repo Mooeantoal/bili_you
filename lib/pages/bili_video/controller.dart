@@ -56,8 +56,7 @@ class BiliVideoController extends GetxController
   refreshReply() {
     Get.find<ReplyController>(tag: 'ReplyPage:$oldBvid').bvid = bvid;
     Get.find<ReplyController>(tag: 'ReplyPage:$oldBvid')
-        .refreshController
-        .callRefresh();
+        .refreshComments();
   }
 
   @override
