@@ -1,6 +1,7 @@
 import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/common/utils/system_ui_util.dart';
 import 'package:bili_you/pages/bili_video/index.dart';
 import 'package:bili_you/pages/main/index.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -13,15 +14,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BiliYouStorage.ensureInitialized();
   MediaKit.ensureInitialized();
-  runApp(const MyApp());
-  //状态栏、导航栏沉浸
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  // 使用工具类设置沉浸式系统UI
+  await SystemUIUtil.setImmersiveSystemUI();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarDividerColor: Colors.transparent,
-    statusBarColor: Colors.transparent,
-  ));
+  
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

@@ -188,8 +188,7 @@ class _BiliVideoPageState extends State<BiliVideoPage>
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-            statusBarIconBrightness: Brightness.light),
+        value: SystemUIUtil.getSystemUiOverlayStyle(context),
         child: Scaffold(
           body: Column(
             children: [
