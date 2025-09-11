@@ -90,12 +90,37 @@ class _BiliVideoPlayerWidgetState extends State<BiliVideoPlayerWidget> {
                     );
                   } else {
                     //加载失败,重试按钮
-                    centrolWidget = IconButton(
-                        onPressed: () async {
-                          await widget.controller._videoAudioController?.play();
-                          setState(() {});
-                        },
-                        icon: const Icon(Icons.refresh_rounded));
+                    centrolWidget = Container(
+                      color: Colors.black,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.white,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            '视频加载失败',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              log('用户点击重试按钮');
+                              setState(() {}); // 重新触发FutureBuilder
+                            },
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('重试'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
                   return Stack(fit: StackFit.expand, children: [
                     Center(
@@ -235,13 +260,24 @@ class BiliVideoPlayerController {
 
   Future<bool> initPlayer(String bvid, int cid) async {
     // 加载视频播放信息
-    if (await loadVideoInfo(bvid, cid) == false) return false;
+    if (await loadVideoInfo(bvid, cid) == false) {
+      log('视频信息加载失败: bvid=$bvid, cid=$cid');
+      return false;
+    }
     
     // 获取视频，音频的url
     String videoUrl =
         _videoPlayItem!.urls.isNotEmpty ? _videoPlayItem!.urls.first : '';
     String audioUrl =
         _audioPlayItem!.urls.isNotEmpty ? _audioPlayItem!.urls.first : '';
+    
+    // 检查URL是否有效
+    if (videoUrl.isEmpty) {
+      log('视频URL为空，无法播放');
+      return false;
+    }
+    
+    log('准备播放视频: videoUrl=$videoUrl, audioUrl=$audioUrl');
     
     // 如果已有播放器控制器，先释放它
     if (_videoAudioController != null) {
@@ -260,7 +296,12 @@ class BiliVideoPlayerController {
             defaultValue: 1.0),
         initDuration: initVideoPosition);
 
-    await _videoAudioController!.init();
+    try {
+      await _videoAudioController!.init();
+    } catch (e) {
+      log('播放器初始化失败: $e');
+      return false;
+    }
 
     //是否进入就全屏
     bool isFullScreenPlayOnEnter = SettingsUtil.getValue(

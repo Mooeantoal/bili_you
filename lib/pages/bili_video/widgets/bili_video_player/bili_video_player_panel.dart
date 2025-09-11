@@ -65,6 +65,10 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     widget.controller._isPlayerPlaying = value.isPlaying;
     widget.controller._isPlayerEnd = value.isEnd;
     widget.controller._isPlayerBuffering = value.isBuffering;
+    // 如果有错误，也要更新播放按钮的状态
+    if (value.hasError) {
+      log('检测到播放器错误，更新UI状态');
+    }
     playButtonKey.currentState?.setState(() {});
   }
 
@@ -612,7 +616,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                         key: playButtonKey,
                         builder: (context, setState) {
                           late final IconData iconData;
-                          if (widget.controller._isPlayerEnd) {
+                          if (widget.controller._biliVideoPlayerController.hasError) {
+                            iconData = Icons.refresh_rounded; // 错误状态显示重试图标
+                          } else if (widget.controller._isPlayerEnd) {
                             iconData = Icons.refresh_rounded;
                           } else if (widget.controller._isPlayerPlaying) {
                             iconData = Icons.pause_rounded;
@@ -624,28 +630,25 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                   color: iconColor,
                                   onPressed: () async {
                                     if (widget.controller
+                                        ._biliVideoPlayerController.hasError) {
+                                      //如果是出错状态, 重新加载
+                                      log('检测到播放器错误，尝试重新加载');
+                                      await widget.controller
+                                          ._biliVideoPlayerController
+                                          .reloadWidget();
+                                    } else if (widget.controller
                                         ._biliVideoPlayerController.isPlaying) {
                                       await widget
                                           .controller._biliVideoPlayerController
                                           .pause();
                                     } else {
-                                      if (widget
-                                          .controller
+                                      //不是出错状态, 就继续播放
+                                      await widget.controller
                                           ._biliVideoPlayerController
-                                          .hasError) {
-                                        //如果是出错状态, 重新加载
-                                        await widget.controller
-                                            ._biliVideoPlayerController
-                                            .reloadWidget();
-                                      } else {
-                                        //不是出错状态, 就继续播放
-                                        await widget.controller
-                                            ._biliVideoPlayerController
-                                            .play();
-                                      }
+                                          .play();
                                     }
                                     widget.controller._isPlayerPlaying =
-                                        !widget.controller._isPlayerPlaying;
+                                        widget.controller._biliVideoPlayerController.isPlaying;
                                     setState(() {});
                                   },
                                   icon: Icon(iconData));
