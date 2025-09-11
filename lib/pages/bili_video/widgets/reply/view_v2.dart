@@ -238,7 +238,7 @@ class _ReplyPageV2State extends State<ReplyPageV2>
                   width: 32,
                   height: 32,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) {
+                  placeholder: () {
                     return Container(
                       width: 32,
                       height: 32,
