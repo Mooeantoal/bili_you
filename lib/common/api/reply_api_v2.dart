@@ -63,8 +63,6 @@ class ReplyApiV2 {
               'user-agent': ApiConstants.userAgent,
               'referer': ApiConstants.bilibiliBase,
             },
-            connectTimeout: const Duration(seconds: 10),
-            receiveTimeout: const Duration(seconds: 15),
           ),
         );
 
