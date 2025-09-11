@@ -10,3 +10,4 @@ export 'user_space_api.dart';
 export 'video_info_api.dart';
 export 'video_play_api.dart';
 export 'reply_api.dart';
+export 'reply_api_v2.dart';

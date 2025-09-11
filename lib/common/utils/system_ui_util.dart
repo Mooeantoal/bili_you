@@ -10,7 +10,7 @@ class SystemUIUtil {
   }) async {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     
-    await SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       // 状态栏配置
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
@@ -30,7 +30,7 @@ class SystemUIUtil {
   static Future<void> setVideoPlayerSystemUI() async {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     
-    await SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
@@ -44,7 +44,7 @@ class SystemUIUtil {
   static Future<void> setFullScreenSystemUI() async {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     
-    await SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,

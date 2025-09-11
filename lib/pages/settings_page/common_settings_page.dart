@@ -139,6 +139,11 @@ class CommonSettingsPage extends StatelessWidget {
               subTitle: '是否在进入详情页且视频加载完成后直接全屏',
               settingsKey: SettingsStorageKeys.fullScreenPlayOnEnter,
               defualtValue: false),
+          const SettingsSwitchTile(
+              title: '使用原生评论区',
+              subTitle: '使用原生API替代网页版评论区，提供更好的性能',
+              settingsKey: SettingsStorageKeys.useNativeComments,
+              defualtValue: true),
           SettingsRadiosTile(
             title: '偏好画质',
             subTitle: '视频播放时默认偏向选择的画质',

@@ -5,6 +5,7 @@ import 'package:bili_you/common/values/index.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
 import 'package:bili_you/pages/bili_video/widgets/introduction/index.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/view.dart';
+import 'package:bili_you/pages/bili_video/widgets/reply/view_v2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -172,11 +173,23 @@ class _BiliVideoPageState extends State<BiliVideoPage>
                 isBangumi: controller.isBangumi,
               ),
               Builder(builder: (context) {
-                //Builder可以让ReplyPage在TabBarView显示到它的时候才取controller.bvid
-                return ReplyPage(
-                  replyId: controller.bvid,
-                  replyType: ReplyType.video,
+                // Builder可以让ReplyPage在TabBarView显示到它的时候才取controller.bvid
+                // 使用设置来决定使用哪个评论组件
+                bool useNativeComments = SettingsUtil.getValue(
+                  SettingsStorageKeys.useNativeComments,
+                  defaultValue: true, // 默认使用原生API评论区
                 );
+                
+                if (useNativeComments) {
+                  return ReplyPageV2(
+                    bvid: controller.bvid,
+                  );
+                } else {
+                  return ReplyPage(
+                    replyId: controller.bvid,
+                    replyType: ReplyType.video,
+                  );
+                }
               })
             ],
           ),
