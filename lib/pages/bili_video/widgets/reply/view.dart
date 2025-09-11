@@ -73,31 +73,80 @@ class _ReplyPageState extends State<ReplyPage>
   void _injectMobileOptimization() {
     const String script = '''
       (function() {
-        // 隐藏所有元素，只显示评论区
+        console.log('开始注入移动端优化脚本');
+        
+        // 立即隐藏所有元素
         var style = document.createElement('style');
+        style.id = 'bili-mobile-style';
         style.innerHTML = `
           /* 隐藏所有元素 */
-          body > * {
+          html, body {
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          body > *:not(#commentapp) {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          
+          /* B站头部导航栏 */
+          .bili-header,
+          .bili-header-m,
+          .international-header,
+          .fixed-sidenav-storage,
+          .left-entry,
+          .right-entry,
+          .video-toolbar,
+          .video-info-container,
+          .video-info,
+          .up-info,
+          .video-desc,
+          .video-tag,
+          .video-toolbar-container,
+          .rec-list,
+          .recommend-list-container,
+          .playlist-container,
+          .danmaku-info,
+          .video-data,
+          .video-page-game-card-small,
+          .video-sponsor,
+          .ad-report,
+          .footer,
+          .mini-header,
+          .float-nav,
+          .fixed-header {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          
+          /* 侧边栏 */
+          .left-container,
+          .right-container {
             display: none !important;
           }
           
           /* 只显示评论区 */
           #commentapp {
             display: block !important;
+            visibility: visible !important;
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
-            width: 100% !important;
+            width: 100vw !important;
             height: 100vh !important;
             background: #fff !important;
-            z-index: 9999 !important;
+            z-index: 99999 !important;
             overflow-y: auto !important;
+            overflow-x: hidden !important;
           }
           
           /* 移动端优化样式 */
           #commentapp .bili-comment {
             padding: 10px !important;
             font-size: 14px !important;
+            max-width: 100% !important;
           }
           
           /* 评论列表优化 */
@@ -156,50 +205,93 @@ class _ReplyPageState extends State<ReplyPage>
           }
         `;
         document.head.appendChild(style);
+        console.log('样式表已注入');
         
         // 等待评论区加载
+        var attempts = 0;
+        var maxAttempts = 100; // 10秒的等待时间
         var checkInterval = setInterval(function() {
+          attempts++;
           var commentApp = document.getElementById('commentapp');
+          console.log('检查评论区第' + attempts + '次，找到:', !!commentApp);
+          
           if (commentApp) {
+            console.log('找到评论区，开始优化');
+            
             // 确保评论区显示
             commentApp.style.display = 'block';
+            commentApp.style.visibility = 'visible';
             commentApp.style.position = 'fixed';
             commentApp.style.top = '0';
             commentApp.style.left = '0';
-            commentApp.style.width = '100%';
+            commentApp.style.width = '100vw';
             commentApp.style.height = '100vh';
             commentApp.style.background = '#fff';
-            commentApp.style.zIndex = '9999';
+            commentApp.style.zIndex = '99999';
             commentApp.style.overflowY = 'auto';
+            commentApp.style.overflowX = 'hidden';
             
-            // 添加页面标题
-            var title = document.createElement('div');
-            title.innerHTML = '评论区';
-            title.style.cssText = `
-              position: sticky;
-              top: 0;
-              background: #fff;
-              padding: 12px 16px;
-              border-bottom: 1px solid #e1e2e3;
-              font-weight: bold;
-              font-size: 16px;
-              z-index: 10;
-            `;
-            commentApp.insertBefore(title, commentApp.firstChild);
+            // 添加页面标题（如果还没有）
+            if (!commentApp.querySelector('.mobile-comment-title')) {
+              var title = document.createElement('div');
+              title.className = 'mobile-comment-title';
+              title.innerHTML = '评论区';
+              title.style.cssText = `
+                position: sticky;
+                top: 0;
+                background: #fff;
+                padding: 12px 16px;
+                border-bottom: 1px solid #e1e2e3;
+                font-weight: bold;
+                font-size: 16px;
+                z-index: 100;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+              `;
+              commentApp.insertBefore(title, commentApp.firstChild);
+            }
             
+            // 隐藏其他所有元素
+            var allElements = document.body.children;
+            for (var i = 0; i < allElements.length; i++) {
+              if (allElements[i].id !== 'commentapp') {
+                allElements[i].style.display = 'none';
+                allElements[i].style.visibility = 'hidden';
+              }
+            }
+            
+            console.log('评论区优化完成');
+            clearInterval(checkInterval);
+          } else if (attempts >= maxAttempts) {
+            console.log('超时，停止检查');
             clearInterval(checkInterval);
           }
-        }, 100);
+        }, 100); // 每100ms检查一次
         
-        // 5秒后停止检查
-        setTimeout(function() {
-          clearInterval(checkInterval);
-        }, 5000);
+        // 监听 DOM 变化，确保样式不被覆盖
+        var observer = new MutationObserver(function(mutations) {
+          var commentApp = document.getElementById('commentapp');
+          if (commentApp && commentApp.style.display !== 'block') {
+            console.log('检测到评论区被隐藏，重新显示');
+            commentApp.style.display = 'block';
+            commentApp.style.visibility = 'visible';
+            commentApp.style.position = 'fixed';
+            commentApp.style.zIndex = '99999';
+          }
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['style', 'class']
+        });
+        
+        console.log('脚本注入完成');
       })();
     ''';
     
     controller.webViewController.runJavaScript(script);
-  }
+  }}
 
   @override
   Widget build(BuildContext context) {

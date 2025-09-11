@@ -7,6 +7,7 @@ import 'package:bili_you/common/widget/settings_slider_tile.dart';
 import 'package:bili_you/common/widget/settings_switch_tile.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/recommend/index.dart';
+import 'package:bili_you/pages/debug/native_reply_debug_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -144,6 +145,16 @@ class CommonSettingsPage extends StatelessWidget {
               subTitle: '使用原生API替代网页版评论区，提供更好的性能',
               settingsKey: SettingsStorageKeys.useNativeComments,
               defualtValue: true),
+          // 调试工具
+          ListTile(
+            leading: Icon(Icons.bug_report, color: Colors.orange),
+            title: Text('原生评论区调试'),
+            subtitle: Text('评论区无法加载时使用此工具诊断问题'),
+            trailing: Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Get.to(() => NativeReplyDebugPage());
+            },
+          ),
           SettingsRadiosTile(
             title: '偏好画质',
             subTitle: '视频播放时默认偏向选择的画质',

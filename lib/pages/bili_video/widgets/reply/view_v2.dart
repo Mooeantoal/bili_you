@@ -1,6 +1,7 @@
 import 'package:bili_you/common/api/reply_api_v2.dart';
 import 'package:bili_you/common/widget/cached_network_image.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/controller_v2.dart';
+import 'package:bili_you/common/utils/debug_utils.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -60,15 +61,36 @@ class _ReplyPageV2State extends State<ReplyPageV2>
                 style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),
-              Text(
-                controller.errorMessage.value,
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                textAlign: TextAlign.center,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  controller.errorMessage.value,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => controller.loadComments(refresh: true),
-                child: const Text('重试'),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => controller.loadComments(refresh: true),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('重试'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      DebugUtils.showNativeReplyDebugDialog(bvid: widget.bvid);
+                    },
+                    icon: const Icon(Icons.bug_report),
+                    label: const Text('调试'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

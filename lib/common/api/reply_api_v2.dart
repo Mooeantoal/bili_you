@@ -74,7 +74,23 @@ class ReplyApiV2 {
 
         if (response.data['code'] != 0) {
           String errorMsg = response.data['message'] ?? '未知错误';
-          throw Exception('获取评论失败: $errorMsg (code: ${response.data['code']})');
+          int errorCode = response.data['code'] ?? -1;
+          
+          // 特殊错误码处理
+          switch (errorCode) {
+            case -404:
+              throw Exception('评论区不存在或已关闭，请尝试刷新或使用网页版评论区');
+            case -403:
+              throw Exception('评论区访问被限制，请登录后重试');
+            case -400:
+              throw Exception('请求参数错误，请检查视频是否存在');
+            case 12002:
+              throw Exception('评论区已关闭');
+            case 12009:
+              throw Exception('评论区需要登录后查看');
+            default:
+              throw Exception('获取评论失败: $errorMsg (code: $errorCode)');
+          }
         }
 
         var data = response.data['data'];

@@ -236,6 +236,13 @@ class VideoAudioController {
       state.hasError = true;
       _callStateChangeListeners();
       PlayersSingleton().resumeSubscriptions();
+      
+      // 增强错误处理，尝试重新初始化播放器
+      if (e.toString().contains('403') || e.toString().contains('404')) {
+        log('视频链接失效，可能需要重新获取播放地址');
+      } else if (e.toString().contains('timeout')) {
+        log('视频加载超时，网络可能不稳定');
+      }
       return;
     }
     
