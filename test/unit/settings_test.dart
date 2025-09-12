@@ -1,6 +1,5 @@
 import 'package:test/test.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
-import 'package:flutter/material.dart';
 
 void main() {
   group('SettingsStorageKeys Tests', () {

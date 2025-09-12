@@ -721,4 +721,7 @@ class BiliVideoPlayerPanelController {
   final BiliVideoPlayerController _biliVideoPlayerController;
   BiliVideoPlayerController get biliVideoPlayerController =>
       _biliVideoPlayerController;
+  
+  // Getter for buffering state - may be used for UI indicators
+  bool get isPlayerBuffering => _isPlayerBuffering;
 }

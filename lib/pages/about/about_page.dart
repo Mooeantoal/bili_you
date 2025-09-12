@@ -41,7 +41,7 @@ class AboutPage extends StatelessWidget {
             launchUrlString(authorUrl);
           },
           onLongPress: () {
-            Clipboard.setData(ClipboardData(text: authorUrl));
+            Clipboard.setData(const ClipboardData(text: authorUrl));
             ScaffoldMessenger.of(context);
             Get.rawSnackbar(message: '已复制$authorUrl到剪切板');
           },
@@ -53,7 +53,7 @@ class AboutPage extends StatelessWidget {
             launchUrlString(projectUrl);
           },
           onLongPress: () {
-            Clipboard.setData(ClipboardData(text: projectUrl));
+            Clipboard.setData(const ClipboardData(text: projectUrl));
             ScaffoldMessenger.of(context);
             Get.rawSnackbar(message: '已复制$projectUrl到剪切板');
           },
@@ -64,7 +64,7 @@ class AboutPage extends StatelessWidget {
               context,
               GetPageRoute(
                 page: () => const LicensePage(
-                  applicationIcon: const ImageIcon(
+                  applicationIcon: ImageIcon(
                     AssetImage("assets/icon/bili.png"),
                     size: 200,
                   ),
