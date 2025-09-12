@@ -1,5 +1,6 @@
 import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/http_utils.dart';
+import 'package:bili_you/common/utils/immersive_utils.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/bili_video/index.dart';
 import 'package:bili_you/pages/main/index.dart';
@@ -13,25 +14,56 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BiliYouStorage.ensureInitialized();
   MediaKit.ensureInitialized();
-  runApp(const MyApp());
-  //状态栏、导航栏沉浸
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  // 初始化沉浸式配置（金标联盟 + Android Edge-to-Edge方案）
+  await ImmersiveUtils.initialize();
+  
+  // 设置竖屏模式
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarDividerColor: Colors.transparent,
-    statusBarColor: Colors.transparent,
-  ));
+  
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+// 动态更新系统UI覆盖层样式（保持向后兼容）
+void _updateSystemUIOverlay() {
+  ImmersiveUtils.updateSystemUIOverlay();
+}
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+  
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+  
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    // 系统主题变化时自动调整系统UI
+    ImmersiveUtils.updateSystemUIOverlay();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
       return GetMaterialApp(
           onInit: () async {
             await HttpUtils().init();
+            // 初始化后调整系统UI
+            await ImmersiveUtils.setAutoSystemUI(SettingsUtil.currentThemeMode);
           },
           navigatorObservers: [BiliVideoPage.routeObserver],
           useInheritedMediaQuery: true,
