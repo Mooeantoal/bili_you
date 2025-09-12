@@ -117,17 +117,34 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
             settingsKey: SettingsStorageKeys.enableITGSACompliance,
             defualtValue: true,
           ),
-          const SettingsSwitchTile(
+          SettingsSwitchTile(
             title: '增强沉浸式体验',
             subTitle: '结合Android Edge-to-Edge技术与金标联盟用户体验优化',
             settingsKey: SettingsStorageKeys.enhancedImmersiveMode,
             defualtValue: true,
+            apply: () async {
+              // 立即应用新的显示模式设置
+              try {
+                await exitFullScreen(); // 先重置到默认状态
+                // 这样下次进入全屏时会使用新的设置
+              } catch (e) {
+                // 忽略错误，确保设置切换不会失败
+              }
+            },
           ),
-          const SettingsSwitchTile(
+          SettingsSwitchTile(
             title: '自适应边到边显示',
             subTitle: '根据设备能力智能启用Edge-to-Edge显示模式',
             settingsKey: SettingsStorageKeys.adaptiveEdgeToEdge,
             defualtValue: true,
+            apply: () async {
+              // 立即应用新的边到边显示设置
+              try {
+                await exitFullScreen(); // 重置系统UI状态
+              } catch (e) {
+                // 忽略错误
+              }
+            },
           ),
           const SettingsLabel(text: '字体'),
           ListTile(

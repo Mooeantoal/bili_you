@@ -86,8 +86,29 @@ void _setImmersiveSystemUIStyle() {
   // 以避免内容与系统UI重叠，这在Flutter中通过SafeArea和MediaQuery.viewInsets处理
 }
 
-//进入全屏显示 - 结合两种方案的增强版本
+//进入全屏显示 - 简化且有效的沉浸式实现
 Future<void> enterFullScreen() async {
+  // 使用最直接有效的immersiveSticky模式，这是最可靠的全屏方案
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+  );
+}
+
+//退出全屏显示 - 恢复到应用默认的Edge-to-Edge状态
+Future<void> exitFullScreen() async {
+  // 恢复到应用启动时的Edge-to-Edge模式
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  // 确保系统UI样式正确恢复
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+  ));
+}
+
+//真正的金标联盟+Android结合方案 - 单独的方法
+Future<void> enterEnhancedImmersiveMode() async {
   DisplayMode mode = await ITGSAComplianceHelper.getRecommendedDisplayMode();
   
   switch (mode) {
@@ -116,20 +137,6 @@ Future<void> enterFullScreen() async {
       );
       break;
   }
-}
-
-//退出全屏显示 - 智能恢复到应用默认的沉浸式状态
-Future<void> exitFullScreen() async {
-  // 恢复到应用启动时设置的Edge-to-Edge模式
-  // 这与main.dart中的初始化设置保持一致
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  
-  // 恢复应用默认的系统UI样式
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarDividerColor: Colors.transparent,
-    statusBarColor: Colors.transparent,
-  ));
 }
 
 //横屏
