@@ -65,7 +65,7 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
         body: ListView(children: [
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
-            child: Text( 
+            child: Text(
               "主题",
               style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
