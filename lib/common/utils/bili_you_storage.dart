@@ -93,7 +93,4 @@ class SettingsStorageKeys {
 
   ///默认播放播放速度
   static const String defaultVideoPlaybackSpeed = "defaultVideoPlaybackSpeed";
-  
-  ///使用原生评论区API
-  static const String useNativeComments = "useNativeComments";
 }

@@ -180,12 +180,10 @@ class VideoAudioController {
   final List<Function(Duration position)> _seekToListeners = [];
 
   Future<void> init() async {
-    // 如果已经初始化过，先重置状态
     if (_initialized) {
-      await dispose();
-      _initialized = false;
+      log('当前播放器控制器已经初始化过了');
+      return;
     }
-    
     //如果还没有播放器实例就创建
     if (PlayersSingleton().count == 0) {
       await PlayersSingleton().init();
@@ -203,7 +201,6 @@ class VideoAudioController {
   // 刷新播放器数据
   // 如果还需要换音视频源的话，还需要在调用前改变videoUrl,audioUrl
   Future<void> refresh() async {
-    log('开始刷新播放器，videoUrl: $videoUrl, audioUrl: $audioUrl');
     //重置几个值
     state.isBuffering = false;
     state.buffered = Duration.zero;
@@ -217,35 +214,16 @@ class VideoAudioController {
     PlayersSingleton().pauseSubscriptions();
     //播放器单例引用
     var player = PlayersSingleton().player!;
-    
-    try {
-      //设置音频源
-      if (audioUrl.isNotEmpty) {
-        await (player.platform as NativePlayer).setProperty(
-            'audio-files',
-            Platform.isWindows
-                ? audioUrl.replaceAll(';', '\\;')
-                : audioUrl.replaceAll(':', '\\:'));
-      }
-      //设置视频源
-      log('正在加载视频源: $videoUrl');
-      await player.open(Media(videoUrl, httpHeaders: headers), play: false);
-      log('视频源加载成功');
-    } catch (e) {
-      log('视频源加载失败: $e');
-      state.hasError = true;
-      _callStateChangeListeners();
-      PlayersSingleton().resumeSubscriptions();
-      
-      // 增强错误处理，尝试重新初始化播放器
-      if (e.toString().contains('403') || e.toString().contains('404')) {
-        log('视频链接失效，可能需要重新获取播放地址');
-      } else if (e.toString().contains('timeout')) {
-        log('视频加载超时，网络可能不稳定');
-      }
-      return;
+    //设置音频源
+    if (audioUrl.isNotEmpty) {
+      await (player.platform as NativePlayer).setProperty(
+          'audio-files',
+          Platform.isWindows
+              ? audioUrl.replaceAll(';', '\\;')
+              : audioUrl.replaceAll(':', '\\:'));
     }
-    
+    //设置视频源
+    await player.open(Media(videoUrl, httpHeaders: headers), play: false);
     //设置监听
     _setStreamListener();
     PlayersSingleton().resumeSubscriptions();
@@ -272,7 +250,6 @@ class VideoAudioController {
         }
       });
     }
-    log('播放器刷新完成');
   }
 
   void _setStreamListener() {
@@ -316,8 +293,7 @@ class VideoAudioController {
     });
     // 错误监听
     PlayersSingleton().errorListen!.onData((event) {
-      log('error: code=${event.code}, message=${event.toString()}');
-      state.hasError = event.code != 0; // 修复：错误码不为0时才是错误
+      state.hasError = event.code == 0;
       _callStateChangeListeners();
     });
     // 时长监听

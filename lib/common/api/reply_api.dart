@@ -4,7 +4,7 @@ import 'package:bili_you/common/models/local/reply/reply_info.dart';
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
 import 'package:bili_you/common/models/local/reply/reply_member.dart';
 import 'package:bili_you/common/models/local/reply/reply_reply_info.dart';
-import 'package:bili_you/common/models/local/reply/official_verify.dart';
+import 'package:bili_you/common/models/local/reply/vip.dart';
 import 'package:bili_you/common/models/network/reply/reply.dart' as reply_raw;
 import 'package:bili_you/common/models/network/reply/reply_reply.dart'
     as reply_reply_raw;
@@ -12,29 +12,21 @@ import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:bili_you/common/utils/index.dart';
 import 'package:flutter/foundation.dart';
 
-import '../models/local/reply/vip.dart';
+import '../models/local/reply/official_verify.dart';
 
 class ReplyApi {
   static Future<reply_raw.ReplyResponse> _requestReply(
       {required String oid,
       required int pageNum,
       required ReplyType type,
-      ReplySort sort = ReplySort.like,
-      int pageSize = 20}) async {
+      ReplySort sort = ReplySort.like}) async {
     var response = await HttpUtils().get(
       ApiConstants.reply,
       queryParameters: {
         'oid': oid,
         'pn': pageNum,
-        'ps': pageSize, // 添加页面大小参数
         'type': type.code,
-        'sort': sort.index,
-        // 添加一些可能有助于绕过限制的额外参数
-        'nohot': 0,
-        'fresh_type': 0,
-        'feed_detail': 0,
-        'is_teenagers': 0,
-        'is_qa': 0,
+        'sort': sort.index
       },
     );
     return await compute(
@@ -163,62 +155,6 @@ class ReplyApi {
           upperMid: response.data!.upper?.mid ?? 0,
           replyCount: response.data!.page?.acount ?? 0);
     }, response);
-  }
-
-  ///获取评论 (尝试绕过登录限制的版本)
-  static Future<ReplyInfo> getReplyWithoutLoginLimit({
-    required String oid,
-    required int pageNum,
-    required ReplyType type,
-    ReplySort sort = ReplySort.like,
-    int pageSize = 20,
-  }) async {
-    // 使用不同的API端点和参数尝试获取更多评论
-    var response = await HttpUtils().get(
-      '${ApiConstants.apiBase}/x/v2/reply/wbi/main',
-      queryParameters: {
-        'oid': oid,
-        'pn': pageNum,
-        'ps': pageSize,
-        'type': type.code,
-        'sort': sort.index,
-        // 添加一些可能有助于绕过限制的参数
-        'nohot': 0,
-        'fresh_type': 0,
-        'feed_detail': 0,
-        'is_teenagers': 0,
-        'is_qa': 0,
-      },
-    );
-    
-    var responseData = await compute(
-        (response) => reply_raw.ReplyResponse.fromJson(response), response.data);
-        
-    if (responseData.code != 0) {
-      throw "getReplies: code:${responseData.code}, message:${responseData.message}";
-    }
-    
-    if (responseData.data == null || responseData.data!.replies == null) {
-      return ReplyInfo.zero;
-    }
-    
-    return await compute((response) {
-      List<ReplyItem> replies = [];
-      for (var i in response.data!.replies!) {
-        replies.add(replyItemRawToReplyItem(i));
-      }
-      List<ReplyItem> topReplies = [];
-      if (response.data!.topReplies != null) {
-        for (var i in response.data!.topReplies!) {
-          topReplies.add(replyItemRawToReplyItem(i));
-        }
-      }
-      return ReplyInfo(
-          replies: replies,
-          topReplies: topReplies,
-          upperMid: response.data!.upper?.mid ?? 0,
-          replyCount: response.data!.page?.acount ?? 0);
-    }, responseData);
   }
 
   //请求评论的评论

@@ -1,7 +1,4 @@
 import 'package:bili_you/common/api/api_constants.dart';
-import 'dart:developer';
-
-import 'package:bili_you/common/api/api_constants.dart';
 import 'package:bili_you/common/models/local/video/audio_play_item.dart';
 import 'package:bili_you/common/models/local/video/video_play_info.dart';
 import 'package:bili_you/common/models/local/video/video_play_item.dart';
@@ -39,108 +36,103 @@ class VideoPlayApi {
     required String bvid,
     required int cid,
   }) async {
-    try {
-      var response =
-          await _requestVideoPlay(bvid: bvid, cid: cid, fnval: FnvalValue.all);
-      if (response.code != 0) {
-        throw "getVideoPlay: code:${response.code}, message:${response.message}";
-      }
-      if (response.data == null ||
-          response.data!.acceptQuality == null ||
-          response.data!.acceptDescription == null) {
-        return VideoPlayInfo.zero;
-      }
-      //获取支持的视频质量
-      List<VideoQuality> supportVideoQualities = [];
-      for (var i in response.data!.acceptQuality ?? <int>[]) {
-        supportVideoQualities.add(VideoQualityCode.fromCode(i));
-      }
-      //获取视频
-      List<VideoPlayItem> videos = [];
-      for (var i in response.data!.dash?.video ?? <VideoOrAudioRaw>[]) {
-        List<String> urls = [];
-        if (i.baseUrl != null) {
-          urls.add(i.baseUrl!);
-        }
-        if (i.backupUrl != null) {
-          urls.addAll(i.backupUrl!);
-        }
-        videos.add(VideoPlayItem(
-          urls: urls,
-          quality: VideoQualityCode.fromCode(i.id ?? -1),
-          bandWidth: i.bandwidth ?? 0,
-          codecs: i.codecs ?? "",
-          width: i.width ?? 0,
-          height: i.height ?? 0,
-          frameRate: double.tryParse(i.frameRate ?? "0") ?? 0,
-          // mimeType: i.mimeType ?? '',
-          // segmentBase: SegmentBase(
-          //     initialization: i.segmentBase?.initialization ?? '',
-          //     indexRange: i.segmentBase?.indexRange ?? ''),
-          sar: double.parse(i.sar?.split(':').first ?? '1') /
-              double.parse(i.sar?.split(':').last ?? '1'),
-          // timeLength: response.data?.timelength ?? 0
-        ));
-      }
-      // //如果是空的话,就放入一个空的VideoPlayItem用来占位
-      // if (videos.isEmpty) {
-      //   videos.add(VideoPlayItem.zero);
-      // }
-      //如果有dolby的话
-      for (var i in response.data!.dash?.dolby?.audio ?? <VideoOrAudioRaw>[]) {
-        response.data!.dash?.audio?.add(i);
-      }
-      //如果有flac的话
-      if (response.data!.dash?.flac?.audio != null) {
-        response.data!.dash?.audio?.add(response.data!.dash!.flac!.audio!);
-      }
-      //获取音频
-      List<AudioPlayItem> audios = [];
-      for (var i in response.data!.dash?.audio ?? <VideoOrAudioRaw>[]) {
-        List<String> urls = [];
-        if (i.baseUrl != null) {
-          urls.add(i.baseUrl!);
-        }
-        if (i.backupUrl != null) {
-          urls.addAll(i.backupUrl!);
-        }
-        audios.add(AudioPlayItem(
-          urls: urls,
-          quality: AudioQualityCode.fromCode(i.id ?? -1),
-          bandWidth: i.bandwidth ?? 0,
-          codecs: i.codecs ?? "",
-          // mimeType: i.mimeType ?? '',
-          // segmentBase: SegmentBase(
-          //   initialization: i.segmentBase?.initialization ?? '',
-          //   indexRange: i.segmentBase?.indexRange ?? '',
-          // ),
-          // timeLength: response.data?.timelength ?? 0
-        ));
-      }
-
-      List<AudioQuality> supportAudioQualities = [];
-      //获取支持的音质
-      for (var i in audios) {
-        supportAudioQualities.add(i.quality);
-      }
-      // //如果是空的话,就放入一个空的AudioPlayItem用来占位
-      // if (audios.isEmpty) {
-      //   audios.add(AudioPlayItem.zero);
-      // }
-      return VideoPlayInfo(
-          // defualtVideoQuality:
-          //     VideoQualityCode.fromCode(response.data!.quality ?? -1),
-          supportVideoQualities: supportVideoQualities,
-          supportAudioQualities: supportAudioQualities,
-          timeLength: response.data!.dash?.duration ?? 0,
-          videos: videos,
-          audios: audios,
-          lastPlayCid: response.data!.lastPlayCid ?? 0,
-          lastPlayTime: Duration(milliseconds: response.data!.lastPlayTime ?? 0));
-    } catch (e) {
-      log('获取视频播放信息失败: $e');
-      rethrow; // 重新抛出异常，让上层能处理
+    var response =
+        await _requestVideoPlay(bvid: bvid, cid: cid, fnval: FnvalValue.all);
+    if (response.code != 0) {
+      throw "getVideoPlay: code:${response.code}, message:${response.message}";
     }
+    if (response.data == null ||
+        response.data!.acceptQuality == null ||
+        response.data!.acceptDescription == null) {
+      return VideoPlayInfo.zero;
+    }
+    //获取支持的视频质量
+    List<VideoQuality> supportVideoQualities = [];
+    for (var i in response.data!.acceptQuality ?? <int>[]) {
+      supportVideoQualities.add(VideoQualityCode.fromCode(i));
+    }
+    //获取视频
+    List<VideoPlayItem> videos = [];
+    for (var i in response.data!.dash?.video ?? <VideoOrAudioRaw>[]) {
+      List<String> urls = [];
+      if (i.baseUrl != null) {
+        urls.add(i.baseUrl!);
+      }
+      if (i.backupUrl != null) {
+        urls.addAll(i.backupUrl!);
+      }
+      videos.add(VideoPlayItem(
+        urls: urls,
+        quality: VideoQualityCode.fromCode(i.id ?? -1),
+        bandWidth: i.bandwidth ?? 0,
+        codecs: i.codecs ?? "",
+        width: i.width ?? 0,
+        height: i.height ?? 0,
+        frameRate: double.tryParse(i.frameRate ?? "0") ?? 0,
+        // mimeType: i.mimeType ?? '',
+        // segmentBase: SegmentBase(
+        //     initialization: i.segmentBase?.initialization ?? '',
+        //     indexRange: i.segmentBase?.indexRange ?? ''),
+        sar: double.parse(i.sar?.split(':').first ?? '1') /
+            double.parse(i.sar?.split(':').last ?? '1'),
+        // timeLength: response.data?.timelength ?? 0
+      ));
+    }
+    // //如果是空的话,就放入一个空的VideoPlayItem用来占位
+    // if (videos.isEmpty) {
+    //   videos.add(VideoPlayItem.zero);
+    // }
+    //如果有dolby的话
+    for (var i in response.data!.dash?.dolby?.audio ?? <VideoOrAudioRaw>[]) {
+      response.data!.dash?.audio?.add(i);
+    }
+    //如果有flac的话
+    if (response.data!.dash?.flac?.audio != null) {
+      response.data!.dash?.audio?.add(response.data!.dash!.flac!.audio!);
+    }
+    //获取音频
+    List<AudioPlayItem> audios = [];
+    for (var i in response.data!.dash?.audio ?? <VideoOrAudioRaw>[]) {
+      List<String> urls = [];
+      if (i.baseUrl != null) {
+        urls.add(i.baseUrl!);
+      }
+      if (i.backupUrl != null) {
+        urls.addAll(i.backupUrl!);
+      }
+      audios.add(AudioPlayItem(
+        urls: urls,
+        quality: AudioQualityCode.fromCode(i.id ?? -1),
+        bandWidth: i.bandwidth ?? 0,
+        codecs: i.codecs ?? "",
+        // mimeType: i.mimeType ?? '',
+        // segmentBase: SegmentBase(
+        //   initialization: i.segmentBase?.initialization ?? '',
+        //   indexRange: i.segmentBase?.indexRange ?? '',
+        // ),
+        // timeLength: response.data?.timelength ?? 0
+      ));
+    }
+
+    List<AudioQuality> supportAudioQualities = [];
+    //获取支持的音质
+    for (var i in audios) {
+      supportAudioQualities.add(i.quality);
+    }
+    // //如果是空的话,就放入一个空的AudioPlayItem用来占位
+    // if (audios.isEmpty) {
+    //   audios.add(AudioPlayItem.zero);
+    // }
+    return VideoPlayInfo(
+        // defualtVideoQuality:
+        //     VideoQualityCode.fromCode(response.data!.quality ?? -1),
+        supportVideoQualities: supportVideoQualities,
+        supportAudioQualities: supportAudioQualities,
+        timeLength: response.data!.dash?.duration ?? 0,
+        videos: videos,
+        audios: audios,
+        lastPlayCid: response.data!.lastPlayCid ?? 0,
+        lastPlayTime: Duration(milliseconds: response.data!.lastPlayTime ?? 0));
   }
 
   static Future<void> reportHistory(
