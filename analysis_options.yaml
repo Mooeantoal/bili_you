@@ -1,1 +1,19 @@
 include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # 启用更严格的规则
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_fields: true
+    avoid_print: true
+    avoid_unnecessary_containers: true
+    prefer_single_quotes: true
+    
+analyzer:
+  exclude:
+    # 排除自动生成的文件
+    - "lib/**/*.pb.dart"
+    - "lib/**/*.pbjson.dart"
+    - "lib/**/*.pbserver.dart"
+    - "lib/**/*.g.dart"
