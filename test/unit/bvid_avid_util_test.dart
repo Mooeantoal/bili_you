@@ -17,39 +17,39 @@ void main() {
       });
     });
 
-    group('bv2Avid', () {
+    group('bvid2Av', () {
       test('should convert BV号 to AV号 correctly', () {
         // 反向转换测试
-        expect(BvidAvidUtil.bv2Avid('BV17x411w7KC'), equals(170001));
-        expect(BvidAvidUtil.bv2Avid('BV1Q541167Qg'), equals(455017605));
-        expect(BvidAvidUtil.bv2Avid('BV1mK4y1C7Bz'), equals(882584971));
+        expect(BvidAvidUtil.bvid2Av('BV17x411w7KC'), equals(170001));
+        expect(BvidAvidUtil.bvid2Av('BV1Q541167Qg'), equals(455017605));
+        expect(BvidAvidUtil.bvid2Av('BV1mK4y1C7Bz'), equals(882584971));
       });
 
       test('should handle BV号 with different cases', () {
-        expect(BvidAvidUtil.bv2Avid('bv17x411w7KC'), equals(170001));
-        expect(BvidAvidUtil.bv2Avid('Bv17x411w7KC'), equals(170001));
+        expect(BvidAvidUtil.bvid2Av('bv17x411w7KC'), equals(170001));
+        expect(BvidAvidUtil.bvid2Av('Bv17x411w7KC'), equals(170001));
       });
 
       test('should handle invalid BV号', () {
-        expect(() => BvidAvidUtil.bv2Avid('invalid'), throwsException);
-        expect(() => BvidAvidUtil.bv2Avid(''), throwsException);
-        expect(() => BvidAvidUtil.bv2Avid('AV123'), throwsException);
+        expect(() => BvidAvidUtil.bvid2Av('invalid'), throwsException);
+        expect(() => BvidAvidUtil.bvid2Av(''), throwsException);
+        expect(() => BvidAvidUtil.bvid2Av('AV123'), throwsException);
       });
     });
 
-    group('isValidBvid', () {
+    group('isBvid', () {
       test('should validate correct BV号', () {
-        expect(BvidAvidUtil.isValidBvid('BV17x411w7KC'), isTrue);
-        expect(BvidAvidUtil.isValidBvid('BV1Q541167Qg'), isTrue);
-        expect(BvidAvidUtil.isValidBvid('BV1mK4y1C7Bz'), isTrue);
+        expect(BvidAvidUtil.isBvid('BV17x411w7KC'), isTrue);
+        expect(BvidAvidUtil.isBvid('BV1Q541167Qg'), isTrue);
+        expect(BvidAvidUtil.isBvid('BV1mK4y1C7Bz'), isTrue);
       });
 
       test('should reject invalid BV号', () {
-        expect(BvidAvidUtil.isValidBvid('invalid'), isFalse);
-        expect(BvidAvidUtil.isValidBvid(''), isFalse);
-        expect(BvidAvidUtil.isValidBvid('AV123'), isFalse);
-        expect(BvidAvidUtil.isValidBvid('BV'), isFalse);
-        expect(BvidAvidUtil.isValidBvid('BV123'), isFalse);
+        expect(BvidAvidUtil.isBvid('invalid'), isFalse);
+        expect(BvidAvidUtil.isBvid(''), isFalse);
+        expect(BvidAvidUtil.isBvid('AV123'), isFalse);
+        expect(BvidAvidUtil.isBvid('BV'), isFalse);
+        expect(BvidAvidUtil.isBvid('BV123'), isFalse);
       });
     });
 
@@ -59,7 +59,7 @@ void main() {
         
         for (final avid in testAvids) {
           final bvid = BvidAvidUtil.av2Bvid(avid);
-          final convertedBack = BvidAvidUtil.bv2Avid(bvid);
+          final convertedBack = BvidAvidUtil.bvid2Av(bvid);
           expect(convertedBack, equals(avid), 
                  reason: 'Roundtrip conversion failed for AVID: $avid');
         }

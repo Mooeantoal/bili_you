@@ -29,7 +29,7 @@ void main() {
 
       test('should handle edge cases', () {
         expect(StringFormatUtils.numFormat(-1), equals('-1'));
-        expect(StringFormatUtils.numFormat(null), equals('0'));
+        expect(StringFormatUtils.numFormat(0), equals('0'));
       });
     });
 

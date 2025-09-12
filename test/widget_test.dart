@@ -7,7 +7,7 @@ void main() {
   group('App Widget Tests', () {
     testWidgets('App should build without crashing', (WidgetTester tester) async {
       // Build our app and trigger a frame.
-      await tester.pumpWidget(const App());
+      await tester.pumpWidget(const MyApp());
 
       // Verify that the app builds successfully
       expect(find.byType(MaterialApp), findsOneWidget);
@@ -15,7 +15,7 @@ void main() {
 
     testWidgets('App should initialize properly', (WidgetTester tester) async {
       // Build the app
-      await tester.pumpWidget(const App());
+      await tester.pumpWidget(const MyApp());
       
       // Allow for async initialization
       await tester.pumpAndSettle();

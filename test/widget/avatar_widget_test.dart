@@ -57,12 +57,12 @@ void main() {
       expect(circleAvatar.radius, equals(testRadius));
     });
 
-    testWidgets('should handle null URL gracefully', (WidgetTester tester) async {
+    testWidgets('should handle empty URL gracefully', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: AvatarWidget(
-              avatarUrl: null,
+              avatarUrl: '',
               radius: 20,
             ),
           ),

@@ -64,7 +64,7 @@ class AboutPage extends StatelessWidget {
               context,
               GetPageRoute(
                 page: () => const LicensePage(
-                  applicationIcon: ImageIcon(
+                  applicationIcon: const ImageIcon(
                     AssetImage("assets/icon/bili.png"),
                     size: 200,
                   ),
