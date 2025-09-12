@@ -57,10 +57,12 @@ jobs:
       - name: 📦 获取项目依赖
         run: flutter pub get
       
-      # 6. 运行代码分析 (可选)
+      # 6. 运行代码分析 (严格模式)
       - name: 🔍 运行代码分析
-        run: flutter analyze
-        continue-on-error: true
+        run: |
+          echo "开始代码分析..."
+          flutter analyze --fatal-infos
+          echo "代码分析完成，无错误或警告"
       
       # 7. 解码签名文件 (如果需要签名)
       - name: 🔐 解码签名文件

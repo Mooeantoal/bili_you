@@ -708,7 +708,7 @@ class BiliVideoPlayerPanelController {
   bool _show = false;
   bool _isPlayerPlaying = false;
   bool _isPlayerEnd = false;
-  bool _isPlayerBuffering = false;
+  // bool _isPlayerBuffering = false; // 未使用的字段
   bool _isSliderDraging = false;
   bool _isPreviousPlaying = false;
   bool _isPreviousShow = false;

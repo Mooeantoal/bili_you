@@ -46,7 +46,7 @@ class _LiveTabPageState extends State<LiveTabPage>
                               controller.columnCount) *
                           10 /
                           16 +
-                      45 * MediaQuery.of(context).textScaleFactor),
+                      45 * MediaQuery.of(context).textScaler.scale(1.0)),
               itemCount: controller.infoList.length,
               itemBuilder: (context, index) => LiveRoomCard(
                   info: controller.infoList[index], heroTagId: HeroTagId.id++),

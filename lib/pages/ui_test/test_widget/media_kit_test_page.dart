@@ -26,9 +26,9 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
       VideoPlayApi.videoPlayerHttpHeaders
           .forEach((key, value) => kvArray.add('$key: $value'));
       final data = kvArray.join(',');
-      if (videopPlayer.platform is libmpvPlayer) {
-        await (videopPlayer.platform as libmpvPlayer).setProperty(name, data);
-        await (videopPlayer.platform as libmpvPlayer).setProperty('audio-files',
+      if (videopPlayer.platform is NativePlayer) {
+        await (videopPlayer.platform as NativePlayer).setProperty(name, data);
+        await (videopPlayer.platform as NativePlayer).setProperty('audio-files',
             videoPlayerInfo.audios.first.urls.first.replaceAll(':', '\\:'));
         await videopPlayer.setVolume(100);
         await videopPlayer.open(Media(videoPlayerInfo.videos.first.urls.first));

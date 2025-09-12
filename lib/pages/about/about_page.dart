@@ -48,7 +48,7 @@ class AboutPage extends StatelessWidget {
         ),
         ListTile(
           title: const Text("项目链接"),
-          subtitle: Text(projectUrl),
+          subtitle: const Text(projectUrl),
           onTap: () {
             launchUrlString(projectUrl);
           },

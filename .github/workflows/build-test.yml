@@ -59,12 +59,30 @@ jobs:
       
       # 6. 运行代码分析
       - name: 🔍 运行代码分析
-        run: flutter analyze
-        continue-on-error: true
+        run: |
+          echo "开始代码分析..."
+          flutter analyze --fatal-infos
+          echo "代码分析完成，无错误或警告"
       
-      # 7. 运行测试 (如果有)
-      - name: 🧪 运行测试
-        run: flutter test
+      # 7. 运行测试
+      - name: 🧪 运行单元测试
+        run: |
+          echo "开始运行单元测试..."
+          flutter test test/unit/ --reporter compact
+          echo "单元测试完成"
+      
+      - name: 🎨 运行 Widget 测试
+        run: |
+          echo "开始运行 Widget 测试..."
+          flutter test test/widget/ --reporter compact
+          echo "Widget 测试完成"
+      
+      - name: 📋 生成测试报告
+        run: |
+          echo "生成测试报告..."
+          mkdir -p test/reports
+          flutter test --coverage --reporter json | tee test/reports/test-results.json
+          echo "测试报告已生成"
         continue-on-error: true
       
       # 8. 构建 APK (测试模式，不签名)
@@ -80,7 +98,18 @@ jobs:
           echo "=== APK 文件大小 ==="
           du -h build/app/outputs/flutter-apk/*.apk
       
-      # 10. 上传构建产物 (仅用于调试)
+      # 10. 上传测试报告
+      - name: 📤 上传测试报告
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports-${{ github.sha }}
+          path: |
+            test/reports/
+            coverage/
+          retention-days: 7
+      
+      # 11. 上传构建产物 (仅用于调试)
       - name: 📤 上传测试 APK
         uses: actions/upload-artifact@v4
         with:

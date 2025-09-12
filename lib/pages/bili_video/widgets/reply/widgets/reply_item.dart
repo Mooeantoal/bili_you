@@ -328,7 +328,7 @@ class _ReplyItemWidgetState extends State<ReplyItemWidget> {
                               Expanded(
                                 child: widget.reply.tags.isNotEmpty
                                     ? Padding(
-                                        padding: EdgeInsets.only(left: 10),
+                                        padding: const EdgeInsets.only(left: 10),
                                         child: Row(children: [
                                           for (var i in widget.reply.tags)
                                             Text("$i ", //标签,如热评,up觉得很赞
