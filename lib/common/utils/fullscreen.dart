@@ -4,6 +4,7 @@ import 'package:auto_orientation/auto_orientation.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/common/utils/bili_you_storage.dart';
 
 /// 显示模式枚举 - 结合金标联盟标准和Android官方方案
 enum DisplayMode {
