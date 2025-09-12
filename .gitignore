@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Keystore files (签名密钥文件)
+*.jks
+*.keystore
+android/keystore.properties
+android/key.properties

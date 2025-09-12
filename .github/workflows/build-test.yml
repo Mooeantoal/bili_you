@@ -1,0 +1,89 @@
+# Flutter APK 构建测试工作流
+# 在主分支或PR时运行，用于测试构建是否正常
+
+name: Build Test
+
+# 触发条件
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+
+# 工作流任务
+jobs:
+  build-test:
+    name: 🔧 构建测试
+    runs-on: ubuntu-latest
+    
+    # 超时设置 (20分钟)
+    timeout-minutes: 20
+
+    steps:
+      # 1. 检出代码
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      # 2. 设置 Java 环境
+      - name: ☕ 设置 Java JDK
+        uses: actions/setup-java@v4
+        with: 
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. 设置 Flutter 环境
+      - name: 🛠️ 设置 Flutter 环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+          cache: true
+      
+      # 4. 验证 Flutter 安装
+      - name: 🔍 验证 Flutter 安装
+        run: |
+          flutter --version
+          flutter doctor -v
+      
+      # 5. 获取依赖
+      - name: 📦 获取项目依赖
+        run: flutter pub get
+      
+      # 6. 运行代码分析
+      - name: 🔍 运行代码分析
+        run: flutter analyze
+        continue-on-error: true
+      
+      # 7. 运行测试 (如果有)
+      - name: 🧪 运行测试
+        run: flutter test
+        continue-on-error: true
+      
+      # 8. 构建 APK (测试模式，不签名)
+      - name: 🔨 构建测试 APK
+        run: flutter build apk --debug --target-platform android-arm64
+      
+      # 9. 检查构建产物
+      - name: 📋 检查构建产物
+        run: |
+          echo "=== 构建产物信息 ==="
+          ls -la build/app/outputs/flutter-apk/
+          echo ""
+          echo "=== APK 文件大小 ==="
+          du -h build/app/outputs/flutter-apk/*.apk
+      
+      # 10. 上传构建产物 (仅用于调试)
+      - name: 📤 上传测试 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
