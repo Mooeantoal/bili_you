@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:bili_you/common/api/reply_api_v2.dart';
 import 'package:bili_you/common/utils/bvid_avid_util.dart';
 import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/view_v2.dart';
 
 /// 原生评论区调试页面
@@ -18,6 +19,17 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
   String _debugInfo = '准备开始调试...';
   bool _isDebugging = false;
   final TextEditingController _bvidController = TextEditingController(text: 'BV1xx411c7mD');
+  List<Map<String, dynamic>> _errorLogs = []; // 错误日志记录
+
+  /// 记录错误日志
+  void _logError(String type, String message, {Map<String, dynamic>? details}) {
+    _errorLogs.add({
+      'timestamp': DateTime.now(),
+      'type': type,
+      'message': message,
+      'details': details ?? {},
+    });
+  }
 
   /// 显示错误弹窗
   void _showErrorDialog(String title, String content) {
@@ -41,6 +53,13 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
           TextButton(
             onPressed: () {
               Get.back();
+              _showDetailedErrorLogs();
+            },
+            child: Text('详细日志'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
               // 建议切换到网页版评论区
               _showSwitchToWebViewDialog();
             },
@@ -49,6 +68,152 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
         ],
       ),
     );
+  }
+
+  /// 显示详细错误日志
+  void _showDetailedErrorLogs() {
+    Get.dialog(
+      AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.list_alt, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('详细错误日志'),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: _errorLogs.isEmpty 
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green, size: 48),
+                    SizedBox(height: 16),
+                    Text('暂无错误日志'),
+                    Text('调试过程正常', style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                itemCount: _errorLogs.length,
+                itemBuilder: (context, index) {
+                  var log = _errorLogs[index];
+                  return Card(
+                    child: ExpansionTile(
+                      title: Text(
+                        log['type'],
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        '${log['timestamp'].toString().substring(0, 19)}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      leading: Icon(
+                        Icons.error_outline, 
+                        color: _getErrorTypeColor(log['type']),
+                      ),
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '错误信息:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 4),
+                              Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  border: Border.all(color: Colors.red[200]!),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  log['message'],
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              if (log['details'].isNotEmpty) ..[
+                                SizedBox(height: 12),
+                                Text(
+                                  '详细信息:',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 4),
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[50],
+                                    border: Border.all(color: Colors.grey[300]!),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    log['details'].entries
+                                        .map((e) => '${e.key}: ${e.value}')
+                                        .join('\n'),
+                                    style: TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _errorLogs.clear();
+              });
+              Get.back();
+              Get.snackbar(
+                '已清空',
+                '错误日志已清空',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+            child: Text('清空日志'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 获取错误类型对应的颜色
+  Color _getErrorTypeColor(String type) {
+    switch (type) {
+      case 'API_CALL_ERROR':
+        return Colors.red;
+      case 'BVID_CONVERSION_ERROR':
+        return Colors.orange;
+      case 'NETWORK_ERROR':
+        return Colors.blue;
+      case 'GENERAL_DEBUG_ERROR':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
   }
 
   /// 显示成功弹窗
@@ -153,6 +318,10 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
         setState(() {
           _debugInfo += '   - ❌ BVID转换失败: $e\n';
         });
+        _logError('BVID_CONVERSION_ERROR', e.toString(), {
+          'input_bvid': bvid,
+          'step': 'bvid_to_avid_conversion'
+        });
         _showErrorDialog(
           'BVID转换失败', 
           '无法将BVID转换为AVID。\n\n错误信息: $e\n\n请检查BVID格式是否正确（例如: BV1xx411c7mD）'
@@ -215,6 +384,21 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
           _debugInfo += '   - ❌ API调用失败: $e\n';
         });
 
+        // 记录详细错误信息
+        _logError('API_CALL_ERROR', e.toString(), {
+          'bvid': bvid,
+          'avid': avid,
+          'api_endpoint': 'https://api.bilibili.com/x/v2/reply',
+          'parameters': {
+            'type': 1,
+            'oid': avid.toString(),
+            'sort': 1,
+            'ps': 20,
+            'pn': 1,
+          },
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+
         // 分析错误类型并显示弹窗
         String errorTitle;
         String errorContent;
@@ -242,6 +426,11 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
     } catch (e) {
       setState(() {
         _debugInfo += '\n❌ 调试过程中发生未知错误: $e\n';
+      });
+      
+      _logError('GENERAL_DEBUG_ERROR', e.toString(), {
+        'context': 'main_debug_process',
+        'bvid': _bvidController.text.trim(),
       });
       
       _showErrorDialog(
@@ -335,26 +524,45 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
                     ),
                   ),
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: 8),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    String testBvid = _bvidController.text.trim();
-                    if (testBvid.isEmpty) {
-                      Get.snackbar('提示', '请先输入BVID');
-                      return;
-                    }
-                    
-                    Get.to(() => Scaffold(
-                      appBar: AppBar(title: Text('实际评论区测试')),
-                      body: ReplyPageV2(bvid: testBvid),
-                    ));
-                  },
-                  icon: Icon(Icons.preview),
-                  label: Text('测试评论区'),
+                  onPressed: () => _showDetailedErrorLogs(),
+                  icon: Icon(Icons.list_alt),
+                  label: Text('错误日志'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: _errorLogs.isEmpty ? Colors.grey : Colors.orange,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  ),
+                ),
+              ],
+            ),
+            
+            SizedBox(height: 12),
+            
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      String testBvid = _bvidController.text.trim();
+                      if (testBvid.isEmpty) {
+                        Get.snackbar('提示', '请先输入BVID');
+                        return;
+                      }
+                      
+                      Get.to(() => Scaffold(
+                        appBar: AppBar(title: Text('实际评论区测试')),
+                        body: ReplyPageV2(bvid: testBvid),
+                      ));
+                    },
+                    icon: Icon(Icons.preview),
+                    label: Text('测试评论区'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
                 ),
               ],
@@ -363,7 +571,7 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
             SizedBox(height: 20),
             
             Text(
-              '调试日志:',
+              '调试日志: (共${_errorLogs.length}条错误)',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             SizedBox(height: 8),

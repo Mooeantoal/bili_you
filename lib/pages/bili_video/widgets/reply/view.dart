@@ -291,7 +291,7 @@ class _ReplyPageState extends State<ReplyPage>
     ''';
     
     controller.webViewController.runJavaScript(script);
-  }}
+  }
 
   @override
   Widget build(BuildContext context) {
