@@ -115,23 +115,32 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
           bottomNavigationBar: MediaQuery.of(context).size.width < 640
-              ? NavigationBar(
-                  height: 64,
-                  destinations: const [
-                    NavigationDestination(
+              ? BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  currentIndex: controller.selectedIndex.value,
+                  onTap: (value) => onDestinationSelected(value),
+                  // MD2风格的特性设置
+                  elevation: 8.0, // 经典MD2阴影
+                  selectedItemColor: Theme.of(context).colorScheme.primary,
+                  unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  showSelectedLabels: true,
+                  showUnselectedLabels: true,
+                  selectedFontSize: 12.0,
+                  unselectedFontSize: 10.0,
+                  iconSize: 24.0,
+                  items: const [
+                    BottomNavigationBarItem(
                       icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home),
+                      activeIcon: Icon(Icons.home),
                       label: "首页",
                     ),
-                    NavigationDestination(
+                    BottomNavigationBarItem(
                       icon: Icon(Icons.star_border_outlined),
+                      activeIcon: Icon(Icons.star),
                       label: "动态",
-                      selectedIcon: Icon(Icons.star),
                     ),
                   ],
-                  selectedIndex: controller.selectedIndex.value,
-                  onDestinationSelected: (value) =>
-                      onDestinationSelected(value),
                 )
               : null,
         ));

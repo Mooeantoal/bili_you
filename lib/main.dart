@@ -66,12 +66,30 @@ class MyApp extends StatelessWidget {
               colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
                   ? lightDynamic ?? BiliTheme.dynamic.themeDataLight.colorScheme
                   : SettingsUtil.currentTheme.themeDataLight.colorScheme,
-              useMaterial3: true),
+              useMaterial3: true,
+              // MD2风格的BottomNavigationBar主题设置
+              bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: null, // 使用主题色
+                unselectedItemColor: null, // 使用默认色
+                elevation: 8.0, // MD2风格的阴影
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+              ),),
           darkTheme: ThemeData(
               colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
                   ? darkDynamic ?? BiliTheme.dynamic.themeDataDark.colorScheme
                   : SettingsUtil.currentTheme.themeDataDark.colorScheme,
-              useMaterial3: true),
+              useMaterial3: true,
+              // MD2风格的BottomNavigationBar暗色主题设置
+              bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: null, // 使用主题色
+                unselectedItemColor: null, // 使用默认色
+                elevation: 8.0, // MD2风格的阴影
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+              ),),
           home: const MainPage(),
           builder: (context, child) => child == null
               ? const SizedBox()
