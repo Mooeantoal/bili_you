@@ -2,18 +2,27 @@ import 'dart:io';
 
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'immersive_utils.dart';
 
 //进入全屏显示
 Future<void> enterFullScreen() async {
-  await ImmersiveUtils.enterFullscreen();
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+  );
 }
 
 //退出全屏显示
 Future<void> exitFullScreen() async {
-  await ImmersiveUtils.exitFullscreen();
+  late SystemUiMode mode;
+  if ((Platform.isAndroid &&
+          (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 29) ||
+      !Platform.isAndroid) {
+    mode = SystemUiMode.edgeToEdge;
+  } else {
+    mode = SystemUiMode.manual;
+  }
+  await SystemChrome.setEnabledSystemUIMode(mode,
+      overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
 }
 
 //横屏

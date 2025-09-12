@@ -7,12 +7,9 @@ import 'package:bili_you/common/utils/index.dart';
 import 'package:bili_you/common/widget/slider_dialog.dart';
 import 'package:bili_you/common/widget/video_audio_player.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
-import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player_cubit.dart';
-import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -43,22 +40,19 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   static const Color iconColor = Colors.white;
 
   void playStateChangedCallback(VideoAudioState value) {
-    // 使用Cubit更新播放状态
-    context.read<BiliVideoPlayerCubit>().updatePlayState(
-          isPlaying: value.isPlaying,
-          isEnd: value.isEnd,
-          isBuffering: value.isBuffering,
-        );
+    widget.controller._isPlayerPlaying = value.isPlaying;
+    widget.controller._isPlayerEnd = value.isEnd;
+    widget.controller._isPlayerBuffering = value.isBuffering;
     playButtonKey.currentState?.setState(() {});
   }
 
   void playerListenerCallback() async {
-    final cubit = context.read<BiliVideoPlayerCubit>();
-    if (!cubit.state.isDragging) {
-      cubit.updatePosition(widget.controller._biliVideoPlayerController.position);
+    if (!widget.controller._isSliderDraging) {
+      widget.controller._position =
+          widget.controller._biliVideoPlayerController.position;
     }
-    cubit.updateBufferedPosition(
-        widget.controller._biliVideoPlayerController.fartherestBuffered);
+    widget.controller._fartherestBuffed =
+        widget.controller._biliVideoPlayerController.fartherestBuffered;
     sliderKey.currentState?.setState(() {});
     durationTextKey.currentState?.setState(() {});
   }
@@ -71,10 +65,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   }
 
   void toggleDanmaku() {
-    final cubit = context.read<BiliVideoPlayerCubit>();
-    final newDanmakuState = !cubit.state.showDanmaku;
-    cubit.setShowDanmaku(newDanmakuState);
-    
     widget.controller._biliVideoPlayerController.biliDanmakuController!
         .toggleDanmaku();
     //保持弹幕状态
@@ -82,7 +72,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
             defaultValue: false) ==
         true) {
       SettingsUtil.setValue(
-          SettingsStorageKeys.defaultShowDanmaku, newDanmakuState);
+          SettingsStorageKeys.defaultShowDanmaku,
+          widget.controller._biliVideoPlayerController.biliDanmakuController!
+              .isDanmakuOpened);
     }
     danmakuCheckBoxKey.currentState!.setState(() {});
   }
@@ -173,11 +165,14 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
             setState(() {});
           },
           onDoubleTap: () {
-            //双击暂停/播放 - 使用Cubit控制
-            final cubit = context.read<BiliVideoPlayerCubit>();
-            cubit.togglePlayPause();
-            
-            widget.controller._show = !cubit.state.isPlaying;
+            //双击暂停/播放
+            if (widget.controller._isPlayerPlaying) {
+              widget.controller._biliVideoPlayerController.pause();
+              widget.controller._show = true;
+            } else {
+              widget.controller._biliVideoPlayerController.play();
+              widget.controller._show = false;
+            }
             setState(() {});
           },
           onLongPress: () {
@@ -225,12 +220,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
             widget.controller._isPreviousPlaying =
                 widget.controller._isPlayerPlaying;
             widget.controller._show = true;
-            
-            // 使用Cubit开始拖动
-            final cubit = context.read<BiliVideoPlayerCubit>();
-            cubit.startDragging();
-            
             widget.controller._biliVideoPlayerController.pause();
+            widget.controller._isSliderDraging = true;
             setState(() {});
           },
           onHorizontalDragUpdate: (details) {
@@ -240,15 +231,11 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
             double scale = 60000 / MediaQuery.of(context).size.width;
             Duration pos = widget.controller._position +
                 Duration(milliseconds: (details.delta.dx * scale).round());
-            
-            // 使用Cubit更新拖动位置
-            final cubit = context.read<BiliVideoPlayerCubit>();
-            cubit.updateDragPosition(Duration(
+            widget.controller._position = Duration(
                 milliseconds: pos.inMilliseconds.clamp(
                     0,
                     widget.controller._biliVideoPlayerController.duration
-                        .inMilliseconds)));
-            
+                        .inMilliseconds));
             setState(() {});
           },
           onHorizontalDragEnd: (details) {
@@ -256,19 +243,15 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
               return;
             }
             isHorizontalGestureInProgress = false;
-            
-            // 使用Cubit结束拖动
-            final cubit = context.read<BiliVideoPlayerCubit>();
-            cubit.endDragging();
-            
             widget.controller.biliVideoPlayerController
-                .seekTo(cubit.state.dragPosition);
+                .seekTo(widget.controller._position);
             if (widget.controller._isPreviousPlaying) {
               widget.controller._biliVideoPlayerController.play();
             }
             if (!widget.controller._isPreviousShow) {
               widget.controller._show = false;
             }
+            widget.controller._isSliderDraging = false;
             setState(() {});
           },
           onVerticalDragStart: (details) {
@@ -295,6 +278,10 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
           onVerticalDragEnd: (details) {
             isVerticalGestureInProgress = false;
           },
+          // onScaleUpdate: (details) {
+          //   widget.controller._biliVideoPlayerController
+          //       .changeCanvasScale(details.scale);
+          // },
         ),
         //面板层
         Visibility(
@@ -349,13 +336,13 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                     StatefulBuilder(
                                       key: danmakuCheckBoxKey,
                                       builder: (context, setState) {
-                                        // 使用Cubit获取弹幕状态
-                                        final showDanmaku = context
-                                            .select<BiliVideoPlayerCubit, bool>(
-                                          (cubit) => cubit.state.showDanmaku,
-                                        );
                                         return Checkbox(
-                                          value: showDanmaku,
+                                          value: widget
+                                                  .controller
+                                                  .biliVideoPlayerController
+                                                  .biliDanmakuController
+                                                  ?.isDanmakuOpened ??
+                                              false,
                                           onChanged: (value) {
                                             if (value != null) {
                                               toggleDanmaku();
@@ -597,12 +584,10 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       StatefulBuilder(
                         key: playButtonKey,
                         builder: (context, setState) {
-                          // 使用Cubit获取播放状态
-                          final cubit = context.read<BiliVideoPlayerCubit>();
                           late final IconData iconData;
-                          if (cubit.state.isEnd) {
+                          if (widget.controller._isPlayerEnd) {
                             iconData = Icons.refresh_rounded;
-                          } else if (cubit.state.isPlaying) {
+                          } else if (widget.controller._isPlayerPlaying) {
                             iconData = Icons.pause_rounded;
                           } else {
                             iconData = Icons.play_arrow_rounded;
@@ -611,10 +596,12 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                               IconButton(
                                   color: iconColor,
                                   onPressed: () async {
-                                    // 使用Cubit控制播放状态
-                                    cubit.togglePlayPause();
-                                    
-                                    if (cubit.state.isPlaying) {
+                                    if (widget.controller
+                                        ._biliVideoPlayerController.isPlaying) {
+                                      await widget
+                                          .controller._biliVideoPlayerController
+                                          .pause();
+                                    } else {
                                       if (widget
                                           .controller
                                           ._biliVideoPlayerController
@@ -629,12 +616,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                             ._biliVideoPlayerController
                                             .play();
                                       }
-                                    } else {
-                                      await widget
-                                          .controller
-                                          ._biliVideoPlayerController
-                                          .pause();
                                     }
+                                    widget.controller._isPlayerPlaying =
+                                        !widget.controller._isPlayerPlaying;
                                     setState(() {});
                                   },
                                   icon: Icon(iconData));
@@ -645,38 +629,45 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                         child: StatefulBuilder(
                             key: sliderKey,
                             builder: (context, setState) {
-                              // 使用Cubit获取进度条状态
-                              final cubit = context.read<BiliVideoPlayerCubit>();
-                              final position = cubit.state.isDragging 
-                                  ? cubit.state.dragPosition 
-                                  : cubit.state.position;
-                              final duration = cubit.state.duration;
-                              final bufferedPosition = cubit.state.bufferedPosition;
-                              
                               return Slider(
                                 min: 0,
-                                max: duration.inMilliseconds.toDouble(),
+                                max: widget
+                                    .controller
+                                    ._biliVideoPlayerController
+                                    .duration
+                                    .inMilliseconds
+                                    .toDouble(),
                                 value: clampDouble(
-                                    position.inMilliseconds.toDouble(),
+                                    widget.controller._position.inMilliseconds
+                                        .toDouble(),
                                     0,
-                                    duration.inMilliseconds.toDouble()),
+                                    widget.controller._biliVideoPlayerController
+                                        .duration.inMilliseconds
+                                        .toDouble()),
                                 secondaryTrackValue: clampDouble(
-                                    bufferedPosition.inMilliseconds.toDouble(),
+                                    widget.controller._fartherestBuffed
+                                        .inMilliseconds
+                                        .toDouble(),
                                     0,
-                                    duration.inMilliseconds.toDouble()),
+                                    widget.controller._biliVideoPlayerController
+                                        .duration.inMilliseconds
+                                        .toDouble()),
                                 onChanged: (value) {
-                                  if (cubit.state.isDragging) {
-                                    cubit.updateDragPosition(
-                                        Duration(milliseconds: value.toInt()));
+                                  if (widget.controller._isSliderDraging) {
+                                    widget.controller._position =
+                                        Duration(milliseconds: value.toInt());
                                   }
                                 },
                                 onChangeStart: (value) {
-                                  cubit.startDragging();
+                                  widget.controller._isSliderDraging = true;
                                 },
                                 onChangeEnd: (value) {
-                                  cubit.endDragging();
-                                  widget.controller._biliVideoPlayerController
-                                      .seekTo(Duration(milliseconds: value.toInt()));
+                                  if (widget.controller._isSliderDraging) {
+                                    widget.controller._biliVideoPlayerController
+                                        .seekTo(Duration(
+                                            milliseconds: value.toInt()));
+                                    widget.controller._isSliderDraging = false;
+                                  }
                                 },
                               );
                             }),
@@ -685,15 +676,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       StatefulBuilder(
                         key: durationTextKey,
                         builder: (context, setState) {
-                          // 使用Cubit获取时间状态
-                          final cubit = context.read<BiliVideoPlayerCubit>();
-                          final position = cubit.state.isDragging 
-                              ? cubit.state.dragPosition 
-                              : cubit.state.position;
-                          final duration = cubit.state.duration;
-                          
                           return Text(
-                            "${StringFormatUtils.timeLengthFormat(position.inSeconds)}/${StringFormatUtils.timeLengthFormat(duration.inSeconds)}",
+                            "${StringFormatUtils.timeLengthFormat(widget.controller._position.inSeconds)}/${StringFormatUtils.timeLengthFormat(widget.controller._biliVideoPlayerController.duration.inSeconds)}",
                             style: const TextStyle(color: textColor),
                           );
                         },
@@ -701,6 +685,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       // 全屏按钮
                       IconButton(
                           onPressed: () {
+                            // log("full:${widget.controller.isFullScreen}");
                             toggleFullScreen();
                           },
                           icon: const Icon(
