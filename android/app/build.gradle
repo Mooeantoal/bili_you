@@ -74,14 +74,10 @@ android {
             v1SigningEnabled true
             v2SigningEnabled true
         }
-        //debug {
-        //    storeFile _storeFile
-        //    storePassword _storePassword
-        //    keyAlias _keyAlias
-        //    keyPassword _keyPassword
-        //    v1SigningEnabled true
-        //    v2SigningEnabled true
-        //}
+        debug {
+            // 使用默认的debug签名配置
+            // Flutter会自动处理debug签名，无需手动配置
+        }
     }
 
     buildTypes {
@@ -91,9 +87,8 @@ android {
             }
         }
         debug {
-            //if (signingConfigs.debug.storePassword != null){
-            //    signingConfig signingConfigs.release
-            //}
+            // Flutter会自动使用默认的debug签名
+            // 无需手动配置签名
         }
     }
 }

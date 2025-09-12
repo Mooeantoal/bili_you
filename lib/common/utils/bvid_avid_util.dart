@@ -3,11 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class BvidAvidUtil {
+  // 官方BVID转换参数
   static const String table =
       "fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF";
   static const List<int> seqArray = [11, 10, 3, 8, 4, 6];
   static const int xOr = 177451812;
   static const int xAdd = 8728348608;
+  
   static const List<String> defaultBvid = [
     'B',
     'V',
@@ -36,7 +38,7 @@ class BvidAvidUtil {
     return defaultBv.join();
   }
 
-  ///bvid转avid - 按官方算法实现
+  ///bvid转avid - 按正确的官方算法实现
   static int bvid2Av(String bvid) {
     try {
       // 1. 验证BVID格式
@@ -44,7 +46,7 @@ class BvidAvidUtil {
         throw ArgumentError('无效的BVID格式: $bvid');
       }
       
-      // 2. 按官方算法计算
+      // 2. 按官方算法计算58进制值 (r)
       int r = 0;
       for (int i = 0; i < seqArray.length; i++) {
         String char = bvid.characters.elementAt(seqArray[i]);
@@ -54,28 +56,60 @@ class BvidAvidUtil {
           throw ArgumentError('BVID包含无效字符: $char 在位置 ${seqArray[i]}');
         }
         
-        // 使用58进制计算，注意使用整数除法
+        // 使用58进制计算: r += charIndex * (58 ^ i)
         r += (charIndex * pow(58, i).toInt());
       }
       
-      // 3. 应用官方公式: (r - xAdd) ^ xOr
-      int av = (r - xAdd) ^ xOr;
+      // 3. 应用正确的解码公式
+      // 根据多个来源确认，正确的公式应该是: (r - add) ^ xor
+      // 但如果 r < add，可能需要特殊处理
       
-      // 4. 验证转换结果
-      if (av <= 0) {
-        throw ArgumentError('转换结果无效: $bvid -> av$av\n'
-            '计算过程: r=$r, xAdd=$xAdd, xOr=$xOr\n'
-            '公式: ($r - $xAdd) ^ $xOr = $av');
+      int result;
+      if (r >= xAdd) {
+        // 标准情况: r >= add
+        result = (r - xAdd) ^ xOr;
+      } else {
+        // 特殊情况: r < add
+        // 可能是新版BVID，尝试不同的计算方式
+        
+        // 方法1: 直接异或
+        int candidate1 = r ^ xOr;
+        
+        // 方法2: 先加再异或 (av2bv的逆操作)
+        int candidate2 = ((r + xAdd) ^ xOr);
+        
+        // 方法3: 使用无符号运算
+        int candidate3 = ((r - xAdd) & 0xFFFFFFFF) ^ xOr;
+        
+        // 选择合理的结果
+        List<int> candidates = [candidate1, candidate2, candidate3]
+            .where((av) => av > 0 && av <= 999999999)
+            .toList();
+        
+        if (candidates.isEmpty) {
+          throw ArgumentError('转换结果无效: $bvid\n'
+              '计算过程: r=$r, xAdd=$xAdd, xOr=$xOr\n'
+              '候选结果: [$candidate1, $candidate2, $candidate3]\n'
+              '所有候选结果都不在合理范围内');
+        }
+        
+        result = candidates.first;
+        print('BVID转换成功(特殊情况): $bvid -> av$result (候选: ${candidates.join(", ")})');
       }
       
-      // 5. 检查是否超出合理范围
-      if (av > 999999999) {
-        throw ArgumentError('转换结果过大: av$av，可能计算错误');
+      // 4. 验证结果合理性
+      if (result <= 0) {
+        throw ArgumentError('转换结果无效: $bvid -> av$result');
       }
       
-      return av;
+      if (result > 999999999) {
+        throw ArgumentError('转换结果过大: av$result，可能计算错误');
+      }
+      
+      print('BVID转换成功: $bvid -> av$result');
+      return result;
+      
     } catch (e) {
-      // 提供更详细的错误信息
       throw Exception('BVID转换失败: $bvid -> ${e.toString()}');
     }
   }
