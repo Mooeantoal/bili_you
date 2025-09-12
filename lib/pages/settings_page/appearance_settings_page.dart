@@ -1,5 +1,6 @@
 import 'package:bili_you/common/utils/index.dart';
 import 'package:bili_you/common/widget/settings_label.dart';
+import 'package:bili_you/common/widget/settings_switch_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -108,6 +109,25 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
                         ),
                       ));
             },
+          ),
+          const SettingsLabel(text: '显示模式 - 结合金标联盟标准和Android官方方案'),
+          const SettingsSwitchTile(
+            title: '金标联盟合规模式',
+            subTitle: '开启金标联盟（ITGSA）移动智能终端显示标准合规检查',
+            settingsKey: SettingsStorageKeys.enableITGSACompliance,
+            defualtValue: true,
+          ),
+          const SettingsSwitchTile(
+            title: '增强沉浸式体验',
+            subTitle: '结合Android Edge-to-Edge技术与金标联盟用户体验优化',
+            settingsKey: SettingsStorageKeys.enhancedImmersiveMode,
+            defualtValue: true,
+          ),
+          const SettingsSwitchTile(
+            title: '自适应边到边显示',
+            subTitle: '根据设备能力智能启用Edge-to-Edge显示模式',
+            settingsKey: SettingsStorageKeys.adaptiveEdgeToEdge,
+            defualtValue: true,
           ),
           const SettingsLabel(text: '字体'),
           ListTile(

@@ -93,4 +93,13 @@ class SettingsStorageKeys {
 
   ///默认播放播放速度
   static const String defaultVideoPlaybackSpeed = "defaultVideoPlaybackSpeed";
+
+  ///显示模式设置 - 金标联盟合规模式
+  static const String enableITGSACompliance = "enableITGSACompliance";
+
+  ///显示模式设置 - 增强沉浸式体验
+  static const String enhancedImmersiveMode = "enhancedImmersiveMode";
+
+  ///显示模式设置 - 自适应边到边显示
+  static const String adaptiveEdgeToEdge = "adaptiveEdgeToEdge";
 }
