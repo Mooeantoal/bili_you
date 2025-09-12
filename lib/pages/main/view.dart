@@ -9,6 +9,7 @@ import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:ui'; // 导入用于高斯模糊的库
 
 import '../dynamic/controller.dart';
 import 'index.dart';
@@ -87,23 +88,41 @@ class _MainPageState extends State<MainPage> {
           body: Row(
             children: [
               if (MediaQuery.of(context).size.width >= 640)
-                NavigationRail(
-                    extended: false,
-                    destinations: const [
-                      NavigationRailDestination(
-                        icon: Icon(Icons.home_outlined),
-                        selectedIcon: Icon(Icons.home),
-                        label: Text("首页"),
+                ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                        border: Border(
+                          right: BorderSide(
+                            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                            width: 0.5,
+                          ),
+                        ),
                       ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.star_border_outlined),
-                        label: Text("动态"),
-                        selectedIcon: Icon(Icons.star),
+                      child: NavigationRail(
+                        backgroundColor: Colors.transparent, // 透明背景
+                        extended: false,
+                        destinations: const [
+                          NavigationRailDestination(
+                            icon: Icon(Icons.home_outlined),
+                            selectedIcon: Icon(Icons.home),
+                            label: Text("首页"),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.star_border_outlined),
+                            label: Text("动态"),
+                            selectedIcon: Icon(Icons.star),
+                          ),
+                        ],
+                        selectedIndex: controller.selectedIndex.value,
+                        onDestinationSelected: (value) =>
+                            onDestinationSelected(value),
                       ),
-                    ],
-                    selectedIndex: controller.selectedIndex.value,
-                    onDestinationSelected: (value) =>
-                        onDestinationSelected(value)),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: Obx(
                   () => IndexedStack(
@@ -115,32 +134,48 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
           bottomNavigationBar: MediaQuery.of(context).size.width < 640
-              ? BottomNavigationBar(
-                  type: BottomNavigationBarType.fixed,
-                  currentIndex: controller.selectedIndex.value,
-                  onTap: (value) => onDestinationSelected(value),
-                  // MD2风格的特性设置
-                  elevation: 8.0, // 经典MD2阴影
-                  selectedItemColor: Theme.of(context).colorScheme.primary,
-                  unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  showSelectedLabels: true,
-                  showUnselectedLabels: true,
-                  selectedFontSize: 12.0,
-                  unselectedFontSize: 10.0,
-                  iconSize: 24.0,
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home_outlined),
-                      activeIcon: Icon(Icons.home),
-                      label: "首页",
+              ? ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                        border: Border(
+                          top: BorderSide(
+                            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
+                      child: BottomNavigationBar(
+                        type: BottomNavigationBarType.fixed,
+                        currentIndex: controller.selectedIndex.value,
+                        onTap: (value) => onDestinationSelected(value),
+                        // MD2风格的特性设置 + 透明背景以显示模糊效果
+                        elevation: 0, // 移除默认阴影，使用模糊效果
+                        backgroundColor: Colors.transparent, // 透明背景
+                        selectedItemColor: Theme.of(context).colorScheme.primary,
+                        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                        showSelectedLabels: true,
+                        showUnselectedLabels: true,
+                        selectedFontSize: 12.0,
+                        unselectedFontSize: 10.0,
+                        iconSize: 24.0,
+                        items: const [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.home_outlined),
+                            activeIcon: Icon(Icons.home),
+                            label: "首页",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.star_border_outlined),
+                            activeIcon: Icon(Icons.star),
+                            label: "动态",
+                          ),
+                        ],
+                      ),
                     ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.star_border_outlined),
-                      activeIcon: Icon(Icons.star),
-                      label: "动态",
-                    ),
-                  ],
+                  ),
                 )
               : null,
         ));
