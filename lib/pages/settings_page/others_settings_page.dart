@@ -58,67 +58,7 @@ class OthersSettingsPage extends StatelessWidget {
         const SettingsLabel(
           text: '显示模式测试',
         ),
-        ListTile(
-          title: const Text(
-            "测试新的导航栏沉浸方案",
-            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-          ),
-          subtitle: const Text("专门针对导航栏沉浸优化的方案"),
-          onTap: () async {
-            try {
-              // 测试新的导航栏沉浸方案
-              await NavigationBarImmersive.enableFullImmersive();
-              Get.rawSnackbar(
-                message: '已启用新的导航栏沉浸方案！请检查导航栏是否真正透明',
-                duration: const Duration(seconds: 3),
-              );
-              
-              // 5秒后自动恢复
-              Future.delayed(const Duration(seconds: 5), () async {
-                await NavigationBarImmersive.restoreDefault();
-                Get.rawSnackbar(
-                  message: '已恢复到默认沉浸状态',
-                  duration: const Duration(seconds: 2),
-                );
-              });
-            } catch (e) {
-              Get.rawSnackbar(
-                message: '新方案测试失败：$e',
-                duration: const Duration(seconds: 2),
-              );
-            }
-          },
-        ),
-        ListTile(
-          title: const Text(
-            "测试金标联盟+Android结合方案",
-          ),
-          subtitle: const Text("点击测试新的显示模式效果"),
-          onTap: () async {
-            try {
-              // 测试进入全屏
-              await enterFullScreen();
-              Get.rawSnackbar(
-                message: '已进入增强沉浸式显示模式（金标联盟+Android结合）',
-                duration: const Duration(seconds: 2),
-              );
-              
-              // 3秒后自动退出
-              Future.delayed(const Duration(seconds: 3), () async {
-                await exitFullScreen();
-                Get.rawSnackbar(
-                  message: '已退出全屏模式，恢复正常显示',
-                  duration: const Duration(seconds: 2),
-                );
-              });
-            } catch (e) {
-              Get.rawSnackbar(
-                message: '测试失败：$e',
-                duration: const Duration(seconds: 2),
-              );
-            }
-          },
-        ),
+        // 保留简单的直接全屏测试
         ListTile(
           title: const Text(
             "测试简单直接全屏",
@@ -150,81 +90,7 @@ class OthersSettingsPage extends StatelessWidget {
             }
           },
         ),
-        ListTile(
-          title: const Text(
-            "测试增强版结合方案",
-            style: TextStyle(color: Colors.blue),
-          ),
-          subtitle: const Text("测试金标联盟智能选择模式"),
-          onTap: () async {
-            try {
-              // 测试增强版方案
-              await enterEnhancedImmersiveMode();
-              Get.rawSnackbar(
-                message: '已进入增强版结合模式',
-                duration: const Duration(seconds: 2),
-              );
-              
-              // 3秒后自动退出
-              Future.delayed(const Duration(seconds: 3), () async {
-                await exitFullScreen();
-                Get.rawSnackbar(
-                  message: '已退出增强版模式',
-                  duration: const Duration(seconds: 2),
-                );
-              });
-            } catch (e) {
-              Get.rawSnackbar(
-                message: '增强版测试失败：$e',
-                duration: const Duration(seconds: 2),
-              );
-            }
-          },
-        ),
-        ListTile(
-          title: const Text(
-            "查看当前显示模式状态",
-          ),
-          onTap: () async {
-            DisplayMode mode = await ITGSAComplianceHelper.getRecommendedDisplayMode();
-            bool compliance = await ITGSAComplianceHelper.checkDisplayCompliance();
-            
-            String modeText = '';
-            switch (mode) {
-              case DisplayMode.enhancedImmersive:
-                modeText = '增强沉浸式（金标联盟+Android结合）';
-                break;
-              case DisplayMode.fullImmersive:
-                modeText = '完全沉浸式（传统模式）';
-                break;
-              case DisplayMode.standard:
-                modeText = '标准模式';
-                break;
-            }
-            
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('显示模式状态'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('金标联盟合规性：${compliance ? "支持" : "不支持"}'),
-                    const SizedBox(height: 8),
-                    Text('推荐显示模式：$modeText'),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('关闭'),
-                  ),
-                ],
-              ),
-            );
-          },
-        )
+        // 删除其他显示模式测试选项
       ]),
     );
   }

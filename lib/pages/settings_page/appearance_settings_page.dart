@@ -110,42 +110,43 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
                       ));
             },
           ),
-          const SettingsLabel(text: '显示模式 - 结合金标联盟标准和Android官方方案'),
-          const SettingsSwitchTile(
-            title: '金标联盟合规模式',
-            subTitle: '开启金标联盟（ITGSA）移动智能终端显示标准合规检查',
-            settingsKey: SettingsStorageKeys.enableITGSACompliance,
-            defualtValue: true,
-          ),
-          SettingsSwitchTile(
-            title: '增强沉浸式体验',
-            subTitle: '结合Android Edge-to-Edge技术与金标联盟用户体验优化',
-            settingsKey: SettingsStorageKeys.enhancedImmersiveMode,
-            defualtValue: true,
-            apply: () async {
-              // 立即应用新的显示模式设置
-              try {
-                await exitFullScreen(); // 先重置到默认状态
-                // 这样下次进入全屏时会使用新的设置
-              } catch (e) {
-                // 忽略错误，确保设置切换不会失败
-              }
-            },
-          ),
-          SettingsSwitchTile(
-            title: '自适应边到边显示',
-            subTitle: '根据设备能力智能启用Edge-to-Edge显示模式',
-            settingsKey: SettingsStorageKeys.adaptiveEdgeToEdge,
-            defualtValue: true,
-            apply: () async {
-              // 立即应用新的边到边显示设置
-              try {
-                await exitFullScreen(); // 重置系统UI状态
-              } catch (e) {
-                // 忽略错误
-              }
-            },
-          ),
+          // 隐藏显示模式设置选项
+          // const SettingsLabel(text: '显示模式 - 结合金标联盟标准和Android官方方案'),
+          // const SettingsSwitchTile(
+          //   title: '金标联盟合规模式',
+          //   subTitle: '开启金标联盟（ITGSA）移动智能终端显示标准合规检查',
+          //   settingsKey: SettingsStorageKeys.enableITGSACompliance,
+          //   defualtValue: true,
+          // ),
+          // SettingsSwitchTile(
+          //   title: '增强沉浸式体验',
+          //   subTitle: '结合Android Edge-to-Edge技术与金标联盟用户体验优化',
+          //   settingsKey: SettingsStorageKeys.enhancedImmersiveMode,
+          //   defualtValue: true,
+          //   apply: () async {
+          //     // 立即应用新的显示模式设置
+          //     try {
+          //       await exitFullScreen(); // 先重置到默认状态
+          //       // 这样下次进入全屏时会使用新的设置
+          //     } catch (e) {
+          //       // 忽略错误，确保设置切换不会失败
+          //     }
+          //   },
+          // ),
+          // SettingsSwitchTile(
+          //   title: '自适应边到边显示',
+          //   subTitle: '根据设备能力智能启用Edge-to-Edge显示模式',
+          //   settingsKey: SettingsStorageKeys.adaptiveEdgeToEdge,
+          //   defualtValue: true,
+          //   apply: () async {
+          //     // 立即应用新的边到边显示设置
+          //     try {
+          //       await exitFullScreen(); // 重置系统UI状态
+          //     } catch (e) {
+          //       // 忽略错误
+          //     }
+          //   },
+          // ),
           const SettingsLabel(text: '字体和界面密度'),
           ListTile(
             title: const Text('字体缩放倍数'),

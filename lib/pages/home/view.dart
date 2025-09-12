@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:bili_you/pages/recommend/view.dart';
 import 'index.dart';
 import 'widgets/user_menu/view.dart';
+import 'dart:ui'; // 导入用于高斯模糊的库
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -51,94 +52,154 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 56,
-        title: MaterialButton(
-          onLongPress: () {
-            //长按进入测试界面
-            // Get.to(() => const UiTestPage());
-            Navigator.of(context)
-                .push(GetPageRoute(page: () => const UiTestPage()));
-          },
-          onPressed: () {
-            Navigator.of(context).push(GetPageRoute(
-                page: () => SearchInputPage(
-                      key: ValueKey(
-                          'SearchInputPage:${controller.defaultSearchWord.value}'),
-                      defaultHintSearchWord: controller.defaultSearchWord.value,
-                    )));
-
-            //更新搜索框默认词
-            controller.refreshDefaultSearchWord();
-          },
-          color: Theme.of(context).colorScheme.surfaceVariant,
-          height: 50,
-          elevation: 0,
-          focusElevation: 0,
-          hoverElevation: 0,
-          disabledElevation: 0,
-          highlightElevation: 0,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(28)),
-          ),
-          child: Row(
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(15),
-                onTap: () {
-                  //更新搜索框默认词
-                  controller.refreshDefaultSearchWord();
-                },
-                child: Icon(
-                  (Icons.search),
-                  size: 24,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(
-                width: 16,
-              ),
-              Expanded(
-                  child: Obx(() => Text(
-                      //搜索框默认词
-                      controller.defaultSearchWord.value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyLarge))),
-              const SizedBox(
-                width: 16,
-              ),
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const UserMenuPage(),
-                  );
-                },
-                child: ClipOval(
-                  child: FutureBuilder(
-                    future: controller.loadOldFace(),
-                    builder: (context, snapshot) {
-                      Widget placeHolder = Container(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      );
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        //头像
-                        return Obx(() => CachedNetworkImage(
-                            cacheWidth: 100,
-                            cacheHeight: 100,
-                            cacheManager: controller.cacheManager,
-                            width: 32,
-                            height: 32,
-                            fit: BoxFit.fill,
-                            imageUrl: controller.faceUrl.value,
-                            placeholder: () => placeHolder));
-                      } else {
-                        return placeHolder;
-                      }
-                    },
-                  ),
-                ),
+        title: Container(
+          decoration: BoxDecoration(
+            // 添加轻微的阴影效果，模拟玻璃的立体感
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
             ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(30)), // 增大圆角
+            child: Stack(
+              children: [
+                // 背景模糊效果
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0), // 增加模糊度
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7),
+                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.9),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3), // 增加边框透明度
+                        width: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+                // 添加高光效果
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 20,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withOpacity(0.3),
+                          Colors.white.withOpacity(0.05),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // 内容
+                MaterialButton(
+                  onLongPress: () {
+                    //长按进入测试界面
+                    // Get.to(() => const UiTestPage());
+                    Navigator.of(context)
+                        .push(GetPageRoute(page: () => const UiTestPage()));
+                  },
+                  onPressed: () {
+                    Navigator.of(context).push(GetPageRoute(
+                        page: () => SearchInputPage(
+                              key: ValueKey(
+                                  'SearchInputPage:${controller.defaultSearchWord.value}'),
+                              defaultHintSearchWord: controller.defaultSearchWord.value,
+                            )));
+
+                    //更新搜索框默认词
+                    controller.refreshDefaultSearchWord();
+                  },
+                  height: 50,
+                  elevation: 0,
+                  focusElevation: 0,
+                  hoverElevation: 0,
+                  disabledElevation: 0,
+                  highlightElevation: 0,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                  ),
+                  child: Row(
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(15),
+                        onTap: () {
+                          //更新搜索框默认词
+                          controller.refreshDefaultSearchWord();
+                        },
+                        child: Icon(
+                          (Icons.search),
+                          size: 24,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 16,
+                      ),
+                      Expanded(
+                          child: Obx(() => Text(
+                              //搜索框默认词
+                              controller.defaultSearchWord.value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyLarge))),
+                      const SizedBox(
+                        width: 16,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const UserMenuPage(),
+                          );
+                        },
+                        child: ClipOval(
+                          child: FutureBuilder(
+                            future: controller.loadOldFace(),
+                            builder: (context, snapshot) {
+                              Widget placeHolder = Container(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              );
+                              if (snapshot.connectionState == ConnectionState.done) {
+                                //头像
+                                return Obx(() => CachedNetworkImage(
+                                    cacheWidth: 100,
+                                    cacheHeight: 100,
+                                    cacheManager: controller.cacheManager,
+                                    width: 32,
+                                    height: 32,
+                                    fit: BoxFit.fill,
+                                    imageUrl: controller.faceUrl.value,
+                                    placeholder: () => placeHolder));
+                              } else {
+                                return placeHolder;
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         centerTitle: true,
