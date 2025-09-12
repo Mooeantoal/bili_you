@@ -90,13 +90,13 @@ class _MainPageState extends State<MainPage> {
               if (MediaQuery.of(context).size.width >= 640)
                 ClipRect(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                    filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0), // iOS 16液态玻璃效果
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                        color: Theme.of(context).colorScheme.surface.withOpacity(0.7), // 适度提高透明度
                         border: Border(
                           right: BorderSide(
-                            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                            color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
                             width: 0.5,
                           ),
                         ),
@@ -136,13 +136,13 @@ class _MainPageState extends State<MainPage> {
           bottomNavigationBar: MediaQuery.of(context).size.width < 640
               ? ClipRect(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                    filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0), // iOS 16液态玻璃效果
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                        color: Theme.of(context).colorScheme.surface.withOpacity(0.7), // 适度提高透明度
                         border: Border(
                           top: BorderSide(
-                            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                            color: Theme.of(context).colorScheme.outline.withOpacity(0.15), // 更轻微的边框
                             width: 0.5,
                           ),
                         ),
@@ -151,11 +151,11 @@ class _MainPageState extends State<MainPage> {
                         type: BottomNavigationBarType.fixed,
                         currentIndex: controller.selectedIndex.value,
                         onTap: (value) => onDestinationSelected(value),
-                        // MD2风格的特性设置 + 透明背景以显示模糊效果
+                        // iOS 16液态玻璃风格的特性设置
                         elevation: 0, // 移除默认阴影，使用模糊效果
                         backgroundColor: Colors.transparent, // 透明背景
                         selectedItemColor: Theme.of(context).colorScheme.primary,
-                        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8), // 轻微降低对比度
                         showSelectedLabels: true,
                         showUnselectedLabels: true,
                         selectedFontSize: 12.0,
