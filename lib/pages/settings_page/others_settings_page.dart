@@ -34,6 +34,37 @@ class OthersSettingsPage extends StatelessWidget {
         ),
         ListTile(
           title: const Text(
+            "测试新的导航栏沉浸方案",
+            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+          ),
+          subtitle: const Text("专门针对导航栏沉浸优化的方案"),
+          onTap: () async {
+            try {
+              // 测试新的导航栏沉浸方案
+              await NavigationBarImmersive.enableFullImmersive();
+              Get.rawSnackbar(
+                message: '已启用新的导航栏沉浸方案！请检查导航栏是否真正透明',
+                duration: const Duration(seconds: 3),
+              );
+              
+              // 5秒后自动恢复
+              Future.delayed(const Duration(seconds: 5), () async {
+                await NavigationBarImmersive.restoreDefault();
+                Get.rawSnackbar(
+                  message: '已恢复到默认沉浸状态',
+                  duration: const Duration(seconds: 2),
+                );
+              });
+            } catch (e) {
+              Get.rawSnackbar(
+                message: '新方案测试失败：$e',
+                duration: const Duration(seconds: 2),
+              );
+            }
+          },
+        ),
+        ListTile(
+          title: const Text(
             "测试金标联盟+Android结合方案",
           ),
           subtitle: const Text("点击测试新的显示模式效果"),

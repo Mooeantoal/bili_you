@@ -20,30 +20,33 @@ void main() async {
   runApp(const MyApp());
 }
 
-/// 初始化系统UI设置 - 遵循Android官方Edge-to-Edge最佳实践
+/// 初始化系统UI设置 - 专门针对导航栏沉浸优化
 void _initializeSystemUI() {
-  // 启用Edge-to-Edge显示模式
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  // 使用手动模式，不显示任何系统UI覆盖层
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: [], // 关键：不显示任何覆盖层，实现真正的沉浸
+  );
   
   // 设置首选屏幕方向
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   
-  // 配置系统UI样式 - 符合金标联盟和Android官方标准
+  // 强制设置完全透明的系统UI
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    // 透明系统UI背景
+    // 完全透明的背景
     statusBarColor: Colors.transparent,
     systemNavigationBarColor: Colors.transparent,
     systemNavigationBarDividerColor: Colors.transparent,
     
-    // 优化状态栏内容可见性
-    statusBarIconBrightness: Brightness.dark, // 默认深色图标适配浅色主题
-    statusBarBrightness: Brightness.light, // iOS兼容性
+    // 状态栏图标颜色
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light, // iOS兼容
     
-    // 优化导航栏内容可见性
+    // 导航栏图标颜色
     systemNavigationBarIconBrightness: Brightness.dark,
     
-    // 启用导航栏对比度增强（Android 10+）
-    systemNavigationBarContrastEnforced: true,
+    // 关闭导航栏对比度增强，避免系统强制显示背景
+    systemNavigationBarContrastEnforced: false,
   ));
 }
 
