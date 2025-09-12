@@ -51,11 +51,10 @@ class MyApp extends StatelessWidget {
               ? const SizedBox()
               : MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                      textScaler: TextScaler.linear(
-                          MediaQuery.of(context).textScaler.scale(1.0) *
+                      textScaleFactor: MediaQuery.of(context).textScaleFactor *
                           SettingsUtil.getValue(
                               SettingsStorageKeys.textScaleFactor,
-                              defaultValue: 1.0))),
+                              defaultValue: 1.0)),
                   child: child));
     }));
   }

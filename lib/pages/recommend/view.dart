@@ -48,7 +48,7 @@ class _RecommendPageState extends State<RecommendPage>
                         controller.recommendColumnCount) *
                     10 /
                     16 +
-                83 * MediaQuery.of(context).textScaler.scale(1.0)),
+                83 * MediaQuery.of(context).textScaleFactor),
         itemCount: controller.recommendItems.length,
         itemBuilder: (context, index) {
           var i = controller.recommendItems[index];

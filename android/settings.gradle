@@ -1,11 +1,34 @@
-include ':app'
+// --- pluginManagement 块：定义项目级别的插件管理 ---
+pluginManagement {
+    // 1. 读取 local.properties 文件以找到 Flutter SDK 的路径
+    def flutterSdkPath = {
+        def properties = new Properties()
+        file("local.properties").withInputStream { properties.load(it) }
+        def flutterSdkPath = properties.getProperty("flutter.sdk")
+        // 断言：如果找不到 flutter.sdk，抛出错误
+        assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+        return flutterSdkPath
+    }()
+    // 2. 包含 Flutter 工具自带的 Gradle 插件
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    // 3. 定义插件仓库
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal() // 允许从 Gradle 插件门户下载插件
+    }
+}
 
-def localPropertiesFile = new File(rootProject.projectDir, "local.properties")
-def properties = new Properties()
+// --- plugins 块：声明项目依赖的 Gradle 插件 ---
+plugins {
+    // 1. Flutter 插件加载器（必须为 true）
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0" 
+    // 2. Android 应用插件（版本与你项目一致）
+    id "com.android.application" version "7.3.0" apply false
+    // 3. Kotlin for Android 插件（版本与你项目一致）
+    id "org.jetbrains.kotlin.android" version "1.7.10" apply false
+}
 
-assert localPropertiesFile.exists()
-localPropertiesFile.withReader("UTF-8") { reader -> properties.load(reader) }
-
-def flutterSdkPath = properties.getProperty("flutter.sdk")
-assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
-apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
+// --- 项目结构 ---
+// 包含 app 模块
+include ":app"

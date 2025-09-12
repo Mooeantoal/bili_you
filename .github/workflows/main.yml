@@ -1,165 +1,72 @@
-# Flutter Android APK 自动构建和发布工作流
+# This is a basic workflow to help you get started with Actions
 
-name: Build and Release APK
+name: builder
 
-# 触发条件
+# git push --tags 执行时候进行编译
 on:
-  # 推送tag时自动构建
   push:
     tags:
-      - 'v*'
-  # 也可以手动触发
-  workflow_dispatch:
-    inputs:
-      version:
-        description: '版本号 (例如: v1.1.5)'
-        required: false
-        default: 'manual-build'
+      - v*
 
-# 工作流任务
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build-apk:
-    name: 构建 Android APK
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
-    # 超时设置 (30分钟)
-    timeout-minutes: 30
 
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # 1. 检出代码
-      - name: 📥 检出代码
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
 
-      # 2. 设置 Java 环境
-      - name: ☕ 设置 Java JDK
-        uses: actions/setup-java@v4
+      # Runs a single command using the runners shell
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
         with: 
-          distribution: 'zulu'
-          java-version: '17'
+            distribution: 'zulu'
+            java-version: "17"
+            token: ${{secrets.GITHUB_TOKEN}}
 
-      # 3. 设置 Flutter 环境
-      - name: 🔧 设置 Flutter 环境
+      - name: Flutter action
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0'
-          channel: 'stable'
-          cache: true
+            flutter-version: 3.10.3
+            channel: stable
       
-      # 4. 验证 Flutter 安装
-      - name: 🔍 验证 Flutter 安装
+      - name: Decode keystore
         run: |
-          flutter --version
-          flutter doctor -v
-      
-      # 5. 获取依赖
-      - name: 📦 获取项目依赖
-        run: flutter pub get
-      
-      # 6. 运行代码分析 (严格模式)
-      - name: 🔍 运行代码分析
-        run: |
-          echo "开始代码分析..."
-          flutter analyze --fatal-infos
-          echo "代码分析完成，无错误或警告"
-      
-      # 7. 解码签名文件 (如果需要签名)
-      - name: 🔐 解码签名文件
-        if: ${{ secrets.KEYSTORE != '' }}
-        run: |
-          echo "$ENCODED_KEYSTORE" | base64 -d > android/app/keystore.jks
+          echo $ENCODED_KEYSTORE | base64 -di > android/app/keystore.jks
         env:
           ENCODED_KEYSTORE: ${{ secrets.KEYSTORE }}
-      
-      # 8. 创建 keystore.properties 文件 (如果需要签名)
-      - name: 📝 创建签名配置文件
-        if: ${{ secrets.KEYSTORE != '' }}
-        run: |
-          echo "storePassword=$KEYSTORE_PASSWORD" >> android/keystore.properties
-          echo "keyPassword=$KEY_PASSWORD" >> android/keystore.properties
-          echo "keyAlias=$KEY_ALIAS" >> android/keystore.properties
-          echo "storeFile=keystore.jks" >> android/keystore.properties
+
+      - run: flutter pub get
+      # 打包apk
+      - name: Collect Apks
+        run: flutter build apk --release --split-per-abi
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD}}
 
-      # 9. 构建 APK (根据是否有签名文件决定构建方式)
-      - name: 🔨 构建 APK
-        run: |
-          if [ -f "android/app/keystore.jks" ]; then
-            echo "使用签名构建 APK"
-            flutter build apk --release --split-per-abi
-          else
-            echo "构建未签名 APK"
-            flutter build apk --release --split-per-abi
-          fi
+      # # 打包linux-x64
+      # - run: sudo apt-get update -y
+      # - run: sudo apt-get install -y  clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev binutils coreutils desktop-file-utils fakeroot fuse libgdk-pixbuf2.0-dev patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
+      # - run: flutter build linux --release --target-platform linux-x64
 
-      # 10. 列出构建产物
-      - name: 📋 列出构建产物
-        run: |
-          echo "=== APK 构建产物 ==="
-          ls -la build/app/outputs/flutter-apk/
-          echo ""
-          echo "=== 文件大小信息 ==="
-          du -h build/app/outputs/flutter-apk/*.apk
-      
-      # 11. 重命名 APK 文件 (添加版本信息)
-      - name: 🏷️ 重命名 APK 文件
-        run: |
-          cd build/app/outputs/flutter-apk/
+      # # 复制linux二进制文件到AppDir目录,准备打包
+      # - run: rm -rf AppDir || true
+      # - run: cp -r build/linux/x64/release/bundle AppDir
+      # # 打包成AppImage
+      # - run: wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.0.0-beta.1/appimage-builder-1.0.0-677acbd-x86_64.AppImage 
+      # - run: chmod +x appimage-builder-x86_64.AppImage
+      # - run: sudo mv appimage-builder-x86_64.AppImage /usr/local/bin/appimage-builder
+      # - run: appimage-builder --recipe AppImageBuilder.yml
           
-          # 获取版本信息
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" = "tag" ]; then
-            VERSION=$(echo ${{ github.ref_name }} | sed 's/^v//')
-          else
-            VERSION="${{ github.event.inputs.version || 'manual' }}"
-          fi
-          
-          # 重命名文件
-          for file in app-*.apk; do
-            if [ -f "$file" ]; then
-              arch=$(echo $file | sed 's/app-//' | sed 's/-release.apk//')
-              new_name="bili_you_${VERSION}_${arch}.apk"
-              mv "$file" "$new_name"
-              echo "重命名: $file -> $new_name"
-            fi
-          done
-          
-          echo "=== 重命名后的文件 ==="
-          ls -la *.apk
-      
-      # 12. 上传构建产物作为工件
-      - name: 📤 上传 APK 作为工件
-        uses: actions/upload-artifact@v4
-        with:
-          name: apk-files
-          path: build/app/outputs/flutter-apk/*.apk
-          retention-days: 30
-      
-      # 13. 创建 Release (仅在推送 tag 时)
-      - name: 🚀 创建 Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      # 发布安装包
+      - name: Release Packages
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/*.apk"
-          allowUpdates: true
-          draft: false
-          generateReleaseNotes: true
-          name: "bili_you ${{ github.ref_name }}"
-          body: |
-            ## 📱 bili_you ${{ github.ref_name }}
-            
-            ### 📥 下载说明
-            - `bili_you_*_arm64-v8a.apk`: 适用于 64 位 ARM 设备 (推荐，支持大部分现代 Android 设备)
-            - `bili_you_*_armeabi-v7a.apk`: 适用于 32 位 ARM 设备 (兼容老设备)
-            - `bili_you_*_x86_64.apk`: 适用于 64 位 x86 设备 (模拟器或特殊设备)
-            
-            ### 🔧 安装要求
-            - Android 5.0 (API 21) 及以上版本
-            - 建议下载 arm64-v8a 版本以获得最佳性能
-            
-            ### 📝 更新内容
-            详见下方自动生成的更新日志
-          token: ${{ secrets.GITHUB_TOKEN }}
+            artifacts: "build/app/outputs/flutter-apk/app-*.apk"
+            allowUpdates: true

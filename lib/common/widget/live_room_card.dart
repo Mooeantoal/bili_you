@@ -52,7 +52,7 @@ class LiveRoomCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
                 child: SizedBox(
-                    height: 50 * MediaQuery.of(context).textScaler.scale(1.0),
+                    height: 50 * MediaQuery.of(context).textScaleFactor,
                     child: Row(
                       children: [
                         Padding(
@@ -61,7 +61,7 @@ class LiveRoomCard extends StatelessWidget {
                           child: AvatarWidget(
                               avatarUrl: info.userFace,
                               radius:
-                                  20 * MediaQuery.of(context).textScaler.scale(1.0)),
+                                  20 * MediaQuery.of(context).textScaleFactor),
                         ),
                         Expanded(
                           child: Column(

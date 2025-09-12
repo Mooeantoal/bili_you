@@ -709,9 +709,6 @@ class BiliVideoPlayerPanelController {
   bool _isPlayerPlaying = false;
   bool _isPlayerEnd = false;
   bool _isPlayerBuffering = false;
-  
-  // Getter to access the buffering state
-  bool get isPlayerBuffering => _isPlayerBuffering;
   bool _isSliderDraging = false;
   bool _isPreviousPlaying = false;
   bool _isPreviousShow = false;

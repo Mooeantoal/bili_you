@@ -41,19 +41,19 @@ class AboutPage extends StatelessWidget {
             launchUrlString(authorUrl);
           },
           onLongPress: () {
-            Clipboard.setData(const ClipboardData(text: authorUrl));
+            Clipboard.setData(ClipboardData(text: authorUrl));
             ScaffoldMessenger.of(context);
             Get.rawSnackbar(message: '已复制$authorUrl到剪切板');
           },
         ),
         ListTile(
           title: const Text("项目链接"),
-          subtitle: const Text(projectUrl),
+          subtitle: Text(projectUrl),
           onTap: () {
             launchUrlString(projectUrl);
           },
           onLongPress: () {
-            Clipboard.setData(const ClipboardData(text: projectUrl));
+            Clipboard.setData(ClipboardData(text: projectUrl));
             ScaffoldMessenger.of(context);
             Get.rawSnackbar(message: '已复制$projectUrl到剪切板');
           },
