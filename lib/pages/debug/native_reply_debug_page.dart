@@ -5,6 +5,7 @@ import 'package:bili_you/common/api/reply_api_v2.dart';
 import 'package:bili_you/common/utils/bvid_avid_util.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:bili_you/common/utils/log_export_util.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/view_v2.dart';
 
 /// 原生评论区调试页面
@@ -19,7 +20,33 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
   String _debugInfo = '准备开始调试...';
   bool _isDebugging = false;
   final TextEditingController _bvidController = TextEditingController(text: 'BV1xx411c7mD');
+  final FocusNode _bvidFocusNode = FocusNode(); // 添加焦点节点
   List<Map<String, dynamic>> _errorLogs = []; // 错误日志记录
+
+  @override
+  void dispose() {
+    _bvidController.dispose();
+    _bvidFocusNode.dispose();
+    super.dispose();
+  }
+
+  /// 更新调试信息（避免频繁重建）
+  void _updateDebugInfo(String info) {
+    if (mounted) {
+      setState(() {
+        _debugInfo += info;
+      });
+    }
+  }
+
+  /// 设置调试状态
+  void _setDebuggingState(bool isDebugging) {
+    if (mounted) {
+      setState(() {
+        _isDebugging = isDebugging;
+      });
+    }
+  }
 
   /// 记录错误日志
   void _logError(String type, String message, Map<String, dynamic> details) {
@@ -192,6 +219,13 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
             child: Text('清空日志'),
           ),
           TextButton(
+            onPressed: () async {
+              Get.back();
+              await _exportLogsDialog();
+            },
+            child: Text('导出日志'),
+          ),
+          TextButton(
             onPressed: () => Get.back(),
             child: Text('关闭'),
           ),
@@ -200,7 +234,132 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
     );
   }
 
-  /// 获取错误类型对应的颜色
+  /// 显示导出日志选项对话框
+  Future<void> _exportLogsDialog() async {
+    Get.dialog(
+      AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.file_download, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('导出调试日志'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('选择导出方式:'),
+            SizedBox(height: 16),
+            
+            // 完整导出选项
+            ListTile(
+              leading: Icon(Icons.save_alt, color: Colors.green),
+              title: Text('保存到手机存储'),
+              subtitle: Text('导出完整JSON格式日志到Downloads文件夹'),
+              onTap: () async {
+                Get.back();
+                await _exportToStorage();
+              },
+            ),
+            
+            Divider(),
+            
+            // 快速分享选项
+            ListTile(
+              leading: Icon(Icons.share, color: Colors.orange),
+              title: Text('快速分享'),
+              subtitle: Text('生成文本格式用于即时分享'),
+              onTap: () async {
+                Get.back();
+                await _quickShareLogs();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('取消'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 导出到手机存储
+  Future<void> _exportToStorage() async {
+    if (_errorLogs.isEmpty) {
+      Get.snackbar(
+        '无日志可导出',
+        '当前没有错误日志记录',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    Get.dialog(
+      AlertDialog(
+        title: Text('正在导出...'),
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text('正在保存日志文件'),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    try {
+      bool success = await LogExportUtil.exportErrorLogs(_errorLogs);
+      Get.back(); // 关闭进度对话框
+      
+      if (success) {
+        Get.snackbar(
+          '导出成功',
+          '日志已保存到手机存储空间',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.back(); // 关闭进度对话框
+      Get.snackbar(
+        '导出失败',
+        '保存日志时出现错误: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// 快速分享日志
+  Future<void> _quickShareLogs() async {
+    if (_errorLogs.isEmpty) {
+      Get.snackbar(
+        '无日志可分享',
+        '当前没有错误日志记录',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    try {
+      await LogExportUtil.exportSimplifiedLogs(_errorLogs);
+    } catch (e) {
+      Get.snackbar(
+        '分享失败',
+        '生成分享内容时出现错误: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
   Color _getErrorTypeColor(String type) {
     switch (type) {
       case 'API_CALL_ERROR':
@@ -271,8 +430,9 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
 
   /// 调试原生评论区
   Future<void> _debugNativeReply() async {
+    _setDebuggingState(true);
+    
     setState(() {
-      _isDebugging = true;
       _debugInfo = '开始调试原生评论区...\n';
     });
 
@@ -289,10 +449,8 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
         defaultValue: true,
       );
       
-      setState(() {
-        _debugInfo += '1. 检查设置:\n';
-        _debugInfo += '   - 使用原生评论区: $useNativeComments\n';
-      });
+      _updateDebugInfo('1. 检查设置:\n');
+      _updateDebugInfo('   - 使用原生评论区: $useNativeComments\n');
 
       if (!useNativeComments) {
         _showErrorDialog(
@@ -303,38 +461,69 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
       }
 
       // 2. 测试BVID转换
-      setState(() {
-        _debugInfo += '\n2. 测试BVID转换:\n';
-        _debugInfo += '   - 输入BVID: $bvid\n';
-      });
+      _updateDebugInfo('\n2. 测试BVID转换（官方算法）:\n');
+      _updateDebugInfo('   - 输入BVID: $bvid\n');
+      _updateDebugInfo('   - 算法参数: XOR=177451812, ADD=8728348608\n');
+      
+      // 首先验证BVID格式
+      bool isValidFormat = BvidAvidUtil.isBvid(bvid);
+      _updateDebugInfo('   - BVID格式验证: ${isValidFormat ? "✅ 有效" : "❌ 无效"}\n');
+      
+      if (!isValidFormat) {
+        _updateDebugInfo('   - 错误详情: BVID格式不正确，应为类似 BV1xx411c7mD 的格式\n');
+        _logError('BVID_FORMAT_ERROR', 'Invalid BVID format', {
+          'input_bvid': bvid,
+          'expected_length': 12,
+          'actual_length': bvid.length,
+          'expected_format': 'BV1**4*1*7**',
+          'algorithm': 'official_bilibili_algorithm',
+        });
+        _showErrorDialog(
+          'BVID格式错误', 
+          'BVID格式不正确。\n\n输入: $bvid\n\n正确格式应为: BV1xx411c7mD\n\n请检查输入的BVID是否完整且正确。\n\n注：已升级为官方算法实现。'
+        );
+        return;
+      }
 
       int avid;
       try {
         avid = BvidAvidUtil.bvid2Av(bvid);
-        setState(() {
-          _debugInfo += '   - ✅ 转换成功: av$avid\n';
-        });
+        _updateDebugInfo('   - ✅ 转换成功: av$avid\n');
+        
+        // 额外验证转换结果
+        if (avid <= 0) {
+          throw Exception('转换结果无效: AVID不能为负数或零');
+        }
+        if (avid > 999999999) {
+          throw Exception('转换结果异常: AVID过大，可能计算错误');
+        }
+        
+        _updateDebugInfo('   - 转换结果验证: ✅ 有效\n');
       } catch (e) {
-        setState(() {
-          _debugInfo += '   - ❌ BVID转换失败: $e\n';
-        });
+        _updateDebugInfo('   - ❌ BVID转换失败: $e\n');
         _logError('BVID_CONVERSION_ERROR', e.toString(), {
           'input_bvid': bvid,
-          'step': 'bvid_to_avid_conversion'
+          'step': 'bvid_to_avid_conversion',
+          'error_type': e.runtimeType.toString(),
+          'algorithm': 'official_bilibili_algorithm',
+          'constants': {
+            'XOR': 177451812,
+            'ADD': 8728348608,
+            'table': 'fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF',
+            'seq_array': [11, 10, 3, 8, 4, 6],
+          },
         });
         _showErrorDialog(
           'BVID转换失败', 
-          '无法将BVID转换为AVID。\n\n错误信息: $e\n\n请检查BVID格式是否正确（例如: BV1xx411c7mD）'
+          '无法将BVID转换为AVID。\n\n输入: $bvid\n错误: $e\n\n可能原因:\n1. BVID格式不正确\n2. BVID包含无效字符\n3. BVID已损坏或不存在\n\n算法信息:\n- 使用官方算法实现\n- XOR: 177451812, ADD: 8728348608\n- 位置数组: [11,10,3,8,4,6]\n\n请检查输入的BVID是否正确。'
         );
         return;
       }
 
       // 3. 测试API调用
-      setState(() {
-        _debugInfo += '\n3. 测试API调用:\n';
-        _debugInfo += '   - API端点: https://api.bilibili.com/x/v2/reply\n';
-        _debugInfo += '   - 参数: type=1, oid=$avid, sort=1, ps=20, pn=1\n';
-      });
+      _updateDebugInfo('\n3. 测试API调用:\n');
+      _updateDebugInfo('   - API端点: https://api.bilibili.com/x/v2/reply\n');
+      _updateDebugInfo('   - 参数: type=1, oid=$avid, sort=1, ps=20, pn=1\n');
 
       try {
         var result = await ReplyApiV2.getComments(
@@ -345,12 +534,10 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
           pn: 1,
         );
 
-        setState(() {
-          _debugInfo += '   - ✅ API调用成功\n';
-          _debugInfo += '   - 总评论数: ${result.page.acount}\n';
-          _debugInfo += '   - 当前页评论数: ${result.replies.length}\n';
-          _debugInfo += '   - 热评数: ${result.hots.length}\n';
-        });
+        _updateDebugInfo('   - ✅ API调用成功\n');
+        _updateDebugInfo('   - 总评论数: ${result.page.acount}\n');
+        _updateDebugInfo('   - 当前页评论数: ${result.replies.length}\n');
+        _updateDebugInfo('   - 热评数: ${result.hots.length}\n');
 
         // 检查是否有评论数据
         if (result.page.acount == 0) {
@@ -380,9 +567,7 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
         }
 
       } catch (e) {
-        setState(() {
-          _debugInfo += '   - ❌ API调用失败: $e\n';
-        });
+        _updateDebugInfo('   - ❌ API调用失败: $e\n');
 
         _logError('API_CALL_ERROR', e.toString(), {
           'bvid': bvid,
@@ -423,9 +608,7 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
       }
 
     } catch (e) {
-      setState(() {
-        _debugInfo += '\n❌ 调试过程中发生未知错误: $e\n';
-      });
+      _updateDebugInfo('\n❌ 调试过程中发生未知错误: $e\n');
       
       _logError('GENERAL_DEBUG_ERROR', e.toString(), {
         'context': 'main_debug_process',
@@ -437,11 +620,41 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
         '调试过程中发生未知错误。\n\n错误信息: $e\n\n请重试或联系开发者。'
       );
     } finally {
-      setState(() {
-        _isDebugging = false;
-        _debugInfo += '\n调试完成。\n';
-      });
+      _setDebuggingState(false);
+      _updateDebugInfo('\n调试完成。\n');
     }
+  }
+
+  /// 添加测试日志（用于演示导出功能）
+  void _addTestLog() {
+    String testBvid = _bvidController.text.trim();
+    if (testBvid.isEmpty) {
+      testBvid = 'BV1xx411c7mD';
+    }
+    
+    _logError('TEST_LOG_ERROR', '这是一个测试日志记录', {
+      'test_bvid': testBvid,
+      'test_type': 'user_generated_test',
+      'timestamp': DateTime.now().toIso8601String(),
+      'platform': 'android',
+      'app_version': '1.1.5+15',
+      'error_details': {
+        'description': '用户手动添加的测试错误日志',
+        'severity': 'low',
+        'category': 'testing',
+        'reproducible': true,
+      },
+    });
+    
+    setState(() {}); // 刷新UI显示新日志
+    
+    Get.snackbar(
+      '测试日志已添加',
+      '已生成一条测试错误日志，现在可以测试导出功能',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
   }
 
   @override
@@ -493,12 +706,19 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
             SizedBox(height: 8),
             TextField(
               controller: _bvidController,
+              focusNode: _bvidFocusNode,
               decoration: InputDecoration(
                 hintText: '输入BVID，如: BV1xx411c7mD',
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 prefixIcon: Icon(Icons.video_library),
               ),
+              onTap: () {
+                // 确保点击时焦点不会丢失
+                if (!_bvidFocusNode.hasFocus) {
+                  _bvidFocusNode.requestFocus();
+                }
+              },
             ),
             
             SizedBox(height: 16),
@@ -562,6 +782,28 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 12),
                     ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: _errorLogs.isEmpty ? null : () => _exportLogsDialog(),
+                  icon: Icon(Icons.file_download),
+                  label: Text('导出日志'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _errorLogs.isEmpty ? Colors.grey : Colors.purple,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  ),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: () => _addTestLog(),
+                  icon: Icon(Icons.add),
+                  label: Text('测试日志'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                   ),
                 ),
               ],

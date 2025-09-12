@@ -70,10 +70,19 @@ class ReplyControllerV2 extends GetxController {
       // 将bvid转换为avid
       int avid;
       try {
-        avid = BvidAvidUtil.bvid2Av(bvid);
-        if (avid <= 0) {
-          throw Exception('无效的视频ID');
+        // 首先验证BVID格式
+        if (!BvidAvidUtil.isBvid(bvid)) {
+          throw Exception('无效的BVID格式，请检查视频链接是否正确');
         }
+        
+        avid = BvidAvidUtil.bvid2Av(bvid);
+        
+        // 验证转换结果
+        if (avid <= 0) {
+          throw Exception('视频ID转换结果无效，请检查视频链接');
+        }
+        
+        log('BVID转换成功: $bvid -> av$avid');
       } catch (e) {
         log('BVID转换失败: bvid=$bvid, error=$e');
         throw Exception('视频ID转换失败，请检查视频链接');

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:bili_you/pages/debug/native_reply_debug_page.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:bili_you/common/utils/log_export_util.dart';
 
 /// 调试工具类
 class DebugUtils {
@@ -56,6 +57,14 @@ class DebugUtils {
               Get.to(() => NativeReplyDebugPage());
             },
             child: Text('调试诊断'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              // 快速导出空日志（作为示例）
+              LogExportUtil.exportSimplifiedLogs([]);
+            },
+            child: Text('导出日志'),
           ),
         ],
       ),
