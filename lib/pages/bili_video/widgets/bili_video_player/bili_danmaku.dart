@@ -6,10 +6,10 @@ import 'package:bili_you/common/utils/index.dart';
 import 'package:bili_you/common/widget/video_audio_player.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
 import 'package:flutter/material.dart';
-import 'package:ns_danmaku/danmaku_controller.dart';
-import 'package:ns_danmaku/danmaku_view.dart';
-import 'package:ns_danmaku/models/danmaku_item.dart';
-import 'package:ns_danmaku/models/danmaku_option.dart';
+import 'package:flutter_ns_danmaku/danmaku_controller.dart';
+import 'package:flutter_ns_danmaku/danmaku_view.dart';
+import 'package:flutter_ns_danmaku/models/danmaku_item.dart';
+import 'package:flutter_ns_danmaku/models/danmaku_option.dart';
 
 class BiliDanmaku extends StatefulWidget {
   const BiliDanmaku({super.key, required this.controller});

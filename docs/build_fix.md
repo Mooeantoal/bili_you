@@ -7,7 +7,7 @@ Because bili_you depends on flutter_danmaku ^0.2.0 which doesn't match any versi
 ```
 
 ## 问题原因
-项目实际使用的是 `ns_danmaku` 包，但是 pubspec.yaml 中错误地配置为 `flutter_danmaku ^0.2.0`。
+项目实际使用的是 `flutter_ns_danmaku` 包，但是 pubspec.yaml 中错误地配置为 `flutter_danmaku ^0.2.0`。
 
 ## 已修复的问题
 
@@ -23,9 +23,9 @@ flutter_danmaku: ^0.2.0
 **修改后**:
 ```yaml
 # 弹幕
-ns_danmaku:
+flutter_ns_danmaku:
   git:
-    url: https://github.com/xiaoyaocz/ns_danmaku.git
+    url: https://github.com/lucinhu/flutter_ns_danmaku.git
 ```
 
 ### 2. 修复import路径错误
@@ -71,7 +71,7 @@ flutter build apk --release --split-per-abi
 
 ## 注意事项
 
-1. **网络问题**: `ns_danmaku` 包从GitHub仓库获取，请确保网络连接正常
+1. **网络问题**: `flutter_ns_danmaku` 包从GitHub仓库获取，请确保网络连接正常
 2. **Git要求**: 系统需要安装Git才能从GitHub仓库拉取依赖
 3. **依赖缓存**: 如果遇到缓存问题，可以删除 `pubspec.lock` 和 `.packages` 文件后重新运行 `flutter pub get`
 
