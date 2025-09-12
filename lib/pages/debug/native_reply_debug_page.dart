@@ -22,12 +22,12 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
   List<Map<String, dynamic>> _errorLogs = []; // 错误日志记录
 
   /// 记录错误日志
-  void _logError(String type, String message, {Map<String, dynamic>? details}) {
+  void _logError(String type, String message, Map<String, dynamic> details) {
     _errorLogs.add({
       'timestamp': DateTime.now(),
       'type': type,
       'message': message,
-      'details': details ?? {},
+      'details': details,
     });
   }
 
@@ -141,7 +141,7 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
                                   ),
                                 ),
                               ),
-                              if (log['details'].isNotEmpty) ..[
+                              if (log['details'].isNotEmpty) ...[
                                 SizedBox(height: 12),
                                 Text(
                                   '详细信息:',
@@ -384,7 +384,6 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
           _debugInfo += '   - ❌ API调用失败: $e\n';
         });
 
-        // 记录详细错误信息
         _logError('API_CALL_ERROR', e.toString(), {
           'bvid': bvid,
           'avid': avid,
