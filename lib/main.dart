@@ -22,18 +22,17 @@ void main() async {
 
 /// 初始化系统UI设置 - 专门针对导航栏沉浸优化
 void _initializeSystemUI() {
-  // 使用手动模式，不显示任何系统UI覆盖层
+  // 使用沉浸式粘性模式作为默认模式
   SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.manual,
-    overlays: [], // 关键：不显示任何覆盖层，实现真正的沉浸
+    SystemUiMode.immersiveSticky,
   );
   
   // 设置首选屏幕方向
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   
-  // 强制设置完全透明的系统UI
+  // 设置系统UI样式
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    // 完全透明的背景
+    // 透明的背景
     statusBarColor: Colors.transparent,
     systemNavigationBarColor: Colors.transparent,
     systemNavigationBarDividerColor: Colors.transparent,
@@ -45,8 +44,8 @@ void _initializeSystemUI() {
     // 导航栏图标颜色
     systemNavigationBarIconBrightness: Brightness.dark,
     
-    // 关闭导航栏对比度增强，避免系统强制显示背景
-    systemNavigationBarContrastEnforced: false,
+    // 启用导航栏对比度增强，提高可访问性
+    systemNavigationBarContrastEnforced: true,
   ));
 }
 

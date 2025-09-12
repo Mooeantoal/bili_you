@@ -203,27 +203,56 @@ class _HomePageState extends State<HomePage>
           ),
         ),
         centerTitle: true,
-        bottom: TabBar(
-          isScrollable: true,
-          tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
-          controller: controller.tabController,
-          onTap: (index) {
-            if (controller.tabController!.indexIsChanging) return;
-            switch (index) {
-              case 0:
-                //点击“直播”回到顶
-                Get.find<LiveTabPageController>().animateToTop();
-                break;
-              case 1:
-                //点击“推荐”回到顶
-                Get.find<RecommendController>().animateToTop();
-                break;
-              case 2:
-                Get.find<PopularVideoController>().animateToTop();
-                break;
-              default:
-            }
-          },
+        bottom: Container(
+          decoration: BoxDecoration(
+            // 为标签栏添加阴影效果
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: TabBar(
+                  isScrollable: true,
+                  tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
+                  controller: controller.tabController,
+                  onTap: (index) {
+                    if (controller.tabController!.indexIsChanging) return;
+                    switch (index) {
+                      case 0:
+                        //点击"直播"回到顶
+                        Get.find<LiveTabPageController>().animateToTop();
+                        break;
+                      case 1:
+                        //点击"推荐"回到顶
+                        Get.find<RecommendController>().animateToTop();
+                        break;
+                      case 2:
+                        Get.find<PopularVideoController>().animateToTop();
+                        break;
+                      default:
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
         ),
       ),
       body: TabBarView(
