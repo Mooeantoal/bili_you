@@ -87,8 +87,10 @@ class ITGSAComplianceHelper {
   static Future<DisplayMode> getRecommendedDisplayMode() async {
     return DisplayMode.enhancedImmersive;
   }
-}于Android官方Edge-to-Edge指南
-void _setImmersiveSystemUIStyle() {
+}
+
+/// 设置沉浸式系统UI样式 - 基于Android官方Edge-to-Edge指南
+void setImmersiveSystemUIStyle() {
   // Android官方推荐的Edge-to-Edge系统UI样式
   // 参考：https://developer.android.com/develop/ui/views/layout/edge-to-edge
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -110,59 +112,6 @@ void _setImmersiveSystemUIStyle() {
   
   // 注意：在实际应用中，还应该使用WindowInsetsCompat处理边距
   // 以避免内容与系统UI重叠，这在Flutter中通过SafeArea和MediaQuery.viewInsets处理
-}
-
-//进入全屏显示 - 简化且有效的沉浸式实现
-Future<void> enterFullScreen() async {
-  // 使用最直接有效的immersiveSticky模式，这是最可靠的全屏方案
-  await SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.immersiveSticky,
-  );
-}
-
-//退出全屏显示 - 恢复到应用默认的Edge-to-Edge状态
-Future<void> exitFullScreen() async {
-  // 恢复到应用启动时的Edge-to-Edge模式
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  
-  // 确保系统UI样式正确恢复
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarDividerColor: Colors.transparent,
-  ));
-}
-
-//真正的金标联盟+Android结合方案 - 单独的方法
-Future<void> enterEnhancedImmersiveMode() async {
-  DisplayMode mode = await ITGSAComplianceHelper.getRecommendedDisplayMode();
-  
-  switch (mode) {
-    case DisplayMode.enhancedImmersive:
-      // 金标联盟 + Android官方Edge-to-Edge结合方案
-      // 使用edgeToEdge模式，保持系统UI可见但内容延伸到边缘
-      await SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.edgeToEdge,
-      );
-      _setImmersiveSystemUIStyle();
-      break;
-      
-    case DisplayMode.fullImmersive:
-      // 传统沉浸式模式 - 完全隐藏系统UI
-      await SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.immersiveSticky,
-      );
-      break;
-      
-    case DisplayMode.standard:
-    default:
-      // 标准模式，符合金标联盟基础要求
-      await SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.manual,
-        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
-      );
-      break;
-  }
 }
 
 //横屏

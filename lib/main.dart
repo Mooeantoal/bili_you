@@ -84,10 +84,7 @@ class MyApp extends StatelessWidget {
                             defaultValue: 1.0), // 改为1.0避免界面过小
                     // 视觉密度优化 - 增加界面元素间距
                     accessibleNavigation: false,
-                    // 触摸目标大小优化
-                    gestureSettings: MediaQuery.of(context).gestureSettings.copyWith(
-                      physicalDoubleTapSlop: 8.0,
-                    ),
+                    // 移除gestureSettings.copyWith调用，因为API不存在
                   ),
                   child: child));
     }));
