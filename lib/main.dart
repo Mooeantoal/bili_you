@@ -77,10 +77,18 @@ class MyApp extends StatelessWidget {
               ? const SizedBox()
               : MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                      textScaleFactor: MediaQuery.of(context).textScaleFactor *
-                          SettingsUtil.getValue(
-                              SettingsStorageKeys.textScaleFactor,
-                              defaultValue: 1.0)),
+                    // 字体缩放 - 提高默认值以避免界面过于拥挤
+                    textScaleFactor: MediaQuery.of(context).textScaleFactor *
+                        SettingsUtil.getValue(
+                            SettingsStorageKeys.textScaleFactor,
+                            defaultValue: 1.0), // 改为1.0避免界面过小
+                    // 视觉密度优化 - 增加界面元素间距
+                    accessibleNavigation: false,
+                    // 触摸目标大小优化
+                    gestureSettings: MediaQuery.of(context).gestureSettings.copyWith(
+                      physicalDoubleTapSlop: 8.0,
+                    ),
+                  ),
                   child: child));
     }));
   }

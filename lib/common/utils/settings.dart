@@ -154,6 +154,30 @@ class SettingsUtil {
     await SettingsUtil.setValue(
         SettingsStorageKeys.preferAudioQuality, quality.code);
   }
+  
+  /// 获取界面密度缩放值
+  static double getInterfaceDensity() {
+    return getValue(SettingsStorageKeys.interfaceDensity, defaultValue: 1.0);
+  }
+  
+  /// 获取卡片间距值
+  static double getCardPadding() {
+    return getValue(SettingsStorageKeys.cardPadding, defaultValue: 12.0);
+  }
+  
+  /// 获取列表项缩放值
+  static double getListItemScale() {
+    return getValue(SettingsStorageKeys.listItemScale, defaultValue: 1.0);
+  }
+  
+  /// 应用界面密度优化设置
+  static Future<void> applyDensityOptimization() async {
+    // 推荐设置：适合解决DPI过小的问题
+    await setValue(SettingsStorageKeys.textScaleFactor, 1.1);
+    await setValue(SettingsStorageKeys.interfaceDensity, 1.2);
+    await setValue(SettingsStorageKeys.cardPadding, 16.0);
+    await setValue(SettingsStorageKeys.listItemScale, 1.1);
+  }
 }
 
 extension ThemeModeString on ThemeMode {

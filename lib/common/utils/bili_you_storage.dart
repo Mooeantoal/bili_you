@@ -87,6 +87,15 @@ class SettingsStorageKeys {
   ///字体大小缩放
   static const String textScaleFactor = 'textScaleFactor';
 
+  ///界面密度设置
+  static const String interfaceDensity = 'interfaceDensity';
+
+  ///卡片间距设置
+  static const String cardPadding = 'cardPadding';
+
+  ///列表项高度缩放
+  static const String listItemScale = 'listItemScale';
+
   ///偏好视频编码（avc或hev）
   static const String preferVideoCodec = "preferVideoCodec";
   static const String preferAudioQuality = "preferAudioQuality";

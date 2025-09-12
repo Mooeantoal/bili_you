@@ -30,6 +30,31 @@ class OthersSettingsPage extends StatelessWidget {
           },
         ),
         const SettingsLabel(
+          text: '界面密度测试',
+        ),
+        ListTile(
+          title: const Text(
+            "一键优化界面密度",
+            style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+          ),
+          subtitle: const Text("解决DPI过小导致的界面元素拥挤问题"),
+          onTap: () async {
+            try {
+              await SettingsUtil.applyDensityOptimization();
+              await Get.forceAppUpdate();
+              Get.rawSnackbar(
+                message: '已应用界面密度优化设置！字体1.1x，密度1.2x，间距16px',
+                duration: const Duration(seconds: 3),
+              );
+            } catch (e) {
+              Get.rawSnackbar(
+                message: '优化失败：$e',
+                duration: const Duration(seconds: 2),
+              );
+            }
+          },
+        ),
+        const SettingsLabel(
           text: '显示模式测试',
         ),
         ListTile(

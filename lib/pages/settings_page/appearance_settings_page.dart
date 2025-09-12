@@ -146,31 +146,106 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
               }
             },
           ),
-          const SettingsLabel(text: '字体'),
+          const SettingsLabel(text: '字体和界面密度'),
           ListTile(
-            title: const Text('缩放倍数'),
-            subtitle: Text(SettingsUtil.getValue(
+            title: const Text('字体缩放倍数'),
+            subtitle: Text('当前: ${SettingsUtil.getValue(
                     SettingsStorageKeys.textScaleFactor,
-                    defaultValue: 0.75)
-                .toString()),
+                    defaultValue: 1.0).toStringAsFixed(2)}x'),
             onTap: () => showDialog(
               context: context,
-              builder: (context) => SimpleDialog(
-                title: const Text('缩放倍数'),
-                children: [
-                  Slider(
-                    value: SettingsUtil.getValue(
+              builder: (context) => AlertDialog(
+                title: const Text('字体缩放倍数'),
+                content: StatefulBuilder(
+                  builder: (context, setState) {
+                    double currentValue = SettingsUtil.getValue(
                         SettingsStorageKeys.textScaleFactor,
-                        defaultValue: 0.75),
-                    min: 0.5,
-                    max: 2,
-                    divisions: 6,
-                    onChanged: (value) async {
-                      await SettingsUtil.setValue(
-                          SettingsStorageKeys.textScaleFactor, value);
-                      await Get.forceAppUpdate();
-                    },
-                  )
+                        defaultValue: 1.0);
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('当前值: ${currentValue.toStringAsFixed(2)}x'),
+                        const SizedBox(height: 16),
+                        Slider(
+                          value: currentValue,
+                          min: 0.8,
+                          max: 1.4,
+                          divisions: 12,
+                          label: '${currentValue.toStringAsFixed(2)}x',
+                          onChanged: (value) async {
+                            await SettingsUtil.setValue(
+                                SettingsStorageKeys.textScaleFactor, value);
+                            setState(() {});
+                            // 立即应用新设置
+                            await Get.forceAppUpdate();
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('推荐: 1.0x - 1.2x 避免界面过于拥挤',
+                            style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    );
+                  },
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('关闭'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ListTile(
+            title: const Text('界面密度设置'),
+            subtitle: const Text('调整列表和卡片间距，解决DPI过小导致的拥挤问题'),
+            onTap: () => showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('界面密度优化'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('这些设置可以解决DPI过小导致的界面元素拥挤问题'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        // 优化预设: 适合大多数设备的舒适设置
+                        await SettingsUtil.setValue(SettingsStorageKeys.textScaleFactor, 1.1);
+                        await SettingsUtil.setValue(SettingsStorageKeys.interfaceDensity, 1.2);
+                        await SettingsUtil.setValue(SettingsStorageKeys.cardPadding, 16.0);
+                        await Get.forceAppUpdate();
+                        Navigator.pop(context);
+                        Get.rawSnackbar(
+                          message: '已应用推荐设置：字体 1.1x，密度 1.2x，间距 16px',
+                          duration: const Duration(seconds: 3),
+                        );
+                      },
+                      child: const Text('一键优化（推荐）'),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () async {
+                        // 恢复默认设置
+                        await SettingsUtil.setValue(SettingsStorageKeys.textScaleFactor, 1.0);
+                        await SettingsUtil.setValue(SettingsStorageKeys.interfaceDensity, 1.0);
+                        await SettingsUtil.setValue(SettingsStorageKeys.cardPadding, 12.0);
+                        await Get.forceAppUpdate();
+                        Navigator.pop(context);
+                        Get.rawSnackbar(
+                          message: '已恢复默认设置',
+                          duration: const Duration(seconds: 2),
+                        );
+                      },
+                      child: const Text('恢复默认'),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('关闭'),
+                  ),
                 ],
               ),
             ),
