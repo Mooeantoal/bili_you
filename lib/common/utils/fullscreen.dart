@@ -5,14 +5,15 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:flutter/material.dart';
 
 /// 显示模式枚举 - 结合金标联盟标准和Android官方方案
 enum DisplayMode {
-  /// 标准模式 - 符合金标联盟基础要求
+  /// 标准模式 - 符合金标联盟基础要求，保持系统UI可见
   standard,
   /// 增强沉浸式 - Android官方Edge-to-Edge + 金标联盟用户体验优化
   enhancedImmersive,
-  /// 完全沉浸式 - 传统全屏模式
+  /// 完全沉浸式 - 传统全屏模式，完全隐藏系统UI
   fullImmersive,
 }
 
@@ -60,6 +61,31 @@ class ITGSAComplianceHelper {
   }
 }
 
+/// 设置沉浸式系统UI样式 - 基于Android官方Edge-to-Edge指南
+void _setImmersiveSystemUIStyle() {
+  // Android官方推荐的Edge-to-Edge系统UI样式
+  // 参考：https://developer.android.com/develop/ui/views/layout/edge-to-edge
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    // 透明状态栏和导航栏背景 - 官方enableEdgeToEdge()的默认行为
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    
+    // 状态栏内容可见性 - 根据官方文档自动适配主题
+    statusBarIconBrightness: Brightness.dark, // 深色图标适配浅色背景
+    statusBarBrightness: Brightness.light, // iOS兼容性
+    
+    // 导航栏内容可见性 - 确保按钮可见
+    systemNavigationBarIconBrightness: Brightness.dark,
+    
+    // 启用导航栏对比度增强（Android 10+）- 官方推荐的可访问性特性
+    systemNavigationBarContrastEnforced: true,
+  ));
+  
+  // 注意：在实际应用中，还应该使用WindowInsetsCompat处理边距
+  // 以避免内容与系统UI重叠，这在Flutter中通过SafeArea和MediaQuery.viewInsets处理
+}
+
 //进入全屏显示 - 结合两种方案的增强版本
 Future<void> enterFullScreen() async {
   DisplayMode mode = await ITGSAComplianceHelper.getRecommendedDisplayMode();
@@ -67,46 +93,43 @@ Future<void> enterFullScreen() async {
   switch (mode) {
     case DisplayMode.enhancedImmersive:
       // 金标联盟 + Android官方Edge-to-Edge结合方案
+      // 使用edgeToEdge模式，保持系统UI可见但内容延伸到边缘
       await SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.edgeToEdge,
       );
+      _setImmersiveSystemUIStyle();
       break;
+      
     case DisplayMode.fullImmersive:
-      // 传统沉浸式模式
+      // 传统沉浸式模式 - 完全隐藏系统UI
       await SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.immersiveSticky,
       );
       break;
+      
     case DisplayMode.standard:
     default:
       // 标准模式，符合金标联盟基础要求
       await SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
-        overlays: [],
+        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
       );
       break;
   }
 }
 
-//退出全屏显示 - 智能恢复模式
+//退出全屏显示 - 智能恢复到应用默认的沉浸式状态
 Future<void> exitFullScreen() async {
-  late SystemUiMode mode;
-  bool adaptiveEdge = SettingsUtil.getValue(
-      SettingsStorageKeys.adaptiveEdgeToEdge, 
-      defaultValue: true);
-      
-  if ((Platform.isAndroid &&
-          (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 29) ||
-      !Platform.isAndroid) {
-    // Android 10+ 或非Android平台：使用Edge-to-Edge模式（符合金标联盟现代化要求）
-    mode = adaptiveEdge ? SystemUiMode.edgeToEdge : SystemUiMode.manual;
-  } else {
-    // 旧版Android：使用传统模式
-    mode = SystemUiMode.manual;
-  }
+  // 恢复到应用启动时设置的Edge-to-Edge模式
+  // 这与main.dart中的初始化设置保持一致
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
-  await SystemChrome.setEnabledSystemUIMode(mode,
-      overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+  // 恢复应用默认的系统UI样式
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    statusBarColor: Colors.transparent,
+  ));
 }
 
 //横屏
