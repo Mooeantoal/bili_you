@@ -19,7 +19,7 @@ class NativeReplyDebugPage extends StatefulWidget {
 class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
   String _debugInfo = '准备开始调试...';
   bool _isDebugging = false;
-  final TextEditingController _bvidController = TextEditingController(text: 'BV1xx411c7mD');
+  final TextEditingController _bvidController = TextEditingController(text: 'BV16hHDzSEzt');
   final FocusNode _bvidFocusNode = FocusNode(); // 添加焦点节点
   List<Map<String, dynamic>> _errorLogs = []; // 错误日志记录
 
@@ -470,17 +470,17 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
       _updateDebugInfo('   - BVID格式验证: ${isValidFormat ? "✅ 有效" : "❌ 无效"}\n');
       
       if (!isValidFormat) {
-        _updateDebugInfo('   - 错误详情: BVID格式不正确，应为类似 BV1xx411c7mD 的格式\n');
+        _updateDebugInfo('   - 错误详情: BVID格式不正确，应为12位以BV开头的字符串\n');
         _logError('BVID_FORMAT_ERROR', 'Invalid BVID format', {
           'input_bvid': bvid,
           'expected_length': 12,
           'actual_length': bvid.length,
-          'expected_format': 'BV1**4*1*7**',
+          'expected_format': 'BV + 10位字符（数字和字母）',
           'algorithm': 'official_bilibili_algorithm',
         });
         _showErrorDialog(
           'BVID格式错误', 
-          'BVID格式不正确。\n\n输入: $bvid\n\n正确格式应为: BV1xx411c7mD\n\n请检查输入的BVID是否完整且正确。\n\n注：已升级为官方算法实现。'
+          'BVID格式不正确。\n\n输入: $bvid\n\n正确格式应为: BV + 10位字符\n示例: BV1xx411c7mD, BV16hHDzSEzt\n\n请检查输入的BVID是否完整且正确。\n\n注：已升级为官方算法实现。'
         );
         return;
       }
@@ -629,32 +629,59 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
   void _addTestLog() {
     String testBvid = _bvidController.text.trim();
     if (testBvid.isEmpty) {
-      testBvid = 'BV1xx411c7mD';
+      testBvid = 'BV16hHDzSEzt'; // 使用真实的新格式BVID
     }
     
-    _logError('TEST_LOG_ERROR', '这是一个测试日志记录', {
-      'test_bvid': testBvid,
-      'test_type': 'user_generated_test',
-      'timestamp': DateTime.now().toIso8601String(),
-      'platform': 'android',
-      'app_version': '1.1.5+15',
-      'error_details': {
-        'description': '用户手动添加的测试错误日志',
-        'severity': 'low',
-        'category': 'testing',
-        'reproducible': true,
-      },
-    });
+    // 测试新的BVID验证逻辑
+    bool isValid = BvidAvidUtil.isBvid(testBvid);
+    
+    if (isValid) {
+      // BVID格式正确，尝试转换
+      try {
+        int avid = BvidAvidUtil.bvid2Av(testBvid);
+        _logError('TEST_SUCCESS', '测试转换成功', {
+          'test_bvid': testBvid,
+          'converted_avid': avid,
+          'test_type': 'format_validation_success',
+          'timestamp': DateTime.now().toIso8601String(),
+          'validation_result': 'passed',
+        });
+        
+        Get.snackbar(
+          '✅ 测试成功',
+          '$testBvid 格式验证通过，转换为 av$avid',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } catch (e) {
+        _logError('TEST_CONVERSION_ERROR', '转换失败但格式正确', {
+          'test_bvid': testBvid,
+          'error': e.toString(),
+          'validation_result': 'format_ok_but_conversion_failed',
+        });
+      }
+    } else {
+      // BVID格式不正确
+      _logError('TEST_FORMAT_ERROR', '测试BVID格式验证失败', {
+        'test_bvid': testBvid,
+        'test_type': 'format_validation_test',
+        'timestamp': DateTime.now().toIso8601String(),
+        'validation_result': 'failed',
+        'length': testBvid.length,
+        'starts_with_bv': testBvid.toUpperCase().startsWith('BV'),
+      });
+      
+      Get.snackbar(
+        '❌ 格式错误',
+        '$testBvid 格式验证失败',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
     
     setState(() {}); // 刷新UI显示新日志
-    
-    Get.snackbar(
-      '测试日志已添加',
-      '已生成一条测试错误日志，现在可以测试导出功能',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
   }
 
   @override
@@ -708,7 +735,7 @@ class _NativeReplyDebugPageState extends State<NativeReplyDebugPage> {
               controller: _bvidController,
               focusNode: _bvidFocusNode,
               decoration: InputDecoration(
-                hintText: '输入BVID，如: BV1xx411c7mD',
+                hintText: '输入BVID，如: BV1xx411c7mD, BV16hHDzSEzt',
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 prefixIcon: Icon(Icons.video_library),

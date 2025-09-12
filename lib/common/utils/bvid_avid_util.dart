@@ -81,28 +81,30 @@ class BvidAvidUtil {
   }
 
   ///判断是否是bvid
-  ///严格的格式验证
+  ///更新的格式验证 - 适应B站新BVID格式
   static bool isBvid(String bvid) {
-    // 首先检查長度
-    if (bvid.length != defaultBvid.length) {
+    // 基本格式检查
+    if (bvid.length != 12) {
       return false;
     }
     
     // 转为大写进行比较
     bvid = bvid.toUpperCase();
     
-    // 检查固定位置的字符
-    for (int i = 0; i < bvid.length; i++) {
-      if (defaultBvid[i] != '') {
-        if (bvid.characters.elementAt(i) != defaultBvid[i]) {
-          return false;
-        }
-      }
+    // 必须以 "BV" 开头
+    if (!bvid.startsWith('BV')) {
+      return false;
     }
     
-    // 检查可变位置的字符是否在允许的表中
-    for (int seqIndex in seqArray) {
-      String char = bvid.characters.elementAt(seqIndex);
+    // 检查第3位必须是数字或字母（通常是'1'但也可能是其他）
+    String thirdChar = bvid.characters.elementAt(2);
+    if (!table.contains(thirdChar) && !'0123456789'.contains(thirdChar)) {
+      return false;
+    }
+    
+    // 检查所有可变位置的字符是否在允许的表中
+    for (int i = 2; i < bvid.length; i++) {
+      String char = bvid.characters.elementAt(i);
       if (!table.contains(char)) {
         return false;
       }
