@@ -42,7 +42,7 @@ dependencies:
       url: https://github.com/lucinhu/flutter_ns_danmaku.git   
   cached_network_image: ^3.4.1
   photo_view: ^0.15.0  
-  card_swiper: ^3.1.0  
+  card_swiper: ^3.0.1  
   frosted_glass: ^0.0.1  # 添加frosted_glass包
   glassmorphism: ^3.0.0  # 添加glassmorphism包作为替代方案
 
