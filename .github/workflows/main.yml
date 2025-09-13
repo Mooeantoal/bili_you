@@ -1,15 +1,13 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Build and Release
+name: builder
 
 # git push --tags 执行时候进行编译
 on:
   push:
     tags:
       - v*
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -23,7 +21,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # Setup Java JDK
+      # Runs a single command using the runners shell
       - name: Setup Java JDK
         uses: actions/setup-java@v3
         with: 
@@ -31,54 +29,43 @@ jobs:
             java-version: "17"
             token: ${{secrets.GITHUB_TOKEN}}
 
-      # Setup Flutter
       - name: Flutter action
         uses: subosito/flutter-action@v2
         with:
-            flutter-version: 3.35.2
+            flutter-version: 3.10.3
             channel: stable
       
-      # Create local properties
-      - name: Create local properties
-        run: |
-          echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
-          echo "flutter.sdk=$FLUTTER_HOME" >> android/local.properties
-
-      # Decode keystore
       - name: Decode keystore
         run: |
           echo $ENCODED_KEYSTORE | base64 -di > android/app/keystore.jks
         env:
           ENCODED_KEYSTORE: ${{ secrets.KEYSTORE }}
 
-      # Get dependencies
-      - name: Get dependencies
-        run: flutter pub get
-
-      # Clean build
-      - name: Clean build
-        run: flutter clean
-
-      # Build APK
+      - run: flutter pub get
+      # 打包apk
       - name: Collect Apks
-        run: flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
+        run: flutter build apk --release --split-per-abi
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD}}
 
-      # Upload artifacts
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: flutter-apk
-          path: |
-            build/app/outputs/flutter-apk/*.apk
-          if-no-files-found: error
+      # # 打包linux-x64
+      # - run: sudo apt-get update -y
+      # - run: sudo apt-get install -y  clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev binutils coreutils desktop-file-utils fakeroot fuse libgdk-pixbuf2.0-dev patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
+      # - run: flutter build linux --release --target-platform linux-x64
 
-      # Release installation packages (only for tags)
+      # # 复制linux二进制文件到AppDir目录,准备打包
+      # - run: rm -rf AppDir || true
+      # - run: cp -r build/linux/x64/release/bundle AppDir
+      # # 打包成AppImage
+      # - run: wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.0.0-beta.1/appimage-builder-1.0.0-677acbd-x86_64.AppImage 
+      # - run: chmod +x appimage-builder-x86_64.AppImage
+      # - run: sudo mv appimage-builder-x86_64.AppImage /usr/local/bin/appimage-builder
+      # - run: appimage-builder --recipe AppImageBuilder.yml
+          
+      # 发布安装包
       - name: Release Packages
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: ncipollo/release-action@v1
         with:
             artifacts: "build/app/outputs/flutter-apk/app-*.apk"

@@ -39,6 +39,7 @@ class LiquidGlassCard extends StatelessWidget {
         height: height,
         borderRadius: borderRadius,
         blur: blur,
+        opacity: opacity,
         border: border,
         linearGradient: LinearGradient(
           begin: Alignment.topLeft,
