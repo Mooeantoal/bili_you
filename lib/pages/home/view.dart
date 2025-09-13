@@ -27,17 +27,20 @@ class _HomePageState extends State<HomePage>
   final RecommendPage recommendPage = const RecommendPage();
   final PopularVideoPage popularVideoPage = const PopularVideoPage();
   final LiveTabPage liveTabPage = const LiveTabPage();
-  // 移除 tabsList，因为我们现在使用自定义标签栏
+  // 添加 PageController 来控制 PageView
+  late PageController _pageController;
 
   @override
   void initState() {
     controller = Get.put(HomeController());
-    // 移除 tabController 初始化，因为我们现在使用自定义标签栏
+    // 初始化 PageController，默认选中"推荐"标签页
+    _pageController = PageController(initialPage: 1);
     super.initState();
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     controller.dispose();
     super.dispose();
   }
@@ -55,17 +58,20 @@ class _HomePageState extends State<HomePage>
         children: [
           _buildTabBar(),
           Expanded(
-            child: Obx(() => IndexedStack(
-              index: controller.selectedIndex.value,
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                // 当页面切换时，更新选中的标签
+                controller.selectedIndex.value = index;
+              },
               children: [
                 liveTabPage,
                 recommendPage,
                 popularVideoPage,
                 const Center(child: Text("分区页面")),
                 const Center(child: Text("番剧页面")),
-                // 可以根据需要添加更多页面
               ],
-            )),
+            ),
           ),
         ],
       ),
@@ -79,31 +85,31 @@ class _HomePageState extends State<HomePage>
         children: [
           // 搜索栏
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
-                borderRadius: BorderRadius.circular(24),
+            child: SearchBar(
+              leading: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(Icons.search),
               ),
-              child: TextField(
-                readOnly: true, // 设置为只读，点击时跳转到搜索页面
-                onTap: () {
-                  // 跳转到搜索页面
-                  Navigator.of(context).push(
-                    GetPageRoute(
-                      page: () => SearchInputPage(
-                        key: ValueKey(
-                            'SearchInputPage:${controller.defaultSearchWord.value}'),
-                        defaultHintSearchWord: controller.defaultSearchWord.value,
-                      ),
+              hintText: controller.defaultSearchWord.value,
+              onTap: () {
+                // 跳转到搜索页面
+                Navigator.of(context).push(
+                  GetPageRoute(
+                    page: () => SearchInputPage(
+                      key: ValueKey(
+                          'SearchInputPage:${controller.defaultSearchWord.value}'),
+                      defaultHintSearchWord: controller.defaultSearchWord.value,
                     ),
-                  );
-                },
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search),
-                  hintText: controller.defaultSearchWord.value,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                );
+              },
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
                 ),
+              ),
+              backgroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.surfaceVariant,
               ),
             ),
           ),
@@ -135,52 +141,61 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildTabItem(String title, int index) {
-    bool isSelected = controller.selectedIndex.value == index;
     return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          controller.selectedIndex.value = index;
-          // 添加滚动到顶部的逻辑
-          switch (index) {
-            case 0:
-              //点击"直播"回到顶
-              Get.find<LiveTabPageController>().animateToTop();
-              break;
-            case 1:
-              //点击"推荐"回到顶
-              Get.find<RecommendController>().animateToTop();
-              break;
-            case 2:
-              Get.find<PopularVideoController>().animateToTop();
-              break;
-            default:
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
+      child: Obx(() {
+        bool isSelected = controller.selectedIndex.value == index;
+        return GestureDetector(
+          onTap: () {
+            controller.selectedIndex.value = index;
+            // 通过 PageController 跳转到对应页面
+            _pageController.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.ease,
+            );
+            
+            // 添加滚动到顶部的逻辑
+            switch (index) {
+              case 0:
+                //点击"直播"回到顶
+                Get.find<LiveTabPageController>().animateToTop();
+                break;
+              case 1:
+                //点击"推荐"回到顶
+                Get.find<RecommendController>().animateToTop();
+                break;
+              case 2:
+                Get.find<PopularVideoController>().animateToTop();
+                break;
+              default:
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isSelected
+                      ? Theme.of(Get.context!).colorScheme.primary
+                      : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+            ),
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
                 color: isSelected
                     ? Theme.of(Get.context!).colorScheme.primary
-                    : Colors.transparent,
-                width: 2,
+                    : Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
           ),
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: isSelected
-                  ? Theme.of(Get.context!).colorScheme.primary
-                  : Theme.of(Get.context!).colorScheme.onSurface,
-            ),
-          ),
-        ),
-      ),
+        );
+      }),
     );
   }
 

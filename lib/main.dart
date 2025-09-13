@@ -40,12 +40,12 @@ class MyApp extends StatelessWidget {
               colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
                   ? lightDynamic ?? BiliTheme.dynamic.themeDataLight.colorScheme
                   : SettingsUtil.currentTheme.themeDataLight.colorScheme,
-              useMaterial3: false), // 使用MD2风格
+              useMaterial3: true), // 使用MD3风格
           darkTheme: ThemeData(
               colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
                   ? darkDynamic ?? BiliTheme.dynamic.themeDataDark.colorScheme
                   : SettingsUtil.currentTheme.themeDataDark.colorScheme,
-              useMaterial3: false), // 使用MD2风格
+              useMaterial3: true), // 使用MD3风格
           home: const MainPage(),
           builder: (context, child) => child == null
               ? const SizedBox()

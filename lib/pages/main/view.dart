@@ -134,26 +134,23 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
           bottomNavigationBar: MediaQuery.of(context).size.width < 640
-              ? BottomNavigationBar(
-                  type: BottomNavigationBarType.fixed,
-                  currentIndex: controller.selectedIndex.value,
-                  onTap: (value) => onDestinationSelected(value),
-                  selectedItemColor: Theme.of(context).colorScheme.primary,
-                  unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  items: const [
-                    BottomNavigationBarItem(
+              ? NavigationBar(
+                  selectedIndex: controller.selectedIndex.value,
+                  onDestinationSelected: (value) => onDestinationSelected(value),
+                  destinations: const [
+                    NavigationDestination(
                       icon: Icon(Icons.home_outlined),
-                      activeIcon: Icon(Icons.home),
+                      selectedIcon: Icon(Icons.home),
                       label: "首页",
                     ),
-                    BottomNavigationBarItem(
+                    NavigationDestination(
                       icon: Icon(Icons.star_border_outlined),
-                      activeIcon: Icon(Icons.star),
+                      selectedIcon: Icon(Icons.star),
                       label: "动态",
                     ),
-                    BottomNavigationBarItem(
+                    NavigationDestination(
                       icon: Icon(Icons.person_outline),
-                      activeIcon: Icon(Icons.person),
+                      selectedIcon: Icon(Icons.person),
                       label: "我的",
                     ),
                   ],

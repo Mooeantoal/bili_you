@@ -20,7 +20,7 @@ class HomeController extends GetxController {
   // 移除 tabsList，因为我们现在使用自定义标签栏
   final int tabInitIndex = 1;
   RxInt tabIndex = 1.obs;
-  RxInt selectedIndex = 0.obs; // 添加 selectedIndex 状态管理
+  RxInt selectedIndex = 1.obs; // 添加 selectedIndex 状态管理
 
   _initData() async {
     refreshDefaultSearchWord();
