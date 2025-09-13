@@ -2,7 +2,7 @@ import 'package:bili_you/common/models/local/home/recommend_item_info.dart';
 import 'package:bili_you/common/utils/string_format_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:bili_you/common/widget/glass_card.dart'; // 导入液态玻璃卡片
+import 'dart:ui'; // 导入用于毛玻璃效果的库
 
 class WebStyleVideoCard extends StatelessWidget {
   final RecommendVideoItemInfo item;
@@ -34,17 +34,24 @@ class WebStyleVideoCard extends StatelessWidget {
                 Positioned(
                   bottom: 8,
                   right: 8,
-                  child: GlassCard(
-                    borderRadius: 8.0,
-                    backgroundColor: Colors.black.withOpacity(0.7),
-                    blurAmount: 5.0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    child: Text(
-                      StringFormatUtils.timeLengthFormat(item.timeLength),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4.0),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          StringFormatUtils.timeLengthFormat(item.timeLength),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),

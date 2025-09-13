@@ -11,7 +11,8 @@ import 'package:get/get.dart';
 import 'package:bili_you/pages/recommend/view.dart';
 import 'index.dart';
 import 'widgets/user_menu/view.dart';
-import 'package:bili_you/common/widget/glass_card.dart'; // 导入液态玻璃卡片
+import 'dart:ui'; // 导入用于毛玻璃效果的库
+import 'package:bili_you/common/widget/frosted_glass_card.dart'; // 导入毛玻璃卡片
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -52,10 +53,10 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 56,
-        title: GlassCard(
+        title: FrostedGlassCard(
           borderRadius: 28.0,
           backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
-          blurAmount: 10.0,
+          blurSigma: 10.0,
           child: MaterialButton(
             onLongPress: () {
               //长按进入测试界面
@@ -147,31 +148,35 @@ class _HomePageState extends State<HomePage>
           ),
         ),
         centerTitle: true,
-        bottom: GlassCard(
-          borderRadius: 12.0,
-          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.85),
-          blurAmount: 15.0,
-          child: TabBar(
-            isScrollable: true,
-            tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
-            controller: controller.tabController,
-            onTap: (index) {
-              if (controller.tabController!.indexIsChanging) return;
-              switch (index) {
-                case 0:
-                  //点击"直播"回到顶
-                  Get.find<LiveTabPageController>().animateToTop();
-                  break;
-                case 1:
-                  //点击"推荐"回到顶
-                  Get.find<RecommendController>().animateToTop();
-                  break;
-                case 2:
-                  Get.find<PopularVideoController>().animateToTop();
-                  break;
-                default:
-              }
-            },
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48.0),
+          child: FrostedGlassCard(
+            borderRadius: 12.0,
+            backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+            blurSigma: 15.0,
+            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: TabBar(
+              isScrollable: true,
+              tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
+              controller: controller.tabController,
+              onTap: (index) {
+                if (controller.tabController!.indexIsChanging) return;
+                switch (index) {
+                  case 0:
+                    //点击"直播"回到顶
+                    Get.find<LiveTabPageController>().animateToTop();
+                    break;
+                  case 1:
+                    //点击"推荐"回到顶
+                    Get.find<RecommendController>().animateToTop();
+                    break;
+                  case 2:
+                    Get.find<PopularVideoController>().animateToTop();
+                    break;
+                  default:
+                }
+              },
+            ),
           ),
         ),
       ),
