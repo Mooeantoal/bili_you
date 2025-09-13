@@ -88,37 +88,49 @@ class _MainPageState extends State<MainPage> {
           body: Row(
             children: [
               if (MediaQuery.of(context).size.width >= 640)
-                ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0), // iOS 16液态玻璃效果
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface.withOpacity(0.7), // 适度提高透明度
-                        border: Border(
-                          right: BorderSide(
-                            color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
-                            width: 0.5,
+                Container(
+                  // 为侧边栏添加边距以避免遮挡系统导航条
+                  margin: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom > 0 
+                      ? MediaQuery.of(context).padding.bottom 
+                      : 8, // 如果没有系统导航条边距，则使用默认值8
+                  ),
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0), // iOS 16液态玻璃效果
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface.withOpacity(0.7), // 适度提高透明度
+                          border: Border(
+                            right: BorderSide(
+                              color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
+                              width: 0.5,
+                            ),
+                          ),
+                          // 为侧边栏添加圆角以增强视觉效果
+                          borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(20),
                           ),
                         ),
-                      ),
-                      child: NavigationRail(
-                        backgroundColor: Colors.transparent, // 透明背景
-                        extended: false,
-                        destinations: const [
-                          NavigationRailDestination(
-                            icon: Icon(Icons.home_outlined),
-                            selectedIcon: Icon(Icons.home),
-                            label: Text("首页"),
-                          ),
-                          NavigationRailDestination(
-                            icon: Icon(Icons.star_border_outlined),
-                            label: Text("动态"),
-                            selectedIcon: Icon(Icons.star),
-                          ),
-                        ],
-                        selectedIndex: controller.selectedIndex.value,
-                        onDestinationSelected: (value) =>
-                            onDestinationSelected(value),
+                        child: NavigationRail(
+                          backgroundColor: Colors.transparent, // 透明背景
+                          extended: false,
+                          destinations: const [
+                            NavigationRailDestination(
+                              icon: Icon(Icons.home_outlined),
+                              selectedIcon: Icon(Icons.home),
+                              label: Text("首页"),
+                            ),
+                            NavigationRailDestination(
+                              icon: Icon(Icons.star_border_outlined),
+                              label: Text("动态"),
+                              selectedIcon: Icon(Icons.star),
+                            ),
+                          ],
+                          selectedIndex: controller.selectedIndex.value,
+                          onDestinationSelected: (value) =>
+                              onDestinationSelected(value),
+                        ),
                       ),
                     ),
                   ),
@@ -134,45 +146,57 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
           bottomNavigationBar: MediaQuery.of(context).size.width < 640
-              ? ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0), // iOS 16液态玻璃效果
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface.withOpacity(0.7), // 适度提高透明度
-                        border: Border(
-                          top: BorderSide(
-                            color: Theme.of(context).colorScheme.outline.withOpacity(0.15), // 更轻微的边框
-                            width: 0.5,
+              ? Container(
+                  // 为底栏添加边距以避免遮挡系统导航条
+                  margin: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom > 0 
+                      ? MediaQuery.of(context).padding.bottom 
+                      : 8, // 如果没有系统导航条边距，则使用默认值8
+                  ),
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0), // iOS 16液态玻璃效果
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface.withOpacity(0.7), // 适度提高透明度
+                          border: Border(
+                            top: BorderSide(
+                              color: Theme.of(context).colorScheme.outline.withOpacity(0.15), // 更轻微的边框
+                              width: 0.5,
+                            ),
+                          ),
+                          // 为底栏添加圆角以增强视觉效果
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
                           ),
                         ),
-                      ),
-                      child: BottomNavigationBar(
-                        type: BottomNavigationBarType.fixed,
-                        currentIndex: controller.selectedIndex.value,
-                        onTap: (value) => onDestinationSelected(value),
-                        // iOS 16液态玻璃风格的特性设置
-                        elevation: 0, // 移除默认阴影，使用模糊效果
-                        backgroundColor: Colors.transparent, // 透明背景
-                        selectedItemColor: Theme.of(context).colorScheme.primary,
-                        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8), // 轻微降低对比度
-                        showSelectedLabels: true,
-                        showUnselectedLabels: true,
-                        selectedFontSize: 12.0,
-                        unselectedFontSize: 10.0,
-                        iconSize: 24.0,
-                        items: const [
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.home_outlined),
-                            activeIcon: Icon(Icons.home),
-                            label: "首页",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.star_border_outlined),
-                            activeIcon: Icon(Icons.star),
-                            label: "动态",
-                          ),
-                        ],
+                        child: BottomNavigationBar(
+                          type: BottomNavigationBarType.fixed,
+                          currentIndex: controller.selectedIndex.value,
+                          onTap: (value) => onDestinationSelected(value),
+                          // iOS 16液态玻璃风格的特性设置
+                          elevation: 0, // 移除默认阴影，使用模糊效果
+                          backgroundColor: Colors.transparent, // 透明背景
+                          selectedItemColor: Theme.of(context).colorScheme.primary,
+                          unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8), // 轻微降低对比度
+                          showSelectedLabels: true,
+                          showUnselectedLabels: true,
+                          selectedFontSize: 12.0,
+                          unselectedFontSize: 10.0,
+                          iconSize: 24.0,
+                          items: const [
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.home_outlined),
+                              activeIcon: Icon(Icons.home),
+                              label: "首页",
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.star_border_outlined),
+                              activeIcon: Icon(Icons.star),
+                              label: "动态",
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

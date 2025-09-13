@@ -22,9 +22,10 @@ void main() async {
 
 /// 初始化系统UI设置 - 专门针对导航栏沉浸优化
 void _initializeSystemUI() {
-  // 使用沉浸式粘性模式作为默认模式
+  // 使用默认模式，状态栏和导航栏默认显示
   SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.immersiveSticky,
+    SystemUiMode.manual,
+    overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
   );
   
   // 设置首选屏幕方向

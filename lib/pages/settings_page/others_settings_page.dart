@@ -58,39 +58,66 @@ class OthersSettingsPage extends StatelessWidget {
         const SettingsLabel(
           text: '显示模式测试',
         ),
-        // 保留简单的直接全屏测试
+        // 更新简单直接全屏测试
         ListTile(
           title: const Text(
             "测试简单直接全屏",
             style: TextStyle(color: Colors.red),
           ),
-          subtitle: const Text("最简单的immersiveSticky模式测试"),
+          subtitle: const Text("测试手动全屏模式切换"),
           onTap: () async {
             try {
-              // 直接使用最简单的全屏模式
+              // 测试进入全屏模式
               await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
               Get.rawSnackbar(
-                message: '已进入简单全屏模式（immersiveSticky）',
+                message: '已进入全屏模式（immersiveSticky）',
                 duration: const Duration(seconds: 2),
               );
               
-              // 3秒后自动退出
+              // 3秒后自动退出全屏模式，恢复默认模式
               Future.delayed(const Duration(seconds: 3), () async {
-                await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                await SystemChrome.setEnabledSystemUIMode(
+                  SystemUiMode.manual,
+                  overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
+                );
                 Get.rawSnackbar(
-                  message: '已退出简单全屏模式',
+                  message: '已退出全屏模式，恢复默认显示',
                   duration: const Duration(seconds: 2),
                 );
               });
             } catch (e) {
               Get.rawSnackbar(
-                message: '简单测试失败：$e',
+                message: '全屏测试失败：$e',
                 duration: const Duration(seconds: 2),
               );
             }
           },
         ),
-        // 删除其他显示模式测试选项
+        // 添加恢复默认显示模式的选项
+        ListTile(
+          title: const Text(
+            "恢复默认显示模式",
+            style: TextStyle(color: Colors.blue),
+          ),
+          subtitle: const Text("恢复状态栏和导航栏默认显示"),
+          onTap: () async {
+            try {
+              await SystemChrome.setEnabledSystemUIMode(
+                SystemUiMode.manual,
+                overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
+              );
+              Get.rawSnackbar(
+                message: '已恢复默认显示模式',
+                duration: const Duration(seconds: 2),
+              );
+            } catch (e) {
+              Get.rawSnackbar(
+                message: '恢复默认模式失败：$e',
+                duration: const Duration(seconds: 2),
+              );
+            }
+          },
+        ),
       ]),
     );
   }

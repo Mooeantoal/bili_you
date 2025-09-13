@@ -53,6 +53,8 @@ class _HomePageState extends State<HomePage>
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(112), // 设置appBar的高度为搜索框(56) + 标签栏(56)的总高度
         child: Container(
+          // 添加顶部间距，避免遮挡状态栏
+          margin: const EdgeInsets.only(top: 24), // 为状态栏留出空间
           decoration: BoxDecoration(
             // 添加轻微的阴影效果，模拟玻璃的立体感
             boxShadow: [
@@ -220,43 +222,37 @@ class _HomePageState extends State<HomePage>
                       child: ClipRRect(
                         borderRadius:
                             const BorderRadius.vertical(bottom: Radius.circular(12)),
-                        child: ClipRect(
-                          // 添加ClipRect包装BackdropFilter
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                                    width: 0.5,
-                                  ),
-                                ),
-                              ),
-                              child: TabBar(
-                                isScrollable: true,
-                                tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
-                                controller: controller.tabController,
-                                onTap: (index) {
-                                  if (controller.tabController!.indexIsChanging) return;
-                                  switch (index) {
-                                    case 0:
-                                      //点击"直播"回到顶
-                                      Get.find<LiveTabPageController>().animateToTop();
-                                      break;
-                                    case 1:
-                                      //点击"推荐"回到顶
-                                      Get.find<RecommendController>().animateToTop();
-                                      break;
-                                    case 2:
-                                      Get.find<PopularVideoController>().animateToTop();
-                                      break;
-                                    default:
-                                  }
-                                },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                                width: 0.5,
                               ),
                             ),
+                          ),
+                          child: TabBar(
+                            isScrollable: true,
+                            tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
+                            controller: controller.tabController,
+                            onTap: (index) {
+                              if (controller.tabController!.indexIsChanging) return;
+                              switch (index) {
+                                case 0:
+                                  //点击"直播"回到顶
+                                  Get.find<LiveTabPageController>().animateToTop();
+                                  break;
+                                case 1:
+                                  //点击"推荐"回到顶
+                                  Get.find<RecommendController>().animateToTop();
+                                  break;
+                                case 2:
+                                  Get.find<PopularVideoController>().animateToTop();
+                                  break;
+                                default:
+                              }
+                            },
                           ),
                         ),
                       ),
@@ -268,20 +264,23 @@ class _HomePageState extends State<HomePage>
           ),
         ),
       ),
-      body: TabBarView(
-        controller: controller.tabController,
-        children: tabsList.map((e) {
-          switch (e['text']) {
-            case '直播':
-              return liveTabPage;
-            case '推荐':
-              return recommendPage;
-            case '热门':
-              return popularVideoPage;
-            default:
-              return const Center(child: Text("该功能暂无"));
-          }
-        }).toList(),
+      body: Container(
+        color: Theme.of(context).colorScheme.background, // 确保内容区域有清晰的背景
+        child: TabBarView(
+          controller: controller.tabController,
+          children: tabsList.map((e) {
+            switch (e['text']) {
+              case '直播':
+                return liveTabPage;
+              case '推荐':
+                return recommendPage;
+              case '热门':
+                return popularVideoPage;
+              default:
+                return const Center(child: Text("该功能暂无"));
+            }
+          }).toList(),
+        ),
       ),
     );
   }
