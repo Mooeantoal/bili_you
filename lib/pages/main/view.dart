@@ -44,20 +44,29 @@ class _MainPageState extends State<MainPage> {
       // 首页
       if (currentPage is HomePage) {
         var homeController = Get.find<HomeController>();
-        var controllerName = homeController
-            .tabsList[homeController.tabController!.index]['controller'];
+        // 更新逻辑以适应新的自定义标签栏
+        // 根据当前选中的标签页执行相应的刷新操作
         late dynamic controller;
-        if (controllerName == 'RecommendController') {
-          controller = Get.find<RecommendController>();
-        } else if (controllerName == "PopularVideoController") {
-          controller = Get.find<PopularVideoController>();
-        } else if (controllerName == "LiveTabPageController") {
-          controller = Get.find<LiveTabPageController>();
+        switch (homeController.selectedIndex.value) {
+          case 0: // 直播
+            controller = Get.find<LiveTabPageController>();
+            break;
+          case 1: // 推荐
+            controller = Get.find<RecommendController>();
+            break;
+          case 2: // 热门
+            controller = Get.find<PopularVideoController>();
+            break;
+          default:
+            controller = null;
         }
-        if (controller.scrollController.offset == 0) {
-          controller.refreshController.callRefresh();
-        } else {
-          controller.animateToTop();
+        
+        if (controller != null) {
+          if (controller.scrollController.offset == 0) {
+            controller.refreshController.callRefresh();
+          } else {
+            controller.animateToTop();
+          }
         }
       }
       // 动态
