@@ -43,7 +43,7 @@ dependencies:
   cached_network_image: ^3.3.1
   photo_view: ^0.14.0  
   card_swiper: ^3.0.1  
-  liquid_glass_renderer: ^0.0.3  # 添加液态玻璃渲染器
+  liquid_glass_renderer: ^0.1.1-dev.0  # 更新为建议的版本
 
   # 播放器
   media_kit: ^1.1.1
