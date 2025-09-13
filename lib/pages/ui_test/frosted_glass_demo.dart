@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frosted_glass/frosted_glass.dart';
+import 'package:bili_you/common/widget/frosted_glass_card.dart'; // 使用自定义的 FrostedGlassCard
 
 class FrostedGlassDemoPage extends StatelessWidget {
   const FrostedGlassDemoPage({Key? key}) : super(key: key);
@@ -24,9 +24,9 @@ class FrostedGlassDemoPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               // 默认的毛玻璃效果
-              FrostedGlass(
-                width: 300,
-                height: 100,
+              FrostedGlassCard(
+                blurSigma: 10.0,
+                backgroundColor: Colors.white.withOpacity(0.2),
                 child: const Center(
                   child: Text(
                     '默认毛玻璃效果',
@@ -39,14 +39,11 @@ class FrostedGlassDemoPage extends StatelessWidget {
               ),
               
               // 自定义的毛玻璃效果
-              FrostedGlass(
-                width: 300,
-                height: 100,
-                blur: 15.0,
-                opacity: 0.15,
-                borderRadius: BorderRadius.circular(20),
+              FrostedGlassCard(
+                blurSigma: 15.0,
+                backgroundColor: Colors.blue.withOpacity(0.15),
+                borderRadius: 20,
                 padding: const EdgeInsets.all(16),
-                overlayColor: Colors.blue,
                 child: const Center(
                   child: Text(
                     '自定义毛玻璃效果',
@@ -59,14 +56,11 @@ class FrostedGlassDemoPage extends StatelessWidget {
               ),
               
               // 低透明度的毛玻璃效果（更接近iOS液态玻璃）
-              FrostedGlass(
-                width: 300,
-                height: 100,
-                blur: 10.0,
-                opacity: 0.1,
-                borderRadius: BorderRadius.circular(15),
+              FrostedGlassCard(
+                blurSigma: 10.0,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                borderRadius: 15,
                 padding: const EdgeInsets.all(16),
-                overlayColor: Colors.white,
                 child: const Center(
                   child: Text(
                     'iOS风格液态玻璃',

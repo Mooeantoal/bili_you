@@ -99,7 +99,6 @@ class GlassEffectComparisonPage extends StatelessWidget {
       height: 120,
       borderRadius: 20,
       blur: 20.0,
-      opacity: 0.2,
       border: 2,
       linearGradient: LinearGradient(
         begin: Alignment.topLeft,

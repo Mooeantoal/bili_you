@@ -44,6 +44,7 @@ class LiquidGlassDemoPage extends StatelessWidget {
                 context,
                 '彩色液态玻璃',
                 Colors.blue,
+                0.2, // 添加 opacity 参数
               ),
             ],
           ),
@@ -56,21 +57,20 @@ class LiquidGlassDemoPage extends StatelessWidget {
     BuildContext context,
     String title,
     double blur,
-    double opacity,
+    double opacity, // 使用 opacity 参数
   ) {
     return GlassmorphicContainer(
       width: 300,
       height: 120,
       borderRadius: 20,
       blur: blur,
-      opacity: opacity,
       border: 2,
       linearGradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Theme.of(context).colorScheme.primary.withOpacity(0.1),
-          Theme.of(context).colorScheme.primary.withOpacity(0.05),
+          Theme.of(context).colorScheme.primary.withOpacity(0.1 * (opacity / 0.2)),
+          Theme.of(context).colorScheme.primary.withOpacity(0.05 * (opacity / 0.2)),
         ],
         stops: const [0.1, 1],
       ),
@@ -78,8 +78,8 @@ class LiquidGlassDemoPage extends StatelessWidget {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Theme.of(context).colorScheme.primary.withOpacity(0.5),
-          Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          Theme.of(context).colorScheme.primary.withOpacity(0.5 * (opacity / 0.2)),
+          Theme.of(context).colorScheme.primary.withOpacity(0.5 * (opacity / 0.2)),
         ],
       ),
       child: Container(
@@ -102,20 +102,20 @@ class LiquidGlassDemoPage extends StatelessWidget {
     BuildContext context,
     String title,
     Color color,
+    double opacity, // 添加 opacity 参数
   ) {
     return GlassmorphicContainer(
       width: 300,
       height: 120,
       borderRadius: 20,
       blur: 20.0,
-      opacity: 0.2,
       border: 2,
       linearGradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          color.withOpacity(0.1),
-          color.withOpacity(0.05),
+          color.withOpacity(0.1 * (opacity / 0.2)),
+          color.withOpacity(0.05 * (opacity / 0.2)),
         ],
         stops: const [0.1, 1],
       ),
@@ -123,8 +123,8 @@ class LiquidGlassDemoPage extends StatelessWidget {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          color.withOpacity(0.5),
-          color.withOpacity(0.5),
+          color.withOpacity(0.5 * (opacity / 0.2)),
+          color.withOpacity(0.5 * (opacity / 0.2)),
         ],
       ),
       child: Container(

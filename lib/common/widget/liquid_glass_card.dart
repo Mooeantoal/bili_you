@@ -11,7 +11,7 @@ class LiquidGlassCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final Color? color;
   final double blur;
-  final double opacity;
+  final double opacity; // 保留 opacity 参数用于设置透明度，但不直接传递给 GlassmorphicContainer
   final double border;
 
   const LiquidGlassCard({
@@ -39,14 +39,13 @@ class LiquidGlassCard extends StatelessWidget {
         height: height,
         borderRadius: borderRadius,
         blur: blur,
-        opacity: opacity,
         border: border,
         linearGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.1),
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.05),
+            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.1 * (opacity / 0.2)), // 根据 opacity 调整透明度
+            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.05 * (opacity / 0.2)),
           ],
           stops: const [0.1, 1],
         ),
@@ -54,8 +53,8 @@ class LiquidGlassCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.5),
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.5),
+            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.5 * (opacity / 0.2)),
+            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.5 * (opacity / 0.2)),
           ],
         ),
         child: Container(
