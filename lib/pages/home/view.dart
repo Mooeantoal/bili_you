@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:bili_you/pages/recommend/view.dart';
 import 'index.dart';
 import 'widgets/user_menu/view.dart';
+import 'package:bili_you/common/widget/glass_card.dart'; // 导入液态玻璃卡片
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -51,118 +52,127 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 56,
-        title: MaterialButton(
-          onLongPress: () {
-            //长按进入测试界面
-            // Get.to(() => const UiTestPage());
-            Navigator.of(context)
-                .push(GetPageRoute(page: () => const UiTestPage()));
-          },
-          onPressed: () {
-            Navigator.of(context).push(GetPageRoute(
-                page: () => SearchInputPage(
-                      key: ValueKey(
-                          'SearchInputPage:${controller.defaultSearchWord.value}'),
-                      defaultHintSearchWord: controller.defaultSearchWord.value,
-                    )));
+        title: GlassCard(
+          borderRadius: 28.0,
+          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+          blurAmount: 10.0,
+          child: MaterialButton(
+            onLongPress: () {
+              //长按进入测试界面
+              // Get.to(() => const UiTestPage());
+              Navigator.of(context)
+                  .push(GetPageRoute(page: () => const UiTestPage()));
+            },
+            onPressed: () {
+              Navigator.of(context).push(GetPageRoute(
+                  page: () => SearchInputPage(
+                        key: ValueKey(
+                            'SearchInputPage:${controller.defaultSearchWord.value}'),
+                        defaultHintSearchWord: controller.defaultSearchWord.value,
+                      )));
 
-            //更新搜索框默认词
-            controller.refreshDefaultSearchWord();
-          },
-          color: Theme.of(context).colorScheme.surfaceVariant,
-          height: 50,
-          elevation: 0,
-          focusElevation: 0,
-          hoverElevation: 0,
-          disabledElevation: 0,
-          highlightElevation: 0,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(28)),
-          ),
-          child: Row(
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(15),
-                onTap: () {
-                  //更新搜索框默认词
-                  controller.refreshDefaultSearchWord();
-                },
-                child: Icon(
-                  (Icons.search),
-                  size: 24,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(
-                width: 16,
-              ),
-              Expanded(
-                  child: Obx(() => Text(
-                      //搜索框默认词
-                      controller.defaultSearchWord.value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyLarge))),
-              const SizedBox(
-                width: 16,
-              ),
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const UserMenuPage(),
-                  );
-                },
-                child: ClipOval(
-                  child: FutureBuilder(
-                    future: controller.loadOldFace(),
-                    builder: (context, snapshot) {
-                      Widget placeHolder = Container(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      );
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        //头像
-                        return Obx(() => CachedNetworkImage(
-                            cacheWidth: 100,
-                            cacheHeight: 100,
-                            cacheManager: controller.cacheManager,
-                            width: 32,
-                            height: 32,
-                            fit: BoxFit.fill,
-                            imageUrl: controller.faceUrl.value,
-                            placeholder: () => placeHolder));
-                      } else {
-                        return placeHolder;
-                      }
-                    },
+              //更新搜索框默认词
+              controller.refreshDefaultSearchWord();
+            },
+            height: 50,
+            elevation: 0,
+            focusElevation: 0,
+            hoverElevation: 0,
+            disabledElevation: 0,
+            highlightElevation: 0,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(28)),
+            ),
+            child: Row(
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(15),
+                  onTap: () {
+                    //更新搜索框默认词
+                    controller.refreshDefaultSearchWord();
+                  },
+                  child: Icon(
+                    (Icons.search),
+                    size: 24,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(
+                  width: 16,
+                ),
+                Expanded(
+                    child: Obx(() => Text(
+                        //搜索框默认词
+                        controller.defaultSearchWord.value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyLarge))),
+                const SizedBox(
+                  width: 16,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const UserMenuPage(),
+                    );
+                  },
+                  child: ClipOval(
+                    child: FutureBuilder(
+                      future: controller.loadOldFace(),
+                      builder: (context, snapshot) {
+                        Widget placeHolder = Container(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        );
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          //头像
+                          return Obx(() => CachedNetworkImage(
+                              cacheWidth: 100,
+                              cacheHeight: 100,
+                              cacheManager: controller.cacheManager,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.fill,
+                              imageUrl: controller.faceUrl.value,
+                              placeholder: () => placeHolder));
+                        } else {
+                          return placeHolder;
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         centerTitle: true,
-        bottom: TabBar(
-          isScrollable: true,
-          tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
-          controller: controller.tabController,
-          onTap: (index) {
-            if (controller.tabController!.indexIsChanging) return;
-            switch (index) {
-              case 0:
-                //点击"直播"回到顶
-                Get.find<LiveTabPageController>().animateToTop();
-                break;
-              case 1:
-                //点击"推荐"回到顶
-                Get.find<RecommendController>().animateToTop();
-                break;
-              case 2:
-                Get.find<PopularVideoController>().animateToTop();
-                break;
-              default:
-            }
-          },
+        bottom: GlassCard(
+          borderRadius: 12.0,
+          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+          blurAmount: 15.0,
+          child: TabBar(
+            isScrollable: true,
+            tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
+            controller: controller.tabController,
+            onTap: (index) {
+              if (controller.tabController!.indexIsChanging) return;
+              switch (index) {
+                case 0:
+                  //点击"直播"回到顶
+                  Get.find<LiveTabPageController>().animateToTop();
+                  break;
+                case 1:
+                  //点击"推荐"回到顶
+                  Get.find<RecommendController>().animateToTop();
+                  break;
+                case 2:
+                  Get.find<PopularVideoController>().animateToTop();
+                  break;
+                default:
+              }
+            },
+          ),
         ),
       ),
       body: TabBarView(
