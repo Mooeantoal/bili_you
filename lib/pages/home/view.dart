@@ -56,12 +56,12 @@ class _HomePageState extends State<HomePage>
           // 添加顶部间距，避免遮挡状态栏
           margin: const EdgeInsets.only(top: 24), // 为状态栏留出空间
           decoration: BoxDecoration(
-            // 添加轻微的阴影效果，模拟玻璃的立体感
+            // 添加更明显的阴影效果
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -69,28 +69,18 @@ class _HomePageState extends State<HomePage>
             borderRadius: BorderRadius.all(Radius.circular(30)), // 增大圆角
             child: Stack(
               children: [
-                // 背景模糊效果
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0), // 增加模糊度
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7),
-                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.9),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(30)),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3), // 增加边框透明度
-                        width: 1.0,
-                      ),
+                // 背景使用纯色而非模糊效果
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface, // 使用纯色背景
+                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3), // 增强边框
+                      width: 1.0,
                     ),
                   ),
                 ),
-                // 添加高光效果
+                // 添加轻微的高光效果
                 Positioned(
                   top: 0,
                   left: 0,
@@ -103,8 +93,8 @@ class _HomePageState extends State<HomePage>
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.white.withOpacity(0.3),
-                          Colors.white.withOpacity(0.05),
+                          Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
+                          Theme.of(context).colorScheme.onSurface.withOpacity(0.01),
                         ],
                       ),
                     ),
@@ -210,25 +200,27 @@ class _HomePageState extends State<HomePage>
                     // 标签栏部分
                     Container(
                       decoration: BoxDecoration(
-                        // 为标签栏添加阴影效果
+                        // 为标签栏添加更明显的阴影效果
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
                       child: ClipRRect(
                         borderRadius:
-                            const BorderRadius.vertical(bottom: Radius.circular(12)),
+                            const BorderRadius.vertical(bottom: Radius.circular(16)), // 增大圆角
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+                            // 使用更清晰的背景色
+                            color: Theme.of(context).colorScheme.surface,
                             border: Border(
+                              // 增强底部边框效果
                               bottom: BorderSide(
-                                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                                width: 0.5,
+                                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                width: 1.0,
                               ),
                             ),
                           ),
@@ -236,6 +228,11 @@ class _HomePageState extends State<HomePage>
                             isScrollable: true,
                             tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
                             controller: controller.tabController,
+                            // 添加标签栏的一些视觉增强属性
+                            indicatorColor: Theme.of(context).colorScheme.primary,
+                            indicatorWeight: 3.0,
+                            labelColor: Theme.of(context).colorScheme.primary,
+                            unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                             onTap: (index) {
                               if (controller.tabController!.indexIsChanging) return;
                               switch (index) {
