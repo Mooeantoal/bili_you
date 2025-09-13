@@ -216,39 +216,41 @@ class _HomePageState extends State<HomePage>
           ),
           child: ClipRRect(
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                      width: 0.5,
+            child: ClipRect(  // 添加ClipRect包装BackdropFilter
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                        width: 0.5,
+                      ),
                     ),
                   ),
-                ),
-                child: TabBar(
-                  isScrollable: true,
-                  tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
-                  controller: controller.tabController,
-                  onTap: (index) {
-                    if (controller.tabController!.indexIsChanging) return;
-                    switch (index) {
-                      case 0:
-                        //点击"直播"回到顶
-                        Get.find<LiveTabPageController>().animateToTop();
-                        break;
-                      case 1:
-                        //点击"推荐"回到顶
-                        Get.find<RecommendController>().animateToTop();
-                        break;
-                      case 2:
-                        Get.find<PopularVideoController>().animateToTop();
-                        break;
-                      default:
-                    }
-                  },
+                  child: TabBar(
+                    isScrollable: true,
+                    tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
+                    controller: controller.tabController,
+                    onTap: (index) {
+                      if (controller.tabController!.indexIsChanging) return;
+                      switch (index) {
+                        case 0:
+                          //点击"直播"回到顶
+                          Get.find<LiveTabPageController>().animateToTop();
+                          break;
+                        case 1:
+                          //点击"推荐"回到顶
+                          Get.find<RecommendController>().animateToTop();
+                          break;
+                        case 2:
+                          Get.find<PopularVideoController>().animateToTop();
+                          break;
+                        default:
+                      }
+                    },
+                  ),
                 ),
               ),
             ),
