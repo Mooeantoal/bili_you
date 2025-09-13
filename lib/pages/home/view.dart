@@ -1,4 +1,5 @@
 import 'package:bili_you/common/widget/cached_network_image.dart';
+import 'package:bili_you/common/widget/frosted_glass_card.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/live_tab_page/view.dart';
 import 'package:bili_you/pages/popular_video/controller.dart';
@@ -85,12 +86,8 @@ class _HomePageState extends State<HomePage>
         children: [
           // 搜索栏
           Expanded(
-            child: SearchBar(
-              leading: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Icon(Icons.search),
-              ),
-              hintText: controller.defaultSearchWord.value,
+            child: TextField(
+              readOnly: true, // 设置为只读，点击时跳转到搜索页面
               onTap: () {
                 // 跳转到搜索页面
                 Navigator.of(context).push(
@@ -103,17 +100,15 @@ class _HomePageState extends State<HomePage>
                   ),
                 );
               },
-              shape: MaterialStateProperty.resolveWith<OutlinedBorder>(
-                (Set<MaterialState> states) {
-                  return RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  );
-                },
-              ),
-              backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                (Set<MaterialState> states) {
-                  return Theme.of(context).colorScheme.surfaceVariant;
-                },
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                hintText: controller.defaultSearchWord.value,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4.0), // MD2风格的圆角
+                  borderSide: BorderSide.none, // 无边框
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceVariant,
               ),
             ),
           ),
@@ -128,15 +123,22 @@ class _HomePageState extends State<HomePage>
       child: Column(
         children: [
           const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildTabItem('直播', 0),
-              _buildTabItem('推荐', 1),
-              _buildTabItem('热门', 2),
-              _buildTabItem('分区', 3),
-              _buildTabItem('番剧', 4),
-              // 可以根据需要添加更多标签
-            ],
+          // 使用 FrostedGlassCard 包装标签栏以实现高斯模糊效果
+          FrostedGlassCard(
+            borderRadius: 16.0,
+            blurSigma: 10.0,
+            margin: EdgeInsets.zero,
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                _buildTabItem('直播', 0),
+                _buildTabItem('推荐', 1),
+                _buildTabItem('热门', 2),
+                _buildTabItem('分区', 3),
+                _buildTabItem('番剧', 4),
+                // 可以根据需要添加更多标签
+              ],
+            ),
           ),
           const SizedBox(height: 16),
         ],

@@ -2,6 +2,7 @@ import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/cache_util.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/widget/bili_url_scheme.dart';
+import 'package:bili_you/common/widget/frosted_glass_card.dart';
 import 'package:bili_you/pages/dynamic/view.dart';
 import 'package:bili_you/pages/home/index.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
@@ -134,26 +135,32 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
           bottomNavigationBar: MediaQuery.of(context).size.width < 640
-              ? NavigationBar(
-                  selectedIndex: controller.selectedIndex.value,
-                  onDestinationSelected: (value) => onDestinationSelected(value),
-                  destinations: const [
-                    NavigationDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home),
-                      label: "首页",
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.star_border_outlined),
-                      selectedIcon: Icon(Icons.star),
-                      label: "动态",
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.person_outline),
-                      selectedIcon: Icon(Icons.person),
-                      label: "我的",
-                    ),
-                  ],
+              ? FrostedGlassCard(
+                  borderRadius: 0.0,
+                  blurSigma: 10.0,
+                  margin: EdgeInsets.zero,
+                  padding: const EdgeInsets.all(0.0),
+                  child: NavigationBar(
+                    selectedIndex: controller.selectedIndex.value,
+                    onDestinationSelected: (value) => onDestinationSelected(value),
+                    destinations: const [
+                      NavigationDestination(
+                        icon: Icon(Icons.home_outlined),
+                        selectedIcon: Icon(Icons.home),
+                        label: "首页",
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.star_border_outlined),
+                        selectedIcon: Icon(Icons.star),
+                        label: "动态",
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.person_outline),
+                        selectedIcon: Icon(Icons.person),
+                        label: "我的",
+                      ),
+                    ],
+                  ),
                 )
               : null,
         ));
