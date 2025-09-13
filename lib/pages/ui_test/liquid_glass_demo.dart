@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oc_liquid_glass/oc_liquid_glass.dart';
+import 'package:glassmorphism/glassmorphism.dart';
 
 class LiquidGlassDemoPage extends StatelessWidget {
   const LiquidGlassDemoPage({Key? key}) : super(key: key);
@@ -8,7 +8,7 @@ class LiquidGlassDemoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('液态玻璃效果演示 (oc_liquid_glass)'),
+        title: const Text('液态玻璃效果演示 (glassmorphism)'),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -27,30 +27,23 @@ class LiquidGlassDemoPage extends StatelessWidget {
               _buildLiquidGlassContainer(
                 context,
                 '默认液态玻璃效果',
-                const OCLiquidGlassSettings(),
+                20.0,
+                0.2,
               ),
               
-              // 自定义的液态玻璃效果
+              // 高模糊度的液态玻璃效果
               _buildLiquidGlassContainer(
                 context,
-                '强折射效果',
-                const OCLiquidGlassSettings(
-                  refractStrength: -0.15,
-                  blurRadiusPx: 3.0,
-                  specStrength: 35.0,
-                ),
+                '高模糊度效果',
+                30.0,
+                0.15,
               ),
               
               // 彩色液态玻璃效果
-              _buildLiquidGlassContainer(
+              _buildColoredLiquidGlassContainer(
                 context,
                 '彩色液态玻璃',
-                const OCLiquidGlassSettings(
-                  refractStrength: -0.05,
-                  blurRadiusPx: 1.5,
-                  specStrength: 20.0,
-                  lightbandColor: Colors.blue,
-                ),
+                Colors.blue,
               ),
             ],
           ),
@@ -62,25 +55,87 @@ class LiquidGlassDemoPage extends StatelessWidget {
   Widget _buildLiquidGlassContainer(
     BuildContext context,
     String title,
-    OCLiquidGlassSettings settings,
+    double blur,
+    double opacity,
   ) {
-    return OCLiquidGlassGroup(
-      settings: settings,
-      child: OCLiquidGlass(
-        width: 300,
-        height: 120,
-        borderRadius: 20,
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.25),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Center(
-            child: Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+    return GlassmorphicContainer(
+      width: 300,
+      height: 120,
+      borderRadius: 20,
+      blur: blur,
+      opacity: opacity,
+      border: 2,
+      linearGradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          Theme.of(context).colorScheme.primary.withOpacity(0.05),
+        ],
+        stops: const [0.1, 1],
+      ),
+      borderGradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          Theme.of(context).colorScheme.primary.withOpacity(0.5),
+        ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColoredLiquidGlassContainer(
+    BuildContext context,
+    String title,
+    Color color,
+  ) {
+    return GlassmorphicContainer(
+      width: 300,
+      height: 120,
+      borderRadius: 20,
+      blur: 20.0,
+      opacity: 0.2,
+      border: 2,
+      linearGradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          color.withOpacity(0.1),
+          color.withOpacity(0.05),
+        ],
+        stops: const [0.1, 1],
+      ),
+      borderGradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          color.withOpacity(0.5),
+          color.withOpacity(0.5),
+        ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
