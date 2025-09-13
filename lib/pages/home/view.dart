@@ -103,10 +103,18 @@ class _HomePageState extends State<HomePage>
                   ),
                 );
               },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+              shape: MaterialStateProperty.resolveWith<OutlinedBorder>(
+                (Set<MaterialState> states) {
+                  return RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  );
+                },
               ),
-              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+              backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+                  return Theme.of(context).colorScheme.surfaceVariant;
+                },
+              ),
             ),
           ),
         ],
