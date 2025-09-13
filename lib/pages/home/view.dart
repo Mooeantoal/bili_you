@@ -13,6 +13,7 @@ import 'index.dart';
 import 'widgets/user_menu/view.dart';
 import 'dart:ui'; // 导入用于毛玻璃效果的库
 import 'package:bili_you/common/widget/frosted_glass_card.dart'; // 导入毛玻璃卡片
+import 'package:bili_you/common/widget/liquid_glass_card.dart'; // 导入液态玻璃卡片
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);

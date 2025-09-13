@@ -44,6 +44,7 @@ dependencies:
   photo_view: ^0.14.0  
   card_swiper: ^3.0.1  
   frosted_glass: ^0.0.1  # 添加frosted_glass包
+  oc_liquid_glass: ^0.2.1  # 添加oc_liquid_glass包
 
   # 播放器
   media_kit: ^1.1.1

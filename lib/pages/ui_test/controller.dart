@@ -10,6 +10,8 @@ import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_p
 import 'package:bili_you/pages/login/password_login/index.dart';
 import 'package:bili_you/pages/login/sms_login/index.dart';
 import 'package:bili_you/pages/ui_test/frosted_glass_demo.dart'; // 导入毛玻璃演示页面
+import 'package:bili_you/pages/ui_test/liquid_glass_demo.dart'; // 导入液态玻璃演示页面
+import 'package:bili_you/pages/ui_test/glass_effect_comparison.dart'; // 导入玻璃效果对比页面
 import 'package:bili_you/pages/ui_test/test_widget/media_kit_test_page.dart';
 import 'package:bili_you/pages/user_space/view.dart';
 import 'package:flutter/material.dart';
@@ -86,6 +88,8 @@ class UiTestController extends GetxController {
         mid: 16752607,
       ),
       "毛玻璃效果演示": const FrostedGlassDemoPage(), // 添加毛玻璃效果演示页面
+      "液态玻璃效果演示": const LiquidGlassDemoPage(), // 添加液态玻璃效果演示页面
+      "玻璃效果对比": const GlassEffectComparisonPage(), // 添加玻璃效果对比页面
       "test cookie": Center(
         child: MaterialButton(
             child: const Text("print cookie"),
