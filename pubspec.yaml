@@ -78,7 +78,7 @@ dependencies:
   share_plus: ^10.1.0
 
   # scheme 
-  appscheme: ^1.0.8
+  appscheme: ^1.2.0  # 更新到最新版本
 
   # 音量控制
   volume_controller: ^2.0.6
