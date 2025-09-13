@@ -103,14 +103,10 @@ class _HomePageState extends State<HomePage>
                   ),
                 );
               },
-              shape: WidgetStateProperty.all(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
               ),
-              backgroundColor: WidgetStateProperty.all(
-                Theme.of(context).colorScheme.surfaceVariant,
-              ),
+              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
             ),
           ),
         ],
