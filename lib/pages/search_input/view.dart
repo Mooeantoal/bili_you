@@ -181,7 +181,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
               ),
             ),
             SizedBox(
-              width: 70,
+              width: 50, // 从 70 减少到 50，给 TextField 更多空间
               child: IconButton(
                 onPressed: () {
                   controller.search(controller.textEditingController.text);

@@ -33,7 +33,7 @@ class SearchInputPageController extends GetxController {
     for (var i in wordList) {
       widgetList.add(
         SizedBox(
-            width: MediaQuery.of(Get.context!).size.width * 0.5,
+            width: MediaQuery.of(Get.context!).size.width * 0.4, // 从 0.5 减少到 0.4，让更多按钮能显示在同一行
             child: InkWell(
                 onTap: () {
                   search(i.keyWord);
@@ -63,19 +63,24 @@ class SearchInputPageController extends GetxController {
     }
     searchSuggestionItems.clear();
     for (var i in list) {
-      searchSuggestionItems.add(InkWell(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Text(
-            i.showWord,
-            style: const TextStyle(fontSize: 16),
+      searchSuggestionItems.add(
+        Container(
+          width: double.infinity,
+          child: InkWell(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Text(
+                i.showWord,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+            onTap: () {
+              setTextFieldText(i.realWord);
+              search(i.realWord);
+            },
           ),
         ),
-        onTap: () {
-          setTextFieldText(i.realWord);
-          search(i.realWord);
-        },
-      ));
+      );
     }
   }
 
@@ -121,19 +126,22 @@ class SearchInputPageController extends GetxController {
     List<dynamic> list = box.get("searchHistory", defaultValue: <String>[]);
     for (String i in list.reversed) {
       widgetList.add(
-        GestureDetector(
-          child: Chip(
-            label: Text(i),
-            onDeleted: () {
-              //点击删除某条历史记录
-              _deleteSearchedWord(i);
+        Container(
+          margin: const EdgeInsets.only(right: 8, bottom: 8),
+          child: GestureDetector(
+            child: Chip(
+              label: Text(i),
+              onDeleted: () {
+                //点击删除某条历史记录
+                _deleteSearchedWord(i);
+              },
+            ),
+            onTap: () {
+              //点击某条历史记录
+              search(i);
+              setTextFieldText(i);
             },
           ),
-          onTap: () {
-            //点击某条历史记录
-            search(i);
-            setTextFieldText(i);
-          },
         ),
       );
     }
@@ -196,3 +204,9 @@ class SearchInputPageController extends GetxController {
   //   super.onClose();
   // }
 }
+
+
+
+
+
+

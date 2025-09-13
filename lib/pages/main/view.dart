@@ -7,6 +7,7 @@ import 'package:bili_you/pages/home/index.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
+import 'package:bili_you/pages/mine/view.dart'; // 添加导入
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -68,6 +69,10 @@ class _MainPageState extends State<MainPage> {
           Get.find<DynamicController>().animateToTop();
         }
       }
+      // 我的
+      if (currentPage is MinePage) {
+        // 可以在这里添加刷新逻辑
+      }
     }
     controller.selectedIndex.value = value;
   }
@@ -100,6 +105,11 @@ class _MainPageState extends State<MainPage> {
                         label: Text("动态"),
                         selectedIcon: Icon(Icons.star),
                       ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.person_outline),
+                        label: Text("我的"),
+                        selectedIcon: Icon(Icons.person),
+                      ),
                     ],
                     selectedIndex: controller.selectedIndex.value,
                     onDestinationSelected: (value) =>
@@ -131,6 +141,11 @@ class _MainPageState extends State<MainPage> {
                       icon: Icon(Icons.star_border_outlined),
                       activeIcon: Icon(Icons.star),
                       label: "动态",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.person_outline),
+                      activeIcon: Icon(Icons.person),
+                      label: "我的",
                     ),
                   ],
                 )

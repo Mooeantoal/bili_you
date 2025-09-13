@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../home/view.dart';
 import '../dynamic/view.dart';
+import '../mine/view.dart'; // 添加导入
 
 class MainController extends GetxController {
   MainController();
@@ -10,6 +11,7 @@ class MainController extends GetxController {
   List<Widget> pages = [
     const HomePage(),
     const DynamicPage(),
+    const MinePage(), // 添加"我的"页面
   ];
 
   _initData() {
