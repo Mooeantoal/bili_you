@@ -44,11 +44,6 @@ jobs:
           echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
           echo "flutter.sdk=$FLUTTER_HOME" >> android/local.properties
 
-      # Set gradlew permissions
-      - name: Set gradlew permissions
-        run: |
-          chmod +x android/gradlew
-
       # Decode keystore
       - name: Decode keystore
         run: |
