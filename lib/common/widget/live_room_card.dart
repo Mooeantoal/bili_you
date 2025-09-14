@@ -16,6 +16,7 @@ class LiveRoomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
+      elevation: 0, // 关闭阴影
       child: Stack(
         children: [
           Column(

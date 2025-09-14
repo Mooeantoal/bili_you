@@ -66,6 +66,7 @@ class RecommendCard extends StatelessWidget {
     Color iconColor = Theme.of(context).hintColor;
     return Card(
         margin: EdgeInsets.zero,
+        elevation: 0, // 关闭阴影
         child: Stack(children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

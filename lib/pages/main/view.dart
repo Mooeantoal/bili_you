@@ -137,26 +137,34 @@ class _MainPageState extends State<MainPage> {
           bottomNavigationBar: MediaQuery.of(context).size.width < 640
               ? FrostedGlassCard(
                   borderRadius: 0.0,
-                  blurSigma: 10.0,
+                  blurSigma: 5.0, // 降低模糊度
+                  backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.9), // 提高透明度
                   margin: EdgeInsets.zero,
                   padding: const EdgeInsets.all(0.0),
-                  child: NavigationBar(
-                    selectedIndex: controller.selectedIndex.value,
-                    onDestinationSelected: (value) => onDestinationSelected(value),
-                    destinations: const [
-                      NavigationDestination(
+                  child: BottomNavigationBar(
+                    type: BottomNavigationBarType.fixed,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    selectedFontSize: 12,
+                    unselectedFontSize: 12,
+                    selectedItemColor: Theme.of(context).colorScheme.primary,
+                    unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    currentIndex: controller.selectedIndex.value,
+                    onTap: (value) => onDestinationSelected(value),
+                    items: const [
+                      BottomNavigationBarItem(
                         icon: Icon(Icons.home_outlined),
-                        selectedIcon: Icon(Icons.home),
+                        activeIcon: Icon(Icons.home),
                         label: "首页",
                       ),
-                      NavigationDestination(
+                      BottomNavigationBarItem(
                         icon: Icon(Icons.star_border_outlined),
-                        selectedIcon: Icon(Icons.star),
+                        activeIcon: Icon(Icons.star),
                         label: "动态",
                       ),
-                      NavigationDestination(
+                      BottomNavigationBarItem(
                         icon: Icon(Icons.person_outline),
-                        selectedIcon: Icon(Icons.person),
+                        activeIcon: Icon(Icons.person),
                         label: "我的",
                       ),
                     ],

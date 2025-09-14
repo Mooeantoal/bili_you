@@ -18,6 +18,7 @@ class DualColumnVideoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.hardEdge,
+      elevation: 0, // 关闭阴影
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),

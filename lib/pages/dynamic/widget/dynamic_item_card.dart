@@ -99,6 +99,7 @@ class _DynamicItemCardState extends State<DynamicItemCard> {
       color: !widget.isForward
           ? Theme.of(context).cardColor
           : Theme.of(context).colorScheme.surfaceVariant,
+      elevation: 0, // 关闭阴影
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20))),
       margin: const EdgeInsets.only(bottom: 12, left: 12, right: 12),

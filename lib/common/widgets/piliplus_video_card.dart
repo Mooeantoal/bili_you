@@ -16,6 +16,7 @@ class PiliPlusVideoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 0, // 关闭阴影
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
