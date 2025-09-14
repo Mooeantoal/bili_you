@@ -6,7 +6,6 @@ import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/popular_video/view.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
 import 'package:bili_you/pages/search_input/index.dart';
-import 'package:bili_you/pages/ui_test/index.dart';
 import 'package:bili_you/pages/mine/view.dart'; // 导入"我的"页面
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,18 +29,23 @@ class _HomePageState extends State<HomePage>
   final LiveTabPage liveTabPage = const LiveTabPage();
   // 添加 PageController 来控制 PageView
   late PageController _pageController;
+  // 添加 TabController 来控制标签页
+  late TabController _tabController;
 
   @override
   void initState() {
     controller = Get.put(HomeController());
     // 初始化 PageController，默认选中"推荐"标签页
     _pageController = PageController(initialPage: 1);
+    // 初始化 TabController，标签数量为5
+    _tabController = TabController(length: 5, vsync: this, initialIndex: 1);
     super.initState();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _tabController.dispose();
     controller.dispose();
     super.dispose();
   }
@@ -53,17 +57,22 @@ class _HomePageState extends State<HomePage>
         toolbarHeight: 56,
         title: _buildAppBar(context),
         centerTitle: true,
-        // 移除原来的 bottom 属性，因为我们现在使用自定义标签栏
+        // 使用 TabBar 作为 bottom
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48.0),
+          child: _buildTabBar(),
+        ),
       ),
       body: Column(
         children: [
-          _buildTabBar(),
           Expanded(
             child: PageView(
               controller: _pageController,
               onPageChanged: (index) {
                 // 当页面切换时，更新选中的标签
                 controller.selectedIndex.value = index;
+                // 同步 TabController 的位置
+                _tabController.animateTo(index);
               },
               children: [
                 liveTabPage,
@@ -81,7 +90,7 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildAppBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 0), // 移除水平内边距，让搜索栏完全铺满
       child: Row(
         children: [
           // 搜索栏
@@ -122,86 +131,70 @@ class _HomePageState extends State<HomePage>
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          const SizedBox(height: 16),
-          // 使用 FrostedGlassCard 包装标签栏以实现高斯模糊效果
-          FrostedGlassCard(
-            borderRadius: 16.0,
-            blurSigma: 10.0,
-            margin: EdgeInsets.zero,
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                _buildTabItem('直播', 0),
-                _buildTabItem('推荐', 1),
-                _buildTabItem('热门', 2),
-                _buildTabItem('分区', 3),
-                _buildTabItem('番剧', 4),
-                // 可以根据需要添加更多标签
+          const SizedBox(height: 8),
+          // 使用 Material Design 3 的 SegmentedButton 风格
+          Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Theme.of(context).colorScheme.secondaryContainer,
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: Theme.of(context).colorScheme.onSecondaryContainer,
+              unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              labelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              // 添加动画持续时间
+              animationDuration: const Duration(milliseconds: 300),
+              tabs: const [
+                Tab(text: '直播'),
+                Tab(text: '推荐'),
+                Tab(text: '热门'),
+                Tab(text: '分区'),
+                Tab(text: '番剧'),
               ],
+              onTap: (index) {
+                controller.selectedIndex.value = index;
+                // 通过 PageController 跳转到对应页面
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+                
+                // 添加滚动到顶部的逻辑
+                switch (index) {
+                  case 0:
+                    //点击"直播"回到顶
+                    Get.find<LiveTabPageController>().animateToTop();
+                    break;
+                  case 1:
+                    //点击"推荐"回到顶
+                    Get.find<RecommendController>().animateToTop();
+                    break;
+                  case 2:
+                    Get.find<PopularVideoController>().animateToTop();
+                    break;
+                  default:
+                }
+              },
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
         ],
       ),
-    );
-  }
-
-  Widget _buildTabItem(String title, int index) {
-    return Expanded(
-      child: Obx(() {
-        bool isSelected = controller.selectedIndex.value == index;
-        return GestureDetector(
-          onTap: () {
-            controller.selectedIndex.value = index;
-            // 通过 PageController 跳转到对应页面
-            _pageController.animateToPage(
-              index,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.ease,
-            );
-            
-            // 添加滚动到顶部的逻辑
-            switch (index) {
-              case 0:
-                //点击"直播"回到顶
-                Get.find<LiveTabPageController>().animateToTop();
-                break;
-              case 1:
-                //点击"推荐"回到顶
-                Get.find<RecommendController>().animateToTop();
-                break;
-              case 2:
-                Get.find<PopularVideoController>().animateToTop();
-                break;
-              default:
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: isSelected
-                      ? Theme.of(Get.context!).colorScheme.primary
-                      : Colors.transparent,
-                  width: 2,
-                ),
-              ),
-            ),
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isSelected
-                    ? Theme.of(Get.context!).colorScheme.primary
-                    : Theme.of(Get.context!).colorScheme.onSurface,
-              ),
-            ),
-          ),
-        );
-      }),
     );
   }
 

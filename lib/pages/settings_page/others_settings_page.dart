@@ -1,7 +1,6 @@
 import 'package:bili_you/common/widget/settings_label.dart';
 import 'package:bili_you/common/utils/fullscreen.dart';
 import 'package:bili_you/common/utils/settings.dart';
-import 'package:bili_you/pages/ui_test/view.dart'; // 导入UI测试页面
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -54,22 +53,6 @@ class OthersSettingsPage extends StatelessWidget {
                 duration: const Duration(seconds: 2),
               );
             }
-          },
-        ),
-        const SettingsLabel(
-          text: 'UI测试',
-        ),
-        ListTile(
-          title: const Text(
-            "UI效果测试",
-            style: TextStyle(color: Colors.blue),
-          ),
-          subtitle: const Text("查看各种UI组件和效果的测试页面"),
-          onTap: () {
-            // 导航到UI测试页面
-            Navigator.of(context).push(
-              GetPageRoute(page: () => const UiTestPage()),
-            );
           },
         ),
         const SettingsLabel(
