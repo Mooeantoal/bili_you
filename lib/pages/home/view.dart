@@ -156,8 +156,6 @@ class _HomePageState extends State<HomePage>
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
-              // 添加动画持续时间
-              animationDuration: const Duration(milliseconds: 300),
               tabs: const [
                 Tab(text: '直播'),
                 Tab(text: '推荐'),
