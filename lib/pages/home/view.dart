@@ -6,6 +6,10 @@ import 'package:bili_you/common/widget/frosted_glass_card.dart';
 import 'package:bili_you/pages/live_tab_page/view.dart';
 import 'package:bili_you/pages/recommend/view.dart';
 import 'package:bili_you/pages/popular_video/view.dart';
+// 添加控制器导入
+import 'package:bili_you/pages/live_tab_page/controller.dart';
+import 'package:bili_you/pages/recommend/controller.dart';
+import 'package:bili_you/pages/popular_video/controller.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -79,6 +83,7 @@ class HomePage extends StatelessWidget {
             if (controller.tabController!.indexIsChanging) return;
             switch (index) {
               case 0:
+                // 添加泛型类型参数
                 Get.find<LiveTabPageController>().animateToTop();
                 break;
               case 1:
