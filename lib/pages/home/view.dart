@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:bili_you/pages/home/controller.dart';
 import 'package:bili_you/pages/search_input/index.dart';
-import 'package:bili_you/pages/ui_test/index.dart';
-import 'package:bili_you/pages/recommend/view.dart';
-import 'package:bili_you/pages/popular_video/view.dart';
-import 'package:bili_you/pages/live_tab_page/view.dart';
+// 移除UiTestPage导入
+
+// 添加控制器导入
+import 'package:bili_you/pages/live_tab_page/controller.dart';
+import 'package:bili_you/pages/recommend/controller.dart';
+import 'package:bili_you/pages/popular_video/controller.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -47,11 +49,7 @@ class _HomePageState extends State<HomePage>
       appBar: AppBar(
         toolbarHeight: 56,
         title: MaterialButton(
-          onLongPress: () {
-            //长按进入测试界面
-            Navigator.of(context)
-                .push(GetPageRoute(page: () => const UiTestPage()));
-          },
+          // 移除长按测试界面功能
           onPressed: () {
             Navigator.of(context).push(GetPageRoute(
                 page: () => SearchInputPage(
@@ -87,7 +85,6 @@ class _HomePageState extends State<HomePage>
                   style: Theme.of(context).textTheme.bodyLarge
                 )),
               ),
-              // 移除个人界面入口：删除用户头像及GestureDetector
             ],
           ),
         ),
@@ -100,6 +97,7 @@ class _HomePageState extends State<HomePage>
             if (controller.tabController!.indexIsChanging) return;
             switch (index) {
               case 0:
+                // 添加泛型类型参数
                 Get.find<LiveTabPageController>().animateToTop();
                 break;
               case 1:
