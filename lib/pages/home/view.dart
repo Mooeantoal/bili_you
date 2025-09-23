@@ -1,16 +1,46 @@
+import 'package:bili_you/common/widget/frosted_glass_card.dart';
+import 'package:bili_you/pages/search/search_input/view.dart';
+import 'package:bili_you/pages/ui_test/view.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'index.dart';
+
+class HomePage extends GetView<HomeController> {
+  const HomePage({Key? key}) : super(key: key);
+
+  // 为保证代码可复现，将tabsList等变量移入view中
+  // 在实际项目中，这些变量可能在Controller或单独的文件中管理
+  static const List<Map<String, String>> tabsList = [
+    {'text': '直播'},
+    {'text': '推荐'},
+    {'text': '热门'},
+    {'text': '番剧'}
+  ];
+  // 假设这些页面Widget已在别处定义或导入
+  static final Widget liveTabPage = const Center(child: Text("直播页面"));
+  static final Widget recommendPage = const Center(child: Text("推荐页面"));
+  static final Widget popularVideoPage = const Center(child: Text("热门页面"));
+
+  @override
+  Widget build(BuildContext context) {
+    // 将原有的 _buildView 方法内容直接整合到 build 方法中
+    // 或作为私有方法调用以保持结构清晰
+    return _buildView(context);
+  }
+
   // 主视图
-  Widget _buildView(context) {
+  Widget _buildView(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 48,
         title: FrostedGlassCard(
           borderRadius: 28.0,
           blurSigma: 5.0, // 降低模糊度
-          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.9), // 提高透明度
+          backgroundColor:
+              Theme.of(context).colorScheme.surface.withOpacity(0.9), // 提高透明度
           child: MaterialButton(
             onLongPress: () {
               //长按进入测试界面
-              // Get.to(() => const UiTestPage());
               Navigator.of(context)
                   .push(GetPageRoute(page: () => const UiTestPage()));
             },
@@ -19,7 +49,8 @@
                   page: () => SearchInputPage(
                         key: ValueKey(
                             'SearchInputPage:${controller.defaultSearchWord.value}'),
-                        defaultHintSearchWord: controller.defaultSearchWord.value,
+                        defaultHintSearchWord:
+                            controller.defaultSearchWord.value,
                       )));
 
               //更新搜索框默认词
@@ -104,3 +135,4 @@
       ),
     );
   }
+}
