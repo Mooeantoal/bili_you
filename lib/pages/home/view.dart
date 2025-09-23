@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:bili_you/pages/home/controller.dart';
 import 'package:bili_you/pages/search_input/index.dart';
-// 移除UiTestPage导入
+// 添加页面类导入
+import 'package:bili_you/pages/live_tab_page/view.dart';
+import 'package:bili_you/pages/recommend/view.dart';
+import 'package:bili_you/pages/popular_video/view.dart';
 
+// 移除UiTestPage导入
 // 添加控制器导入
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
@@ -43,13 +47,11 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
-  // 主视图
   Widget _buildView(context) {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 56,
         title: MaterialButton(
-          // 移除长按测试界面功能
           onPressed: () {
             Navigator.of(context).push(GetPageRoute(
                 page: () => SearchInputPage(
@@ -97,7 +99,6 @@ class _HomePageState extends State<HomePage>
             if (controller.tabController!.indexIsChanging) return;
             switch (index) {
               case 0:
-                // 添加泛型类型参数
                 Get.find<LiveTabPageController>().animateToTop();
                 break;
               case 1:
@@ -113,7 +114,8 @@ class _HomePageState extends State<HomePage>
       ),
       body: TabBarView(
         controller: controller.tabController,
-        children: tabsList.map((e) {
+        // 修复类型不匹配错误：显式指定Widget类型
+        children: tabsList.map<Widget>((e) {
           switch (e['text']) {
             case '直播':
               return liveTabPage;
