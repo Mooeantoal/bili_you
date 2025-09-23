@@ -42,7 +42,7 @@ class _MainPageState extends State<MainPage> {
       if (currentPage is HomePage) {
         var homeController = Get.find<HomeController>();
         late dynamic pageController;
-        switch (homeController.tabIndex.value) { // 将selectedIndex改为tabIndex
+        switch (homeController.tabIndex.value) {
           case 0:
             pageController = Get.find<LiveTabPageController>();
             break;
@@ -76,10 +76,83 @@ class _MainPageState extends State<MainPage> {
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Obx(() => Scaffold(
-      // 其余代码保持不变
-      bottomNavigationBar: ... // 已截断部分
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      primary: true,
+      body: Row(
+        children: [
+          if (MediaQuery.of(context).size.width >= 640)
+            NavigationRail(
+              extended: false,
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: Text("首页"),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.star_border_outlined),
+                  label: Text("动态"),
+                  selectedIcon: Icon(Icons.star),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.person_outline),
+                  label: Text("我的"),
+                  selectedIcon: Icon(Icons.person),
+                ),
+              ],
+              selectedIndex: controller.selectedIndex.value,
+              onDestinationSelected: (value) => onDestinationSelected(value),
+            ),
+          Expanded(
+            child: Obx(
+              () => IndexedStack(
+                index: controller.selectedIndex.value,
+                children: controller.pages,
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: MediaQuery.of(context).size.width < 640
+          ? FrostedGlassCard(
+              borderRadius: 0.0,
+              blurSigma: 5.0,
+              backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+              margin: EdgeInsets.zero,
+              padding: const EdgeInsets.all(0.0),
+              child: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                currentIndex: controller.selectedIndex.value,
+                onTap: (value) => onDestinationSelected(value),
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    activeIcon: Icon(Icons.home),
+                    label: "首页",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.star_border_outlined),
+                    activeIcon: Icon(Icons.star),
+                    label: "动态",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    activeIcon: Icon(Icons.person),
+                    label: "我的",
+                  ),
+                ],
+              ),
+            )
+          : null,
     ));
   }
 }
