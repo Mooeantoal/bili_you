@@ -125,8 +125,8 @@ class _MainPageState extends State<MainPage> {
       bottomNavigationBar: MediaQuery.of(context).size.width < 640
           ? FrostedGlassCard(
               borderRadius: 0.0,
-              blurSigma: 5.0,
-              backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+              blurSigma: 10.0,
+              backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
               margin: EdgeInsets.zero,
               padding: const EdgeInsets.all(0.0),
               child: BottomNavigationBar(
