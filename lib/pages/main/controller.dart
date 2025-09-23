@@ -1,38 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../home/view.dart';
+import '../home/index.dart'; // 导入home/index.dart而非view.dart
 import '../dynamic/view.dart';
-import '../mine/view.dart'; // 添加导入
+import '../mine/view.dart';
 
 class MainController extends GetxController {
   MainController();
   var selectedIndex = 0.obs;
 
   List<Widget> pages = [
-    const HomePage(),
+    const HomePage(), // 确保HomePage在home/index.dart中导出
     const DynamicPage(),
-    const MinePage(), // 添加"我的"页面
+    const MinePage(),
   ];
 
   _initData() {
-    // update(["main"]);
+    // 初始化数据
   }
 
   void onTap() {}
-
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  // }
 
   @override
   void onReady() {
     super.onReady();
     _initData();
   }
-
-  // @override
-  // void onClose() {
-  //   super.onClose();
-  // }
 }
