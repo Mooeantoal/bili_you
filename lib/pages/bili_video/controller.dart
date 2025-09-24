@@ -90,10 +90,7 @@ isFaved.value = await VideoOperationApi.hasFavourite(bvid: bvid);
   }
 
   Future<void> toggleLike() async {
-    var result = await VideoOperationApi.clickLike(
-      bvid: bvid,
-      cancel: isLiked.value, // 修复参数名称
-    );
+    var result = await VideoOperationApi.clickLike(bvid: bvid, likeOrCancelLike: !isLiked.value);
     isLiked.value = !isLiked.value;
     likeCount.value += isLiked.value ? 1 : -1;
   }
