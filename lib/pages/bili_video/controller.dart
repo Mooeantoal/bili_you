@@ -112,7 +112,8 @@ class BiliVideoController extends GetxController
   }
 
   Future toggleFav() async {
-    await VideoOperationApi.addFavorite(
+    // 修复 addFavorite 不存在
+    await VideoOperationApi.toggleFavourite(
       bvid: bvid,
       isCancel: isFaved.value,
     );
@@ -150,3 +151,6 @@ class BiliVideoController extends GetxController
   @override
   void onClose() {
     biliVideoPlayerController.dispose();
+    super.onClose();
+  }
+}
