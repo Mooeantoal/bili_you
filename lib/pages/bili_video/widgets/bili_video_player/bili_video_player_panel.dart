@@ -307,8 +307,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                           .biliDanmakuController!
                                           .isDanmakuOpened
                                       ? Icons.comment
-                                      : Icons.comment_off_outlined  // 修复图标名称
-                                  : Icons.comment_off_outlined,  // 修复图标名称
+                                      : Icons.comment_off  // 修复图标名称
+                                  : Icons.comment_off,  // 修复图标名称
                               color: iconColor,
                             ),
                             onPressed: toggleDanmaku,
