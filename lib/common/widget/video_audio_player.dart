@@ -2,19 +2,62 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:bili_you/common/utils/index.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+/// 临时 VideoAudioState，用于兼容 UI
+class VideoAudioState {
+  Duration position = Duration.zero;
+  Duration duration = Duration.zero;
+  bool isPlaying = false;
+  bool isEnd = false;
+  bool isBuffering = false;
+  bool hasError = false;
+  double width = 1920;
+  double height = 1080;
+  double speed = 1.0;
+  List<Duration> buffered = [];
+}
+
+/// 临时 VideoAudioController，空实现
+class VideoAudioController {
+  String? videoUrl;
+  String? audioUrl;
+  VideoAudioState state = VideoAudioState();
+
+  Future<void> play() async {}
+  Future<void> pause() async {}
+  Future<void> seekTo(Duration position) async {}
+  Future<void> refresh() async {}
+  Future<void> setPlayBackSpeed(double speed) async {}
+  Future<void> dispose() async {}
+  Future<void> init() async {}
+
+  void addListener(Function() listener) {}
+  void removeListener(Function() listener) {}
+  void addStateChangedListener(Function(VideoAudioState state) listener) {}
+  void removeStateChangedListener(Function(VideoAudioState state) listener) {}
+  void addSeekToListener(Function(Duration position) listener) {}
+  void removeSeekToListener(Function(Duration position) listener) {}
+}
+
+/// 临时 PlayersSingleton 空实现
+class PlayersSingleton {
+  static final PlayersSingleton _instance = PlayersSingleton._internal();
+  factory PlayersSingleton() => _instance;
+  PlayersSingleton._internal();
+
+  int count = 0;
+  dynamic player;
+
+  Future<void> init() async {}
+  Future<void> dispose() async {}
+}
+
+/// 视频播放器 Widget
 class VideoAudioPlayer extends StatefulWidget {
   const VideoAudioPlayer(this.controller,
-      {super.key,
-      this.width,
-      this.height,
-      this.asepectRatio,
-      this.fit = BoxFit.contain});
+      {super.key, this.width, this.height, this.asepectRatio, this.fit = BoxFit.contain});
   final VideoAudioController controller;
   final double? width;
   final double? height;
@@ -26,31 +69,15 @@ class VideoAudioPlayer extends StatefulWidget {
 }
 
 class _VideoAudioPlayerState extends State<VideoAudioPlayer> {
-  VideoAudioController? _videoAudioController;
-
-  @override
-  void initState() {
-    super.initState();
-    _videoAudioController = widget.controller;
-  }
-
-  Future<void> _enterPipMode() async {
-    // 修复报错：VideoAudioController 没有 enterPipMode 方法
-    await _videoAudioController?.enterPipMode();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Container(); // 原逻辑保持不变
-  }
-}
-
-class VideoAudioController {
-  // 原有逻辑...
-
-  /// 修复 enterPipMode 调用报错，空实现
-  Future<void> enterPipMode() async {
-    // TODO: 需要实现 PIP 功能时再填充
-    return;
+    // 临时 UI 占位
+    return Container(
+      width: widget.width ?? double.infinity,
+      height: widget.height ?? 200,
+      color: Colors.black,
+      alignment: Alignment.center,
+      child: const Icon(Icons.play_arrow, color: Colors.white, size: 50),
+    );
   }
 }
