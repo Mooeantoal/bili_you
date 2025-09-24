@@ -11,7 +11,7 @@ import 'package:media_kit/media_kit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await BiliYouStorage.ensureInitialized();
+  await BiliMeStorage.ensureInitialized();
   MediaKit.ensureInitialized();
   runApp(const MyApp());
   //状态栏、导航栏沉浸
