@@ -139,11 +139,14 @@ class BiliVideoPlayerController {
   //当前播放的音频信息
   AudioPlayItem? _audioPlayItem;
   //
-  // //当前的视频画质
+  //
+  //当前的视频画质
   // VideoQuality? _videoQuality;
   //
-  // //当前的音质
+  //
+  //当前的音质
   // AudioQuality? _audioQuality;
+
   VideoPlayItem? get videoPlayItem => _videoPlayItem;
   AudioPlayItem? get audioPlayItem => _audioPlayItem;
   // VideoQuality? get videoQuality => _videoQuality;
@@ -207,6 +210,7 @@ class BiliVideoPlayerController {
       }
       _videoPlayItem = matchedVideo;
     }
+
     if (_audioPlayItem == null) {
       //根据偏好选择音质
       //根据AudioQuality下标判断最接近的音质
@@ -339,8 +343,8 @@ class BiliVideoPlayerController {
     }
   }
 
-  Future<void> enablePictureInPicture() async {
-    await _videoAudioController?.enterPictureInPictureMode();
+  Future enablePictureInPicture() async {
+    await _videoAudioController?.enterPipMode();
   }
 
   void addListener(VoidCallback listener) {
@@ -364,7 +368,7 @@ class BiliVideoPlayerController {
   }
 
   void removeSeekToListener(Function(Duration position) listener) {
-    _videoAudioController?.addSeekToListener(listener);
+    _videoAudioController?.removeSeekToListener(listener);
   }
 
   Future dispose() async {
