@@ -114,7 +114,7 @@ class BiliVideoController extends GetxController
   }
 
   Future toggleFav() async {
-    await VideoOperationApi.addFavorite(
+    await VideoOperationApi.addFavourite( // ✅ 修正方法名
       bvid: bvid,
       isCancel: isFaved.value,
     );
@@ -140,8 +140,6 @@ class BiliVideoController extends GetxController
 
   Future refreshReply() async {
     try {
-      // 此处添加评论刷新逻辑（示例）
-      // await replyApi.refresh();
       update(); // 通知UI更新评论区
     } catch (e) {
       errorMessage.value = "刷新评论失败: $e";
