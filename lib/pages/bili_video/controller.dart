@@ -6,12 +6,14 @@ import 'package:bili_you/common/models/local/video/video_play_info.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/cache_util.dart';
 import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_danmaku.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class BiliVideoController extends GetxController {
+class BiliVideoController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   final String bvid;
   final int cid;
   final bool isBangumi;
@@ -29,8 +31,9 @@ class BiliVideoController extends GetxController {
   late VideoInfo videoInfo;
   late VideoPlayInfo videoPlayInfo;
   late BiliVideoPlayerController biliVideoPlayerController;
-  late BiliVideoPlayerPanelController panelController;
-  late TabController tabController; // 新增TabController
+  late BiliVideoPlayerPanelController biliVideoPlayerPanelController;
+  late BiliDanmakuController biliDanmakuController;
+  late TabController tabController;
   final cacheManager = CacheUtils.bigImageCacheManager;
   final isLoading = true.obs;
   final isError = false.obs;
@@ -51,7 +54,7 @@ class BiliVideoController extends GetxController {
       videoPlayInfo = await VideoPlayApi.getVideoPlay(bvid: bvid, cid: cid);
       _initPlayer();
       _initPanelController();
-      _initTabController(); // 初始化TabController
+      _initTabController();
       await _loadInteractionState();
       isLoading.value = false;
     } catch (e) {
@@ -64,7 +67,6 @@ class BiliVideoController extends GetxController {
 
   Future _loadVideoInfo() async {
     videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
-    // 直接从VideoInfo获取互动数据（修复state不存在问题）
     likeCount.value = videoInfo.stat.like;
     coinCount.value = videoInfo.stat.coin;
     favCount.value = videoInfo.stat.favorite;
@@ -75,19 +77,19 @@ class BiliVideoController extends GetxController {
     biliVideoPlayerController = BiliVideoPlayerController(
       bvid: bvid,
       cid: cid,
-      initVideoPosition: progress != null ? Duration(seconds: progress!) : Duration.zero,
+      initVideoPosition:
+          progress != null ? Duration(seconds: progress!) : Duration.zero,
     );
   }
 
   void _initPanelController() {
-    panelController = BiliVideoPlayerPanelController(
+    biliVideoPlayerPanelController = BiliVideoPlayerPanelController(
       biliVideoPlayerController: biliVideoPlayerController,
     );
   }
 
   void _initTabController() {
-    // 初始化TabController（假设2个标签页，可根据实际需求调整）
-    tabController = TabController(length: 2, vsync: Get.context!);
+    tabController = TabController(length: 2, vsync: this);
   }
 
   Future _loadInteractionState() async {
@@ -97,7 +99,7 @@ class BiliVideoController extends GetxController {
   }
 
   Future toggleLike() async {
-    var result = await VideoOperationApi.clickLike(
+    await VideoOperationApi.clickLike(
       bvid: bvid,
       likeOrCancelLike: !isLiked.value,
     );
@@ -106,14 +108,13 @@ class BiliVideoController extends GetxController {
   }
 
   Future addCoin(int num) async {
-    var result = await VideoOperationApi.addCoin(bvid: bvid, num: num);
+    await VideoOperationApi.addCoin(bvid: bvid, num: num);
     isCoined.value = true;
     coinCount.value += num;
   }
 
   Future toggleFav() async {
-    // 修复参数名：iscancel -> isCancel
-    var result = await VideoOperationApi.addFavorite(
+    await VideoOperationApi.addFavorite(
       bvid: bvid,
       isCancel: isFaved.value,
     );
@@ -125,7 +126,6 @@ class BiliVideoController extends GetxController {
     shareCount.value += 1;
   }
 
-  // 新增：切换视频分P方法
   void changeVideoPart(int partIndex) {
     if (partIndex < videoInfo.pages.length) {
       int newCid = videoInfo.pages[partIndex].cid;
@@ -138,8 +138,7 @@ class BiliVideoController extends GetxController {
     }
   }
 
-  // 新增：刷新评论方法
-  Future<void> refreshReply() async {
+  Future refreshReply() async {
     try {
       // 此处添加评论刷新逻辑（示例）
       // await replyApi.refresh();
@@ -152,7 +151,7 @@ class BiliVideoController extends GetxController {
   @override
   void onClose() {
     biliVideoPlayerController.dispose();
-    tabController.dispose(); // 释放TabController
+    tabController.dispose();
     super.onClose();
   }
 }
