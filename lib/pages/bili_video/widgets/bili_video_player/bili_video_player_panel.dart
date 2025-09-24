@@ -68,7 +68,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   void toggleDanmaku() {
     widget.controller._biliVideoPlayerController.biliDanmakuController!
         .toggleDanmaku();
-    //保持弹幕状态
     if (SettingsUtil.getValue(SettingsStorageKeys.rememberDanmakuSwitch,
             defaultValue: false) ==
         true) {
@@ -85,7 +84,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     if (!widget.controller._isInitializedState) {
       widget.controller._isPlayerPlaying =
           widget.controller._biliVideoPlayerController.isPlaying;
-      //进入视频时如果没有在播放就显示
       widget.controller._show = !widget.controller._isPlayerPlaying;
       widget.controller.asepectRatio =
           widget.controller._biliVideoPlayerController.videoAspectRatio;
@@ -115,7 +113,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     super.dispose();
   }
 
-  ///视频画质radio列表
   List<RadioListTile> buildVideoQualityTiles() {
     List<RadioListTile> list = [];
     for (var i
@@ -134,7 +131,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     return list;
   }
 
-  //音质radio列表
   List<RadioListTile> buildAudioQualityTiles() {
     List<RadioListTile> list = [];
     for (var i
@@ -153,7 +149,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     return list;
   }
 
-  //播放速度radio列表
   List<RadioListTile> buildPlaybackSpeedTiles() {
     const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0];
     return speeds
@@ -163,7 +158,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
               groupValue: widget.controller._biliVideoPlayerController.speed,
               onChanged: (value) {
                 widget.controller._biliVideoPlayerController
-                    .setPlaybackSpeed(value!);
+                    .setSpeed(value!);
                 Navigator.of(context).pop();
               },
             ))
@@ -215,8 +210,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       MediaQuery.of(context).size.width)) {
                 isVerticalGestureInProgress = true;
                 tempSpeed = widget.controller._biliVideoPlayerController.speed;
-                widget.controller._biliVideoPlayerController
-                    .setPlaybackSpeed(1.0);
+                widget.controller._biliVideoPlayerController.setSpeed(1.0);
               }
             },
             onVerticalDragUpdate: (details) async {
@@ -225,32 +219,27 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                 var dy = details.delta.dy;
                 if (details.localPosition.dx <
                     MediaQuery.of(context).size.width / 2) {
-                  //左侧：亮度调节
                   var brightness = widget.controller._brightness - dy / height;
                   brightness = brightness.clamp(0.0, 1.0);
                   widget.controller._brightness = brightness;
                   await ScreenBrightness().setScreenBrightness(brightness);
                   setState(() {});
                 } else {
-                  //右侧：音量调节
                   var volume = widget.controller._volume - dy / height;
                   volume = volume.clamp(0.0, 1.0);
                   widget.controller._volume = volume;
-                  await VolumeController().setVolume(volume);
-                  setState(() {});
+                  VolumeController().setVolume(volume);
                 }
               }
             },
             onVerticalDragEnd: (details) {
               if (isVerticalGestureInProgress) {
                 isVerticalGestureInProgress = false;
-                widget.controller._biliVideoPlayerController
-                    .setPlaybackSpeed(tempSpeed);
+                widget.controller._biliVideoPlayerController.setSpeed(tempSpeed);
               }
             },
             child: Stack(
               children: [
-                //视频播放结束时显示的封面
                 if (widget.controller._isPlayerEnd)
                   Positioned.fill(
                     child: GestureDetector(
@@ -266,13 +255,12 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                           children: const [
                             Icon(Icons.replay, color: Colors.white, size: 50),
                             SizedBox(height: 10),
-                            Text("点击重新播放", color: Colors.white),
+                            Text("点击重新播放", style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),
                     ),
                   ),
-                //顶部控制栏
                 if (widget.controller._show)
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -299,7 +287,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                 color: iconColor),
                             onPressed: () {
                               widget.controller._biliVideoPlayerController
-                                  .enablePictureInPicture(context);
+                                  .enablePictureInPictureMode(context);
                             },
                           ),
                           IconButton(
@@ -397,38 +385,32 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       ),
                     ),
                   ),
-                //底部控制栏
                 if (widget.controller._show)
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.fastOutSlowIn,
                     height: widget.controller._show ? 60 : 0,
-                    child: FrostedGlassCard(  // 添加模糊效果
+                    child: FrostedGlassCard(
                       borderRadius: 0,
                       blurSigma: 8.0,
                       backgroundColor: Colors.black.withOpacity(0.4),
                       child: Column(
                         children: [
-                          //进度条
                           _VideoProgressSlider(
                             key: sliderKey,
                             controller: widget.controller,
                           ),
-                          //时间和控制按钮
                           Row(
                             children: [
-                              //播放按钮
                               _PlayButton(
                                 key: playButtonKey,
                                 controller: widget.controller,
                               ),
-                              //当前时间和总时长
                               _DurationText(
                                 key: durationTextKey,
                                 controller: widget.controller,
                               ),
                               const Spacer(),
-                              //音量按钮
                               IconButton(
                                 icon: Icon(
                                   widget.controller._volume > 0
@@ -436,34 +418,32 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                       : Icons.volume_off,
                                   color: iconColor,
                                 ),
-                                onPressed: () async {
+                                onPressed: () {
                                   if (widget.controller._volume > 0) {
                                     widget.controller._volume = 0;
-                                    await VolumeController().setVolume(0);
+                                    VolumeController().setVolume(0);
                                   } else {
                                     widget.controller._volume = 1.0;
-                                    await VolumeController().setVolume(1.0);
+                                    VolumeController().setVolume(1.0);
                                   }
                                   setState(() {});
                                 },
                               ),
-                              //音量滑块
                               SizedBox(
                                 width: 60,
                                 child: Slider(
                                   min: 0,
                                   max: 1,
                                   value: widget.controller._volume,
-                                  onChanged: (value) async {
+                                  onChanged: (value) {
                                     widget.controller._volume = value;
-                                    await VolumeController().setVolume(value);
+                                    VolumeController().setVolume(value);
                                     setState(() {});
                                   },
                                   activeColor: Colors.white,
                                   inactiveColor: Colors.white30,
                                 ),
                               ),
-                              //全屏按钮
                               IconButton(
                                 icon: Icon(
                                   widget.controller._biliVideoPlayerController
@@ -480,7 +460,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       ),
                     ),
                   ),
-                //加载中指示器
                 if (widget.controller._isPlayerBuffering)
                   const Center(
                     child: CircularProgressIndicator(
@@ -521,7 +500,7 @@ class _VideoProgressSliderState extends State<_VideoProgressSlider> {
       onChangeEnd: (value) {
         widget.controller._isSliderDraging = false;
         widget.controller._biliVideoPlayerController
-            .seekTo(Duration(milliseconds: value.round()));
+            .seekTo(widget.controller._position);
       },
       activeColor: Colors.blue,
       inactiveColor: Colors.white30,
@@ -595,7 +574,6 @@ class _DurationTextState extends State<_DurationText> {
 }
 
 class BiliVideoPlayerPanelController extends ChangeNotifier {
-  //外部传入的播放器控制器
   late final BiliVideoPlayerController _biliVideoPlayerController;
   late final Duration _duration;
   bool _show = true;
@@ -610,8 +588,8 @@ class BiliVideoPlayerPanelController extends ChangeNotifier {
   bool _isInitializedState = false;
   double? asepectRatio;
 
-  BiliVideoPlayerPanelController(
-      {required BiliVideoPlayerController biliVideoPlayerController})
-      : _biliVideoPlayerController = biliVideoPlayerController,
+  BiliVideoPlayerPanelController({
+    required BiliVideoPlayerController biliVideoPlayerController,
+  })  : _biliVideoPlayerController = biliVideoPlayerController,
         _duration = biliVideoPlayerController.duration;
 }
