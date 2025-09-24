@@ -48,12 +48,9 @@ class BiliVideoController extends GetxController {
     try {
       await _loadVideoInfo();
       // 修复API方法名称
-      videoPlayInfo = await VideoPlayApi.getPlayInfo(
+      videoPlayInfo = await VideoPlayApi.getVideoPlay(
         bvid: bvid,
-        cid: cid,
-        isBangumi: isBangumi,
-        ssid: ssid,
-      );
+        cid: cid,);
       _initPlayer();
       _initPanelController();
       _loadInteractionState();
