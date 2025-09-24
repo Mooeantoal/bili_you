@@ -149,6 +149,11 @@ class BiliVideoPlayerController {
   // VideoQuality? get videoQuality => _videoQuality;
   // AudioQuality? get audioQuality => _audioQuality;
 
+// 添加播放速率控制方法
+void setPlaybackRate(double rate) {
+  _videoAudioController?.setPlaybackRate(rate);
+}
+
   Future<void> reloadWidget() async {
     updateWidget();
     await _videoAudioController?.refresh();
