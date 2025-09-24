@@ -158,7 +158,8 @@ class _BiliVideoPageState extends State<BiliVideoPage>
             controller: controller.tabController,
             children: [
               IntroductionPage(
-                changePartCallback: controller.changeVideoPart,
+                changePartCallback: (_, partIndex) =>
+                    controller.changeVideoPart(partIndex),
                 refreshReply: controller.refreshReply,
                 bvid: controller.bvid,
                 cid: controller.cid,
