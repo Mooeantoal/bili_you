@@ -74,7 +74,7 @@ class MinePage extends GetView<MineController> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         return ValueListenableBuilder(
-                          valueListenable: BiliYouStorage.user
+                          valueListenable: BiliMeStorage.user
                               .listenable(keys: [UserStorageKeys.userFace]),
                           builder: (context, value, child) {
                             return CachedNetworkImage(
