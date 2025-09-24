@@ -18,11 +18,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 class BiliVideoPlayerPanel extends StatefulWidget {
   const BiliVideoPlayerPanel(this.controller, {super.key});
   final BiliVideoPlayerPanelController controller;
+  
   @override
   State<BiliVideoPlayerPanel> createState() => _BiliVideoPlayerPanelState();
 }
 
 class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
+  // 定义缺失的颜色变量
+  static const Color iconColor = Colors.white;
+  static const Color textColor = Colors.white;
+  
   GlobalKey danmakuCheckBoxKey = GlobalKey();
   GlobalKey playButtonKey = GlobalKey();
   GlobalKey sliderKey = GlobalKey();
@@ -37,8 +42,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   final panelDecoration = const BoxDecoration(boxShadow: [
     BoxShadow(color: Colors.black45, blurRadius: 15, spreadRadius: 5)
   ]);
-  static const Color textColor = Colors.white;
-  static const Color iconColor = Colors.white;
 
   void playStateChangedCallback(VideoAudioState value) {
     widget.controller._isPlayerPlaying = value.isPlaying;
@@ -157,8 +160,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
               value: speed,
               groupValue: widget.controller._biliVideoPlayerController.speed,
               onChanged: (value) {
-                widget.controller._biliVideoPlayerController
-                    .setSpeed(value!);
+                // 修复方法名称
+                widget.controller._biliVideoPlayerController.setPlaybackRate(value!);
                 Navigator.of(context).pop();
               },
             ))
@@ -210,7 +213,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       MediaQuery.of(context).size.width)) {
                 isVerticalGestureInProgress = true;
                 tempSpeed = widget.controller._biliVideoPlayerController.speed;
-                widget.controller._biliVideoPlayerController.setSpeed(1.0);
+                // 修复方法名称
+                widget.controller._biliVideoPlayerController.setPlaybackRate(1.0);
               }
             },
             onVerticalDragUpdate: (details) async {
@@ -235,7 +239,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
             onVerticalDragEnd: (details) {
               if (isVerticalGestureInProgress) {
                 isVerticalGestureInProgress = false;
-                widget.controller._biliVideoPlayerController.setSpeed(tempSpeed);
+                // 修复方法名称
+                widget.controller._biliVideoPlayerController.setPlaybackRate(tempSpeed);
               }
             },
             child: Stack(
@@ -286,8 +291,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                             icon: const Icon(Icons.picture_in_picture,
                                 color: iconColor),
                             onPressed: () {
+                              // 修复方法名称
                               widget.controller._biliVideoPlayerController
-                                  .enablePictureInPictureMode(context);
+                                  .enablePictureInPicture(context);
                             },
                           ),
                           IconButton(
@@ -301,8 +307,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                           .biliDanmakuController!
                                           .isDanmakuOpened
                                       ? Icons.comment
-                                      : Icons.comment_off
-                                  : Icons.comment_off,
+                                      : Icons.comment_off_outlined  // 修复图标名称
+                                  : Icons.comment_off_outlined,  // 修复图标名称
                               color: iconColor,
                             ),
                             onPressed: toggleDanmaku,
