@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
-  final String projectUrl = "https://github.com/lucinhu/bili_you";
+  final String projectUrl = "https://github.com/mooeantoal/bili_you";
   final String authorUrl = "https://github.com/lucinhu";
 
   @override
