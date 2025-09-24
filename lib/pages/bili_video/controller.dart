@@ -3,9 +3,7 @@ import 'package:bili_you/common/api/video_operation_api.dart';
 import 'package:bili_you/common/api/video_play_api.dart';
 import 'package:bili_you/common/models/local/video/video_info.dart';
 import 'package:bili_you/common/models/local/video/video_play_info.dart';
-import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/cache_util.dart';
-import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_danmaku.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player_panel.dart';
@@ -114,7 +112,7 @@ class BiliVideoController extends GetxController
   }
 
   Future toggleFav() async {
-    await VideoOperationApi.addFavourite( // ✅ 修正方法名
+    await VideoOperationApi.addFavorite(
       bvid: bvid,
       isCancel: isFaved.value,
     );
@@ -126,7 +124,7 @@ class BiliVideoController extends GetxController
     shareCount.value += 1;
   }
 
-  void changeVideoPart(String _, int partIndex) {
+  void changeVideoPart(int partIndex, bool autoPlay) {
     if (partIndex < videoInfo.parts.length) {
       int newCid = videoInfo.parts[partIndex].cid;
       biliVideoPlayerController = BiliVideoPlayerController(
@@ -134,13 +132,16 @@ class BiliVideoController extends GetxController
         cid: newCid,
         initVideoPosition: Duration.zero,
       );
-      update(); // 通知UI更新播放器
+      update();
+      if (autoPlay) {
+        biliVideoPlayerController.play();
+      }
     }
   }
 
   Future refreshReply() async {
     try {
-      update(); // 通知UI更新评论区
+      update();
     } catch (e) {
       errorMessage.value = "刷新评论失败: $e";
     }
@@ -149,7 +150,3 @@ class BiliVideoController extends GetxController
   @override
   void onClose() {
     biliVideoPlayerController.dispose();
-    tabController.dispose();
-    super.onClose();
-  }
-}
