@@ -67,10 +67,10 @@ class BiliVideoController extends GetxController
 
   Future _loadVideoInfo() async {
     videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
-    likeCount.value = videoInfo.stat.like;
-    coinCount.value = videoInfo.stat.coin;
-    favCount.value = videoInfo.stat.favorite;
-    shareCount.value = videoInfo.stat.share;
+    likeCount.value = videoInfo.like;
+    coinCount.value = videoInfo.coin;
+    favCount.value = videoInfo.favorite;
+    shareCount.value = videoInfo.share;
   }
 
   void _initPlayer() {
@@ -114,7 +114,7 @@ class BiliVideoController extends GetxController
   }
 
   Future toggleFav() async {
-    await VideoOperationApi.addFavorite(
+    await VideoOperationApi.setFavorite(
       bvid: bvid,
       isCancel: isFaved.value,
     );
@@ -126,9 +126,9 @@ class BiliVideoController extends GetxController
     shareCount.value += 1;
   }
 
-  void changeVideoPart(int partIndex) {
-    if (partIndex < videoInfo.pages.length) {
-      int newCid = videoInfo.pages[partIndex].cid;
+  void changeVideoPart(String _, int partIndex) {
+    if (partIndex < videoInfo.parts.length) {
+      int newCid = videoInfo.parts[partIndex].cid;
       biliVideoPlayerController = BiliVideoPlayerController(
         bvid: bvid,
         cid: newCid,
