@@ -36,7 +36,7 @@ class AboutPage extends StatelessWidget {
         ),
         ListTile(
           title: const Text("作者"),
-          subtitle: const Text("mooeantoal"),
+          subtitle: const Text("Mooeantoal"),
           onTap: () {
             launchUrlString(authorUrl);
           },
