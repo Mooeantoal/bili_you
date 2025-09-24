@@ -9,7 +9,7 @@ class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
   final String projectUrl = "https://github.com/mooeantoal/bili_you";
-  final String authorUrl = "https://github.com/lucinhu";
+  final String authorUrl = "https://github.com/mooeantoal";
 
   @override
   Widget build(BuildContext context) {
