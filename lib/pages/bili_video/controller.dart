@@ -83,10 +83,10 @@ class BiliVideoController extends GetxController {
     isLiked.value = await VideoOperationApi.hasLike(bvid: bvid);
 isCoined.value = await VideoOperationApi.hasAddCoin(bvid: bvid);
 isFaved.value = await VideoOperationApi.hasFavourite(bvid: bvid);
-    likeCount.value = state.likeCount;
-    coinCount.value = state.coinCount;
-    favCount.value = state.favCount;
-    shareCount.value = state.shareCount;
+    likeCount.value = await _getLikeCount(bvid); // 需实现点赞数获取API
+    coinCount.value = await _getCoinCount(bvid); // 需实现硬币数获取API
+     favCount.value = await _getFavCount(bvid);   // 需实现收藏数获取API
+     shareCount.value = await _getShareCount(bvid); // 需实现分享数获取API
   }
 
   Future<void> toggleLike() async {
