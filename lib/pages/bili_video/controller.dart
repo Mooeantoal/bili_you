@@ -106,9 +106,9 @@ isFaved.value = await VideoOperationApi.hasFavourite(bvid: bvid);
 
   Future<void> toggleFav() async {
     // 修复API方法名称
-    var result = await VideoOperationApi.favoriteVideo(
+    var result = await VideoOperationApi.addFavorite(
       bvid: bvid,
-      cancel: isFaved.value,
+      iscancel: isFaved.value,
     );
     isFaved.value = !isFaved.value;
     favCount.value += isFaved.value ? 1 : -1;
