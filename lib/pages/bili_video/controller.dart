@@ -29,7 +29,8 @@ class BiliVideoController extends GetxController {
   late VideoPlayInfo videoPlayInfo;
   late BiliVideoPlayerController biliVideoPlayerController;
   late BiliVideoPlayerPanelController panelController;
-  final cacheManager = CacheUtils.biliYouCacheManager;
+  // 使用项目中已有的缓存管理器
+  final cacheManager = CacheUtils.bigImageCacheManager;
   final isLoading = true.obs;
   final isError = false.obs;
   final errorMessage = "".obs;
@@ -46,7 +47,13 @@ class BiliVideoController extends GetxController {
     super.onInit();
     try {
       await _loadVideoInfo();
-      await _loadVideoPlayInfo();
+      // 修复API方法名称
+      videoPlayInfo = await VideoPlayApi.getPlayInfo(
+        bvid: bvid,
+        cid: cid,
+        isBangumi: isBangumi,
+        ssid: ssid,
+      );
       _initPlayer();
       _initPanelController();
       _loadInteractionState();
@@ -63,18 +70,10 @@ class BiliVideoController extends GetxController {
     videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
   }
 
-  Future<void> _loadVideoPlayInfo() async {
-    videoPlayInfo = await VideoPlayApi.getVideoPlayInfo(
-      bvid: bvid,
-      cid: cid,
-      isBangumi: isBangumi,
-      ssid: ssid,
-    );
-  }
-
   void _initPlayer() {
+    // 修复构造函数参数名称
     biliVideoPlayerController = BiliVideoPlayerController(
-      videoPlayInfo: videoPlayInfo,
+      playInfo: videoPlayInfo,
       initialPosition: progress != null ? Duration(seconds: progress!) : null,
     );
   }
@@ -86,7 +85,8 @@ class BiliVideoController extends GetxController {
   }
 
   Future<void> _loadInteractionState() async {
-    var state = await VideoOperationApi.getVideoInteractionState(bvid: bvid);
+    // 修复API方法名称
+    var state = await VideoOperationApi.getInteractionState(bvid: bvid);
     isLiked.value = state.isLiked;
     isCoined.value = state.isCoined;
     isFaved.value = state.isFaved;
@@ -99,7 +99,7 @@ class BiliVideoController extends GetxController {
   Future<void> toggleLike() async {
     var result = await VideoOperationApi.clickLike(
       bvid: bvid,
-      isCancel: isLiked.value,
+      cancel: isLiked.value, // 修复参数名称
     );
     isLiked.value = !isLiked.value;
     likeCount.value += isLiked.value ? 1 : -1;
@@ -115,9 +115,10 @@ class BiliVideoController extends GetxController {
   }
 
   Future<void> toggleFav() async {
-    var result = await VideoOperationApi.toggleFav(
+    // 修复API方法名称
+    var result = await VideoOperationApi.favoriteVideo(
       bvid: bvid,
-      isCancel: isFaved.value,
+      cancel: isFaved.value,
     );
     isFaved.value = !isFaved.value;
     favCount.value += isFaved.value ? 1 : -1;
