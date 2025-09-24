@@ -69,10 +69,7 @@ class BiliVideoController extends GetxController {
 
   void _initPlayer() {
     // 修复构造函数参数名称
-    biliVideoPlayerController = BiliVideoPlayerController(
-      playInfo: videoPlayInfo,
-      initialPosition: progress != null ? Duration(seconds: progress!) : null,
-    );
+    biliVideoPlayerController = BiliVideoPlayerController(bvid: bvid, cid: cid, initVideoPosition: progress != null ? Duration(seconds: progress!) : Duration.zero);
   }
 
   void _initPanelController() {
@@ -83,10 +80,9 @@ class BiliVideoController extends GetxController {
 
   Future<void> _loadInteractionState() async {
     // 修复API方法名称
-    var state = await VideoOperationApi.getInteractionState(bvid: bvid);
-    isLiked.value = state.isLiked;
-    isCoined.value = state.isCoined;
-    isFaved.value = state.isFaved;
+    isLiked.value = await VideoOperationApi.hasLike(bvid: bvid);
+isCoined.value = await VideoOperationApi.hasAddCoin(bvid: bvid);
+isFaved.value = await VideoOperationApi.hasFavourite(bvid: bvid);
     likeCount.value = state.likeCount;
     coinCount.value = state.coinCount;
     favCount.value = state.favCount;
