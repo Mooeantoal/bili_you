@@ -116,7 +116,7 @@ class SettingsUtil {
                     } else if (Platform.isLinux) {
                       //linux
                       launchUrlString(
-                          "https://github.com/lucinhu/bili_you/releases",
+                          "https://github.com/mooeantoal/bili_you/releases",
                           mode: LaunchMode.externalApplication);
                     } else if (Platform.isIOS) {
                       //TODO ios
