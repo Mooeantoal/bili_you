@@ -8,6 +8,7 @@ import 'package:bili_you/common/utils/cache_util.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player_panel.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class BiliVideoController extends GetxController {
@@ -29,7 +30,7 @@ class BiliVideoController extends GetxController {
   late VideoPlayInfo videoPlayInfo;
   late BiliVideoPlayerController biliVideoPlayerController;
   late BiliVideoPlayerPanelController panelController;
-  // 使用项目中已有的缓存管理器
+  late TabController tabController; // 新增TabController
   final cacheManager = CacheUtils.bigImageCacheManager;
   final isLoading = true.obs;
   final isError = false.obs;
@@ -47,13 +48,11 @@ class BiliVideoController extends GetxController {
     super.onInit();
     try {
       await _loadVideoInfo();
-      // 修复API方法名称
-      videoPlayInfo = await VideoPlayApi.getVideoPlay(
-        bvid: bvid,
-        cid: cid,);
+      videoPlayInfo = await VideoPlayApi.getVideoPlay(bvid: bvid, cid: cid);
       _initPlayer();
       _initPanelController();
-      _loadInteractionState();
+      _initTabController(); // 初始化TabController
+      await _loadInteractionState();
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
@@ -63,13 +62,21 @@ class BiliVideoController extends GetxController {
     }
   }
 
-  Future<void> _loadVideoInfo() async {
+  Future _loadVideoInfo() async {
     videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
+    // 直接从VideoInfo获取互动数据（修复state不存在问题）
+    likeCount.value = videoInfo.stat.like;
+    coinCount.value = videoInfo.stat.coin;
+    favCount.value = videoInfo.stat.favorite;
+    shareCount.value = videoInfo.stat.share;
   }
 
   void _initPlayer() {
-    // 修复构造函数参数名称
-    biliVideoPlayerController = BiliVideoPlayerController(bvid: bvid, cid: cid, initVideoPosition: progress != null ? Duration(seconds: progress!) : Duration.zero);
+    biliVideoPlayerController = BiliVideoPlayerController(
+      bvid: bvid,
+      cid: cid,
+      initVideoPosition: progress != null ? Duration(seconds: progress!) : Duration.zero,
+    );
   }
 
   void _initPanelController() {
@@ -78,49 +85,74 @@ class BiliVideoController extends GetxController {
     );
   }
 
-  Future<void> _loadInteractionState() async {
-    // 修复API方法名称
-    isLiked.value = await VideoOperationApi.hasLike(bvid: bvid);
-isCoined.value = await VideoOperationApi.hasAddCoin(bvid: bvid);
-isFaved.value = await VideoOperationApi.hasFavourite(bvid: bvid);
-    likeCount.value = await _getLikeCount(bvid); // 需实现点赞数获取API
-    coinCount.value = await _getCoinCount(bvid); // 需实现硬币数获取API
-     favCount.value = await _getFavCount(bvid);   // 需实现收藏数获取API
-     shareCount.value = await _getShareCount(bvid); // 需实现分享数获取API
+  void _initTabController() {
+    // 初始化TabController（假设2个标签页，可根据实际需求调整）
+    tabController = TabController(length: 2, vsync: Get.context!);
   }
 
-  Future<void> toggleLike() async {
-    var result = await VideoOperationApi.clickLike(bvid: bvid, likeOrCancelLike: !isLiked.value);
+  Future _loadInteractionState() async {
+    isLiked.value = await VideoOperationApi.hasLike(bvid: bvid);
+    isCoined.value = await VideoOperationApi.hasAddCoin(bvid: bvid);
+    isFaved.value = await VideoOperationApi.hasFavourite(bvid: bvid);
+  }
+
+  Future toggleLike() async {
+    var result = await VideoOperationApi.clickLike(
+      bvid: bvid,
+      likeOrCancelLike: !isLiked.value,
+    );
     isLiked.value = !isLiked.value;
     likeCount.value += isLiked.value ? 1 : -1;
   }
 
-  Future<void> addCoin(int num) async {
-    var result = await VideoOperationApi.addCoin(
-      bvid: bvid,
-      num: num,
-    );
+  Future addCoin(int num) async {
+    var result = await VideoOperationApi.addCoin(bvid: bvid, num: num);
     isCoined.value = true;
     coinCount.value += num;
   }
 
-  Future<void> toggleFav() async {
-    // 修复API方法名称
+  Future toggleFav() async {
+    // 修复参数名：iscancel -> isCancel
     var result = await VideoOperationApi.addFavorite(
       bvid: bvid,
-      iscancel: isFaved.value,
+      isCancel: isFaved.value,
     );
     isFaved.value = !isFaved.value;
     favCount.value += isFaved.value ? 1 : -1;
   }
 
-  Future<void> shareVideo() async {
+  Future shareVideo() async {
     shareCount.value += 1;
+  }
+
+  // 新增：切换视频分P方法
+  void changeVideoPart(int partIndex) {
+    if (partIndex < videoInfo.pages.length) {
+      int newCid = videoInfo.pages[partIndex].cid;
+      biliVideoPlayerController = BiliVideoPlayerController(
+        bvid: bvid,
+        cid: newCid,
+        initVideoPosition: Duration.zero,
+      );
+      update(); // 通知UI更新播放器
+    }
+  }
+
+  // 新增：刷新评论方法
+  Future<void> refreshReply() async {
+    try {
+      // 此处添加评论刷新逻辑（示例）
+      // await replyApi.refresh();
+      update(); // 通知UI更新评论区
+    } catch (e) {
+      errorMessage.value = "刷新评论失败: $e";
+    }
   }
 
   @override
   void onClose() {
     biliVideoPlayerController.dispose();
+    tabController.dispose(); // 释放TabController
     super.onClose();
   }
 }
