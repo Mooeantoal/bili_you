@@ -35,8 +35,7 @@ class ShowDialog {
                               PhotoViewGalleryPageOptions(
                                 filterQuality: FilterQuality.high,
                                 minScale: PhotoViewComputedScale.contained,
-                                maxScale:
-                                    PhotoViewComputedScale.contained * 6.0,
+                                maxScale: PhotoViewComputedScale.contained * 6.0,
                                 initialScale: PhotoViewComputedScale.contained,
                                 heroAttributes:
                                     PhotoViewHeroAttributes(tag: urls[index]),
@@ -46,76 +45,77 @@ class ShowDialog {
                                         CacheUtils.bigImageCacheManager),
                               )),
                       Container(
-                          decoration: const BoxDecoration(boxShadow: [
-                            BoxShadow(
-                                offset: Offset(0, -20),
-                                color: Colors.black12,
-                                blurRadius: 20,
-                                spreadRadius: 20)
-                          ]),
-                          child: SafeArea(
-                            bottom: false,
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  icon: Icon(Icons.close,
-                                      color: Theme.of(context)
-                                          .primaryTextTheme
-                                          .bodyMedium!
-                                          .color,
-                                      shadows: const [
-                                        Shadow(
-                                            color: Colors.black54,
-                                            blurRadius: 2),
-                                      ]),
-                                ),
-                                const Spacer(),
-                                Text(
-                                    style: TextStyle(
-                                      shadows: const [
-                                        Shadow(
-                                            color: Colors.black54,
-                                            blurRadius: 2),
-                                      ],
-                                      color: Theme.of(context)
-                                          .primaryTextTheme
-                                          .bodyMedium!
-                                          .color,
-                                    ),
-                                    '${currentIndex + 1}/${urls.length}'),
-                                PopupMenuButton(
-                                  icon: Icon(Icons.more_vert_rounded,
-                                      color: Theme.of(context)
-                                          .primaryTextTheme
-                                          .bodyMedium!
-                                          .color,
-                                      shadows: const [
-                                        Shadow(
-                                            color: Colors.black54,
-                                            blurRadius: 2),
-                                      ]),
-                                  itemBuilder: (context) => [
-                                    PopupMenuItem(
-                                      child: const Text("保存图片"),
-                                      onTap: () async {
-                                        await _saveImage(urls[currentIndex]);
-                                      },
-                                    ),
-                                    PopupMenuItem(
-                                      child: const Text("分享图片"),
-                                      onTap: () async {
-                                        await Share.shareXFiles(
-                                            [XFile(urls[currentIndex])]);
-                                      },
-                                    )
+                        decoration: const BoxDecoration(boxShadow: [
+                          BoxShadow(
+                              offset: Offset(0, -20),
+                              color: Colors.black12,
+                              blurRadius: 20,
+                              spreadRadius: 20)
+                        ]),
+                        child: SafeArea(
+                          bottom: false,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                icon: Icon(
+                                  Icons.close,
+                                  color: Theme.of(context)
+                                      .primaryTextTheme
+                                      .bodyMedium!
+                                      .color,
+                                  shadows: const [
+                                    Shadow(color: Colors.black54, blurRadius: 2),
                                   ],
-                                )
-                              ],
-                            ),
-                          ))
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                  style: TextStyle(
+                                    shadows: const [
+                                      Shadow(
+                                          color: Colors.black54, blurRadius: 2),
+                                    ],
+                                    color: Theme.of(context)
+                                        .primaryTextTheme
+                                        .bodyMedium!
+                                        .color,
+                                  ),
+                                  '${currentIndex + 1}/${urls.length}'),
+                              PopupMenuButton(
+                                icon: Icon(
+                                  Icons.more_vert_rounded,
+                                  color: Theme.of(context)
+                                      .primaryTextTheme
+                                      .bodyMedium!
+                                      .color,
+                                  shadows: const [
+                                    Shadow(
+                                        color: Colors.black54, blurRadius: 2),
+                                  ],
+                                ),
+                                itemBuilder: (context) => [
+                                  PopupMenuItem(
+                                    child: const Text("保存图片"),
+                                    onTap: () async {
+                                      await _saveImage(urls[currentIndex]);
+                                    },
+                                  ),
+                                  PopupMenuItem(
+                                    child: const Text("分享图片"),
+                                    onTap: () async {
+                                      await Share.shareXFiles(
+                                          [XFile(urls[currentIndex])]);
+                                    },
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      )
                     ],
                   );
                 },
@@ -123,14 +123,15 @@ class ShowDialog {
             ));
   }
 
-  static Future<void> _saveImage(String url) async {
+  static Future _saveImage(String url) async {
     try {
-      var imageData = await CachedNetworkImageProvider(
+      // 确保图片在缓存中
+      await CachedNetworkImageProvider(
         url,
         cacheManager: CacheUtils.bigImageCacheManager,
       ).obtainKey(const ImageConfiguration());
-      var file = await CacheUtils.bigImageCacheManager.getFileFromCache(
-          imageData.key.toString());
+      // 从缓存中获取文件
+      var file = await CacheUtils.bigImageCacheManager.getFileFromCache(url);
       if (file != null) {
         await ImageGallerySaver.saveFile(file.file.path);
         Get.showSnackbar(const GetSnackBar(
@@ -166,10 +167,12 @@ class ShowDialog {
     return showDialog<bool>(
       context: context,
       barrierDismissible: barrierDismissible,
-      builder: (context) => FrostedGlassCard(  // 添加模糊效果
+      builder: (context) => FrostedGlassCard(
+        // 添加模糊效果
         borderRadius: 16.0,
         blurSigma: 8.0,
-        backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+        backgroundColor:
+            Theme.of(context).colorScheme.surface.withOpacity(0.9),
         child: AlertDialog(
           title: Text(title),
           content: Text(content),
