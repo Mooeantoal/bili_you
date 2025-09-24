@@ -1,4 +1,4 @@
-import 'package:bili_me/common/utils/bili_you_storage.dart';
+import 'package:bili_me/common/utils/bili_me_storage.dart';
 import 'package:bili_me/common/utils/http_utils.dart';
 import 'package:bili_me/common/utils/settings.dart';
 import 'package:bili_me/pages/bili_video/index.dart';
