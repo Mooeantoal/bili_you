@@ -2,7 +2,7 @@ name: "Feature request"
 description: 关于新功能的建议
 labels: 
   - enhancement
-assignees: lucinhu
+assignees: Mooeantoal
 body:
   - type: textarea
     attributes:
