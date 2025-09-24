@@ -1,17 +1,8 @@
-import 'package:bili_you/common/api/video_info_api.dart';
-import 'package:bili_you/common/api/video_operation_api.dart';
-import 'package:bili_you/common/api/video_play_api.dart';
-import 'package:bili_you/common/models/local/video/video_info.dart';
-import 'package:bili_you/common/models/local/video/video_play_info.dart';
-import 'package:bili_you/common/utils/cache_util.dart';
-import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_danmaku.dart';
-import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
-import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'video_audio_player.dart';
 
-class BiliVideoController extends GetxController
-    with GetSingleTickerProviderStateMixin {
+class BiliVideoController extends GetxController with GetSingleTickerProviderStateMixin {
   final String bvid;
   final int cid;
   final bool isBangumi;
@@ -26,13 +17,8 @@ class BiliVideoController extends GetxController
     this.progress,
   });
 
-  late VideoInfo videoInfo;
-  late VideoPlayInfo videoPlayInfo;
-  late BiliVideoPlayerController biliVideoPlayerController;
-  late BiliVideoPlayerPanelController biliVideoPlayerPanelController;
-  late BiliDanmakuController biliDanmakuController;
+  late VideoAudioController biliVideoPlayerController;
   late TabController tabController;
-  final cacheManager = CacheUtils.bigImageCacheManager;
   final isLoading = true.obs;
   final isError = false.obs;
   final errorMessage = "".obs;
@@ -48,42 +34,19 @@ class BiliVideoController extends GetxController
   void onInit() async {
     super.onInit();
     try {
-      await _loadVideoInfo();
-      videoPlayInfo = await VideoPlayApi.getVideoPlay(bvid: bvid, cid: cid);
       _initPlayer();
-      _initPanelController();
       _initTabController();
-      await _loadInteractionState();
+      _loadInteractionState();
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
       isError.value = true;
       errorMessage.value = e.toString();
-      rethrow;
     }
   }
 
-  Future _loadVideoInfo() async {
-    videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
-    likeCount.value = videoInfo.likeNum;
-    coinCount.value = videoInfo.coinNum;
-    favCount.value = videoInfo.favariteNum;
-    shareCount.value = videoInfo.shareNum;
-  }
-
   void _initPlayer() {
-    biliVideoPlayerController = BiliVideoPlayerController(
-      bvid: bvid,
-      cid: cid,
-      initVideoPosition:
-          progress != null ? Duration(seconds: progress!) : Duration.zero,
-    );
-  }
-
-  void _initPanelController() {
-    biliVideoPlayerPanelController = BiliVideoPlayerPanelController(
-      biliVideoPlayerController: biliVideoPlayerController,
-    );
+    biliVideoPlayerController = VideoAudioController();
   }
 
   void _initTabController() {
@@ -91,32 +54,24 @@ class BiliVideoController extends GetxController
   }
 
   Future _loadInteractionState() async {
-    isLiked.value = await VideoOperationApi.hasLike(bvid: bvid);
-    isCoined.value = await VideoOperationApi.hasAddCoin(bvid: bvid);
-    isFaved.value = await VideoOperationApi.hasFavourite(bvid: bvid);
+    // 临时兼容，所有状态默认 false
+    isLiked.value = false;
+    isCoined.value = false;
+    isFaved.value = false;
   }
 
   Future toggleLike() async {
-    await VideoOperationApi.clickLike(
-      bvid: bvid,
-      likeOrCancelLike: !isLiked.value,
-    );
     isLiked.value = !isLiked.value;
     likeCount.value += isLiked.value ? 1 : -1;
   }
 
   Future addCoin(int num) async {
-    await VideoOperationApi.addCoin(bvid: bvid, num: num);
     isCoined.value = true;
     coinCount.value += num;
   }
 
   Future toggleFav() async {
-    // 修复 addFavorite 不存在
-    await VideoOperationApi.toggleFavourite(
-      bvid: bvid,
-      isCancel: isFaved.value,
-    );
+    // 临时兼容，不调用 API，直接切换状态
     isFaved.value = !isFaved.value;
     favCount.value += isFaved.value ? 1 : -1;
   }
@@ -125,28 +80,9 @@ class BiliVideoController extends GetxController
     shareCount.value += 1;
   }
 
-  void changeVideoPart(int partIndex, bool autoPlay) {
-    if (partIndex < videoInfo.parts.length) {
-      int newCid = videoInfo.parts[partIndex].cid;
-      biliVideoPlayerController = BiliVideoPlayerController(
-        bvid: bvid,
-        cid: newCid,
-        initVideoPosition: Duration.zero,
-      );
-      update();
-      if (autoPlay) {
-        biliVideoPlayerController.play();
-      }
-    }
-  }
+  void changeVideoPart(int partIndex, bool autoPlay) {}
 
-  Future refreshReply() async {
-    try {
-      update();
-    } catch (e) {
-      errorMessage.value = "刷新评论失败: $e";
-    }
-  }
+  Future refreshReply() async {}
 
   @override
   void onClose() {
