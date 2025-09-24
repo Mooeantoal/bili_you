@@ -16,9 +16,7 @@ import 'widgets/bili_video_player/bili_video_player_panel.dart';
 import 'widgets/reply/controller.dart';
 
 class BiliVideoPage extends StatefulWidget {
-  static final RouteObserver<PageRoute> routeObserver =
-      RouteObserver<PageRoute>();
-
+  static final RouteObserver routeObserver = RouteObserver();
   const BiliVideoPage(
       {Key? key,
       required this.bvid,
@@ -34,7 +32,6 @@ class BiliVideoPage extends StatefulWidget {
   final bool isBangumi;
   final int? progress;
   final String tag;
-
   @override
   State<BiliVideoPage> createState() => _BiliVideoPageState();
 }
@@ -43,7 +40,6 @@ class _BiliVideoPageState extends State<BiliVideoPage>
     with RouteAware, WidgetsBindingObserver {
   int currentTabIndex = 0;
   late BiliVideoController controller;
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     //当应用切换后台时
@@ -90,7 +86,10 @@ class _BiliVideoPageState extends State<BiliVideoPage>
     //暂停视频
     var second = controller.biliVideoPlayerController.position.inSeconds;
     await controller.biliVideoPlayerController.pause();
-    await HistoryApi.reportVideoViewHistory(aid: BvidAvidUtil.bvid2Av(controller.bvid),cid: controller.cid,progress: second);
+    await HistoryApi.reportVideoViewHistory(
+        aid: BvidAvidUtil.bvid2Av(controller.bvid),
+        cid: controller.cid,
+        progress: second);
     //释放所有图片缓存
     CacheUtils.clearAllCacheImageMem();
     super.didPop();
@@ -126,12 +125,7 @@ class _BiliVideoPageState extends State<BiliVideoPage>
         TabBar(
           controller: controller.tabController,
           splashFactory: NoSplash.splashFactory,
-          tabs: const [
-            Tab(
-              text: "简介",
-            ),
-            Tab(text: "评论")
-          ],
+          tabs: const [Tab(text: "简介"), Tab(text: "评论")],
           onTap: (value) {
             if (value == currentTabIndex) {
               //当按下的tab和当前的一样，就滚动到顶部
@@ -187,7 +181,7 @@ class _BiliVideoPageState extends State<BiliVideoPage>
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
+    return AnnotatedRegion(
         value: const SystemUiOverlayStyle(
             statusBarIconBrightness: Brightness.light),
         child: Scaffold(
