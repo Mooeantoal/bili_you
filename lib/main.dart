@@ -1,8 +1,8 @@
-import 'package:bili_me/common/utils/bili_me_storage.dart';
-import 'package:bili_me/common/utils/http_utils.dart';
-import 'package:bili_me/common/utils/settings.dart';
-import 'package:bili_me/pages/bili_video/index.dart';
-import 'package:bili_me/pages/main/index.dart';
+import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:bili_you/common/utils/http_utils.dart';
+import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/pages/bili_video/index.dart';
+import 'package:bili_you/pages/main/index.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
