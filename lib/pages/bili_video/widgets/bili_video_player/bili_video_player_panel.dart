@@ -18,7 +18,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 class BiliVideoPlayerPanel extends StatefulWidget {
   const BiliVideoPlayerPanel(this.controller, {super.key});
   final BiliVideoPlayerPanelController controller;
-  
+
   @override
   State<BiliVideoPlayerPanel> createState() => _BiliVideoPlayerPanelState();
 }
@@ -27,7 +27,6 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   // 定义缺失的颜色变量
   static const Color iconColor = Colors.white;
   static const Color textColor = Colors.white;
-  
   GlobalKey danmakuCheckBoxKey = GlobalKey();
   GlobalKey playButtonKey = GlobalKey();
   GlobalKey sliderKey = GlobalKey();
@@ -36,13 +35,11 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   bool isHorizontalGestureInProgress = false;
   bool isVerticalGestureInProgress = false;
   static const gestureEdgeDeadZone = 0.1;
-  var isInDeadZone = (x, bound) =>
-      math.min<double>(x, bound - x) < gestureEdgeDeadZone * bound;
-
+  var isInDeadZone =
+      (x, bound) => math.min(x, bound - x) < gestureEdgeDeadZone * bound;
   final panelDecoration = const BoxDecoration(boxShadow: [
     BoxShadow(color: Colors.black45, blurRadius: 15, spreadRadius: 5)
   ]);
-
   void playStateChangedCallback(VideoAudioState value) {
     widget.controller._isPlayerPlaying = value.isPlaying;
     widget.controller._isPlayerEnd = value.isEnd;
@@ -100,7 +97,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     super.initState();
   }
 
-  Future<void> initControl() async {
+  Future initControl() async {
     widget.controller._volume = await VolumeController().getVolume();
     widget.controller._brightness = await ScreenBrightness().current;
     setState(() {});
@@ -116,8 +113,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     super.dispose();
   }
 
-  List<RadioListTile> buildVideoQualityTiles() {
-    List<RadioListTile> list = [];
+  List<Widget> buildVideoQualityTiles() {
+    List<Widget> list = [];
     for (var i
         in widget.controller._biliVideoPlayerController.videoPlayInfo!.videos) {
       list.add(RadioListTile(
@@ -126,7 +123,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
         value: i,
         groupValue: widget.controller._biliVideoPlayerController.videoPlayItem,
         onChanged: (value) {
-          widget.controller._biliVideoPlayerController.changeVideoItem(value);
+          widget.controller._biliVideoPlayerController.changeVideoItem(value!);
           Navigator.of(context).pop();
         },
       ));
@@ -134,8 +131,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     return list;
   }
 
-  List<RadioListTile> buildAudioQualityTiles() {
-    List<RadioListTile> list = [];
+  List<Widget> buildAudioQualityTiles() {
+    List<Widget> list = [];
     for (var i
         in widget.controller._biliVideoPlayerController.videoPlayInfo!.audios) {
       list.add(RadioListTile(
@@ -144,7 +141,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
         value: i,
         groupValue: widget.controller._biliVideoPlayerController.audioPlayItem,
         onChanged: (value) {
-          widget.controller._biliVideoPlayerController.changeAudioItem(value);
+          widget.controller._biliVideoPlayerController.changeAudioItem(value!);
           Navigator.of(context).pop();
         },
       ));
@@ -152,16 +149,16 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
     return list;
   }
 
-  List<RadioListTile> buildPlaybackSpeedTiles() {
+  List<Widget> buildPlaybackSpeedTiles() {
     const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0];
     return speeds
-        .map((speed) => RadioListTile(
+        .map((speed) => RadioListTile<double>(
               title: Text('${speed}x'),
               value: speed,
               groupValue: widget.controller._biliVideoPlayerController.speed,
               onChanged: (value) {
-                // 修复方法名称
-                widget.controller._biliVideoPlayerController.setPlaybackRate(value!);
+                widget.controller._biliVideoPlayerController
+                    .setPlayBackSpeed(value!);
                 Navigator.of(context).pop();
               },
             ))
@@ -192,9 +189,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                 var width = MediaQuery.of(context).size.width;
                 var value = details.localPosition.dx / width;
                 widget.controller._position = Duration(
-                    milliseconds:
-                        (value * widget.controller._duration.inMilliseconds)
-                            .round());
+                    milliseconds: (value *
+                            widget.controller._duration.inMilliseconds)
+                        .round());
                 sliderKey.currentState?.setState(() {});
                 durationTextKey.currentState?.setState(() {});
               }
@@ -213,8 +210,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                       MediaQuery.of(context).size.width)) {
                 isVerticalGestureInProgress = true;
                 tempSpeed = widget.controller._biliVideoPlayerController.speed;
-                // 修复方法名称
-                widget.controller._biliVideoPlayerController.setPlaybackRate(1.0);
+                widget.controller._biliVideoPlayerController.setPlayBackSpeed(1.0);
               }
             },
             onVerticalDragUpdate: (details) async {
@@ -239,8 +235,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
             onVerticalDragEnd: (details) {
               if (isVerticalGestureInProgress) {
                 isVerticalGestureInProgress = false;
-                // 修复方法名称
-                widget.controller._biliVideoPlayerController.setPlaybackRate(tempSpeed);
+                widget.controller._biliVideoPlayerController
+                    .setPlayBackSpeed(tempSpeed);
               }
             },
             child: Stack(
@@ -260,7 +256,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                           children: const [
                             Icon(Icons.replay, color: Colors.white, size: 50),
                             SizedBox(height: 10),
-                            Text("点击重新播放", style: TextStyle(color: Colors.white)),
+                            Text("点击重新播放",
+                                style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),
@@ -291,9 +288,8 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                             icon: const Icon(Icons.picture_in_picture,
                                 color: iconColor),
                             onPressed: () {
-                              // 修复方法名称
                               widget.controller._biliVideoPlayerController
-                                  .enablePictureInPicture(context);
+                                  .enablePictureInPicture();
                             },
                           ),
                           IconButton(
@@ -302,13 +298,14 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                               widget.controller._biliVideoPlayerController
                                           .biliDanmakuController !=
                                       null
-                                  ? widget.controller
+                                  ? widget
+                                          .controller
                                           ._biliVideoPlayerController
                                           .biliDanmakuController!
                                           .isDanmakuOpened
                                       ? Icons.comment
-                                      : Icons.comment_off  // 修复图标名称
-                                  : Icons.comment_off,  // 修复图标名称
+                                      : Icons.comment_bank_outlined
+                                  : Icons.comment_bank_outlined,
                               color: iconColor,
                             ),
                             onPressed: toggleDanmaku,
@@ -323,41 +320,50 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           ListTile(
-                                            leading: const Icon(Icons.video_library),
+                                            leading:
+                                                const Icon(Icons.video_library),
                                             title: const Text("视频画质"),
                                             onTap: () {
                                               showDialog(
                                                   context: context,
                                                   builder: (context) =>
                                                       AlertDialog(
-                                                        title: const Text("选择画质"),
-                                                        content: SingleChildScrollView(
-                                                            child: Column(
-                                                          children:
-                                                              buildVideoQualityTiles(),
-                                                        )),
+                                                        title:
+                                                            const Text("选择画质"),
+                                                        content:
+                                                            SingleChildScrollView(
+                                                          child: Column(
+                                                            children:
+                                                                buildVideoQualityTiles(),
+                                                          ),
+                                                        ),
                                                       ));
                                             },
                                           ),
-                                          if (widget.controller
-                                                  ._biliVideoPlayerController
-                                                  .videoPlayInfo!
-                                                  .audios
-                                                  .isNotEmpty)
+                                          if (widget
+                                              .controller
+                                              ._biliVideoPlayerController
+                                              .videoPlayInfo!
+                                              .audios
+                                              .isNotEmpty)
                                             ListTile(
-                                              leading: const Icon(Icons.music_note),
+                                              leading:
+                                                  const Icon(Icons.music_note),
                                               title: const Text("音频音质"),
                                               onTap: () {
                                                 showDialog(
                                                     context: context,
                                                     builder: (context) =>
                                                         AlertDialog(
-                                                          title: const Text("选择音质"),
-                                                          content: SingleChildScrollView(
-                                                              child: Column(
-                                                            children:
-                                                                buildAudioQualityTiles(),
-                                                          )),
+                                                          title: const Text(
+                                                              "选择音质"),
+                                                          content:
+                                                              SingleChildScrollView(
+                                                            child: Column(
+                                                              children:
+                                                                  buildAudioQualityTiles(),
+                                                            ),
+                                                          ),
                                                         ));
                                               },
                                             ),
@@ -369,17 +375,21 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                                   context: context,
                                                   builder: (context) =>
                                                       AlertDialog(
-                                                        title: const Text("播放速度"),
-                                                        content: SingleChildScrollView(
-                                                            child: Column(
-                                                          children:
-                                                              buildPlaybackSpeedTiles(),
-                                                        )),
+                                                        title: const Text(
+                                                            "播放速度"),
+                                                        content:
+                                                            SingleChildScrollView(
+                                                          child: Column(
+                                                            children:
+                                                                buildPlaybackSpeedTiles(),
+                                                          ),
+                                                        ),
                                                       ));
                                             },
                                           ),
                                           ListTile(
-                                            leading: const Icon(Icons.fullscreen),
+                                            leading:
+                                                const Icon(Icons.fullscreen),
                                             title: const Text("全屏"),
                                             onTap: toggleFullScreen,
                                           ),
@@ -392,77 +402,82 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                     ),
                   ),
                 if (widget.controller._show)
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.fastOutSlowIn,
-                    height: widget.controller._show ? 60 : 0,
-                    child: FrostedGlassCard(
-                      borderRadius: 0,
-                      blurSigma: 8.0,
-                      backgroundColor: Colors.black.withOpacity(0.4),
-                      child: Column(
-                        children: [
-                          _VideoProgressSlider(
-                            key: sliderKey,
-                            controller: widget.controller,
-                          ),
-                          Row(
-                            children: [
-                              _PlayButton(
-                                key: playButtonKey,
-                                controller: widget.controller,
-                              ),
-                              _DurationText(
-                                key: durationTextKey,
-                                controller: widget.controller,
-                              ),
-                              const Spacer(),
-                              IconButton(
-                                icon: Icon(
-                                  widget.controller._volume > 0
-                                      ? Icons.volume_up
-                                      : Icons.volume_off,
-                                  color: iconColor,
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.fastOutSlowIn,
+                      height: widget.controller._show ? 60 : 0,
+                      child: FrostedGlassCard(
+                        borderRadius: 0,
+                        blurSigma: 8.0,
+                        backgroundColor: Colors.black.withOpacity(0.4),
+                        child: Column(
+                          children: [
+                            _VideoProgressSlider(
+                              key: sliderKey,
+                              controller: widget.controller,
+                            ),
+                            Row(
+                              children: [
+                                _PlayButton(
+                                  key: playButtonKey,
+                                  controller: widget.controller,
                                 ),
-                                onPressed: () {
-                                  if (widget.controller._volume > 0) {
-                                    widget.controller._volume = 0;
-                                    VolumeController().setVolume(0);
-                                  } else {
-                                    widget.controller._volume = 1.0;
-                                    VolumeController().setVolume(1.0);
-                                  }
-                                  setState(() {});
-                                },
-                              ),
-                              SizedBox(
-                                width: 60,
-                                child: Slider(
-                                  min: 0,
-                                  max: 1,
-                                  value: widget.controller._volume,
-                                  onChanged: (value) {
-                                    widget.controller._volume = value;
-                                    VolumeController().setVolume(value);
+                                _DurationText(
+                                  key: durationTextKey,
+                                  controller: widget.controller,
+                                ),
+                                const Spacer(),
+                                IconButton(
+                                  icon: Icon(
+                                    widget.controller._volume > 0
+                                        ? Icons.volume_up
+                                        : Icons.volume_off,
+                                    color: iconColor,
+                                  ),
+                                  onPressed: () {
+                                    if (widget.controller._volume > 0) {
+                                      widget.controller._volume = 0;
+                                      VolumeController().setVolume(0);
+                                    } else {
+                                      widget.controller._volume = 1.0;
+                                      VolumeController().setVolume(1.0);
+                                    }
                                     setState(() {});
                                   },
-                                  activeColor: Colors.white,
-                                  inactiveColor: Colors.white30,
                                 ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  widget.controller._biliVideoPlayerController
-                                          .isFullScreen
-                                      ? Icons.fullscreen_exit
-                                      : Icons.fullscreen,
-                                  color: iconColor,
+                                SizedBox(
+                                  width: 60,
+                                  child: Slider(
+                                    min: 0,
+                                    max: 1,
+                                    value: widget.controller._volume,
+                                    onChanged: (value) {
+                                      widget.controller._volume = value;
+                                      VolumeController().setVolume(value);
+                                      setState(() {});
+                                    },
+                                    activeColor: Colors.white,
+                                    inactiveColor: Colors.white30,
+                                  ),
                                 ),
-                                onPressed: toggleFullScreen,
-                              ),
-                            ],
-                          ),
-                        ],
+                                IconButton(
+                                  icon: Icon(
+                                    widget.controller._biliVideoPlayerController
+                                            .isFullScreen
+                                        ? Icons.fullscreen_exit
+                                        : Icons.fullscreen,
+                                    color: iconColor,
+                                  ),
+                                  onPressed: toggleFullScreen,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -496,8 +511,7 @@ class _VideoProgressSliderState extends State<_VideoProgressSlider> {
       value: widget.controller._position.inMilliseconds.toDouble(),
       onChanged: (value) {
         setState(() {
-          widget.controller._position =
-              Duration(milliseconds: value.round());
+          widget.controller._position = Duration(milliseconds: value.round());
         });
       },
       onChangeStart: (value) {
@@ -593,7 +607,6 @@ class BiliVideoPlayerPanelController extends ChangeNotifier {
   double _brightness = 1.0;
   bool _isInitializedState = false;
   double? asepectRatio;
-
   BiliVideoPlayerPanelController({
     required BiliVideoPlayerController biliVideoPlayerController,
   })  : _biliVideoPlayerController = biliVideoPlayerController,
