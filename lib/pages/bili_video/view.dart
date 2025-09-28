@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'controller.dart';
 import 'package:bili_you/common/utils/settings.dart';
-import 'package:bili_you/common/utils/cache_utils.dart';
+import 'package:bili_you/common/utils/cache_util.dart';
 import 'package:bili_you/common/api/history_api.dart';
 import 'package:bili_you/common/utils/bvid_avid_util.dart';
 import 'widgets/bili_video_player/bili_video_player.dart';
