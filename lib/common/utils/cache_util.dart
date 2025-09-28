@@ -1,6 +1,9 @@
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class CacheUtils {
+  static Future<void> clearAllCacheImageMem() async {
+    await DefaultCacheManager().emptyCache();
+  }
   static const String userFaceKey = 'userFace';
   static const String othersFaceKey = 'othersFace';
   static const String recommendItemCoverKey = 'recommendItemCover';
