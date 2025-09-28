@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'video_audio_player.dart';
+import 'package:bili_you/common/widget/video_audio_player.dart';
 
 /// 临时 BiliVideoController
 /// 注意：视频播放和互动功能都是占位
