@@ -1,22 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'controller.dart';
-import 'package:bili_you/common/widget/video_audio_player.dart';
-/// 临时 BiliVideoPage
-/// 注意：视频和评论都是占位 UI
+import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/common/utils/cache_utils.dart';
+import 'package:bili_you/common/api/history_api.dart';
+import 'package:bili_you/common/utils/bvid_avid_util.dart';
+import 'widgets/bili_video_player/bili_video_player.dart';
+import 'widgets/bili_video_player/bili_video_player_panel.dart';
+import 'widgets/bili_video_player/bili_danmaku.dart';
+import 'widgets/introduction/index.dart';
+import 'widgets/reply/view.dart';
+
 class BiliVideoPage extends StatefulWidget {
-  const BiliVideoPage({super.key, required this.bvid, required this.cid, this.isBangumi = false, this.ssid, this.progress});
+  // 添加 routeObserver 静态属性
+  static final RouteObserver routeObserver = RouteObserver();
+
+  const BiliVideoPage({
+    super.key,
+    required this.bvid,
+    required this.cid,
+    this.isBangumi = false,
+    this.ssid,
+    this.progress,
+  }) : tag = "BiliVideoPage:$bvid", super(key: key); // 新增 tag 参数
+
   final String bvid;
   final int cid;
   final int? ssid;
   final bool isBangumi;
   final int? progress;
+  final String tag; // 新增 tag 属性
 
   @override
-  State<BiliVideoPage> createState() => _BiliVideoPageState();
+  State createState() => _BiliVideoPageState();
 }
 
-class _BiliVideoPageState extends State<BiliVideoPage> with WidgetsBindingObserver {
+class _BiliVideoPageState extends State<BiliVideoPage> 
+  with RouteAware, WidgetsBindingObserver { // 新增 RouteAware 混入
+
+  int currentTabIndex = 0; // 新增标签页索引
   late BiliVideoController controller;
 
   @override
@@ -29,37 +52,147 @@ class _BiliVideoPageState extends State<BiliVideoPage> with WidgetsBindingObserv
         progress: widget.progress,
         ssid: widget.ssid,
       ),
+      tag: widget.tag, // 新增 tag 参数
     );
     WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
 
+  // 新增路由监听订阅
+  @override
+  void didChangeDependencies() {
+    BiliVideoPage.routeObserver.subscribe(
+      this,
+      ModalRoute.of(context) as PageRoute,
+    );
+    super.didChangeDependencies();
+  }
+
+  // 新增应用生命周期监听
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused && 
+        !SettingsUtil.getValue(SettingsStorageKeys.isBackGroundPlay, defaultValue: true)) {
+      controller.biliVideoPlayerController.pause();
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
+  // 新增路由切换生命周期方法
+  @override
+  void didPushNext() async {
+    CacheUtils.clearAllCacheImageMem();
+    await controller.biliVideoPlayerController.pause();
+    super.didPushNext();
+  }
+
+  @override
+  void didPopNext() async {
+    await controller.biliVideoPlayerController.refreshPlayer();
+    super.didPopNext();
+  }
+
+  @override
+  void didPop() async {
+    var second = controller.biliVideoPlayerController.position.inSeconds;
+    await controller.biliVideoPlayerController.pause();
+    await HistoryApi.reportVideoViewHistory(
+      aid: BvidAvidUtil.bvid2Av(controller.bvid),
+      cid: controller.cid,
+      progress: second,
+    );
+    CacheUtils.clearAllCacheImageMem();
+    super.didPop();
+  }
+
   @override
   void dispose() {
-    controller.dispose(); // 占位释放
+    controller.dispose();
+    BiliVideoPage.routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          // 视频占位
-          VideoAudioPlayer(controller.biliVideoPlayerController),
-          // 简介和评论占位
-          Expanded(
-            child: Column(
-              children: const [
-                SizedBox(height: 20),
-                Text("简介占位", style: TextStyle(fontSize: 16)),
-                SizedBox(height: 10),
-                Text("评论占位", style: TextStyle(fontSize: 16)),
-              ],
+    return AnnotatedRegion(
+      value: const SystemUiOverlayStyle(
+        statusBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        body: Column(
+          children: [
+            // 替换视频播放器为参考项目实现
+            BiliVideoPlayerWidget(
+              controller.biliVideoPlayerController,
+              heroTagId: "BiliVideoPage:${widget.bvid}",
+              buildControllPanel: () => BiliVideoPlayerPanel(
+                controller.biliVideoPlayerPanelController,
+              ),
+              buildDanmaku: () => BiliDanmaku(
+                controller: controller.biliDanmakuController,
+              ),
             ),
-          ),
-        ],
+            // 实现标签页（简介+评论）
+            Expanded(
+              child: Column(
+                children: [
+                  TabBar(
+                    controller: controller.tabController,
+                    splashFactory: NoSplash.splashFactory,
+                    tabs: const [
+                      Tab(text: "简介"),
+                      Tab(text: "评论"),
+                    ],
+                    onTap: (value) {
+                      if (value == currentTabIndex) {
+                        switch (value) {
+                          case 0:
+                            Get.find<IntroductionController>(tag: widget.bvid)
+                                .scrollController
+                                .animateTo(0,
+                                    duration: const Duration(milliseconds: 500),
+                                    curve: Curves.linear);
+                            break;
+                          case 1:
+                            Get.find<ReplyController>(tag: widget.bvid)
+                                .scrollController
+                                .animateTo(0,
+                                    duration: const Duration(milliseconds: 500),
+                                    curve: Curves.linear);
+                            break;
+                        }
+                      } else {
+                        setState(() => currentTabIndex = value);
+                      }
+                    },
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      controller: controller.tabController,
+                      children: [
+                        IntroductionPage(
+                          changePartCallback: controller.changeVideoPart,
+                          refreshReply: controller.refreshReply,
+                          bvid: controller.bvid,
+                          cid: controller.cid,
+                          ssid: controller.ssid,
+                          isBangumi: controller.isBangumi,
+                        ),
+                        Builder(builder: (context) {
+                          return ReplyPage(
+                            replyId: controller.bvid,
+                            replyType: ReplyType.video,
+                          );
+                        })
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
