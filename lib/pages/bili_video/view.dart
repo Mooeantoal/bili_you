@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'controller.dart';
-import 'video_audio_player.dart';
-
+import 'package:bili_you/common/widget/video_audio_player.dart';
 /// 临时 BiliVideoPage
 /// 注意：视频和评论都是占位 UI
 class BiliVideoPage extends StatefulWidget {
