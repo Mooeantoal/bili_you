@@ -53,7 +53,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.lucinhu.bili_you"
+        applicationId "com.met.bili_me"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
