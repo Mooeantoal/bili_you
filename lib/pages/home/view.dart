@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
   // 主视图
   Widget _buildView(context) {
     return Scaffold(
