@@ -40,11 +40,6 @@ class MyApp extends StatelessWidget {
               primaryColor: CupertinoColors.systemBlue,
               barBackgroundColor: CupertinoColors.systemBackground,
               scaffoldBackgroundColor: CupertinoColors.systemBackground),
-          darkTheme: const CupertinoThemeData(
-              brightness: Brightness.dark,
-              primaryColor: CupertinoColors.systemBlue,
-              barBackgroundColor: CupertinoColors.systemBackground,
-              scaffoldBackgroundColor: CupertinoColors.systemBackground),
           home: const MainPage(),
           builder: (context, child) => child == null
               ? const SizedBox()
