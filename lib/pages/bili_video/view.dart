@@ -1,199 +1,214 @@
+import 'package:bili_you/common/models/local/reply/reply_item.dart';
+import 'package:bili_you/common/utils/index.dart';
+import 'package:bili_you/common/values/hero_tag_id.dart';
+import 'package:bili_you/common/values/index.dart';
+import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
+import 'package:bili_you/pages/bili_video/widgets/introduction/index.dart';
+import 'package:bili_you/pages/bili_video/widgets/reply/view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'controller.dart';
-import 'package:bili_you/common/utils/settings.dart';
-import 'package:bili_you/common/utils/cache_util.dart';
-import 'package:bili_you/common/api/history_api.dart';
-import 'package:bili_you/common/utils/bvid_avid_util.dart';
-import 'widgets/bili_video_player/bili_video_player.dart';
-import 'widgets/bili_video_player/bili_video_player_panel.dart';
+import '../../common/api/history_api.dart';
+import '../../common/utils/bvid_avid_util.dart';
+import 'index.dart';
 import 'widgets/bili_video_player/bili_danmaku.dart';
-import 'widgets/introduction/index.dart';
-import 'widgets/reply/view.dart';
+import 'widgets/bili_video_player/bili_video_player_panel.dart';
+import 'widgets/reply/controller.dart';
 
 class BiliVideoPage extends StatefulWidget {
-  // 添加 routeObserver 静态属性
-  static final RouteObserver routeObserver = RouteObserver();
+  static final RouteObserver<PageRoute> routeObserver =
+      RouteObserver<PageRoute>();
 
-  const BiliVideoPage({
-    super.key,
-    required this.bvid,
-    required this.cid,
-    this.isBangumi = false,
-    this.ssid,
-    this.progress,
-  }) : tag = "BiliVideoPage:$bvid", super(key: key); // 新增 tag 参数
-
+  const BiliVideoPage(
+      {Key? key,
+      required this.bvid,
+      required this.cid,
+      this.isBangumi = false,
+      this.ssid,
+      this.progress})
+      : tag = "BiliVideoPage:$bvid",
+        super(key: key);
   final String bvid;
   final int cid;
   final int? ssid;
   final bool isBangumi;
   final int? progress;
-  final String tag; // 新增 tag 属性
+  final String tag;
 
   @override
-  State createState() => _BiliVideoPageState();
+  State<BiliVideoPage> createState() => _BiliVideoPageState();
 }
 
-class _BiliVideoPageState extends State<BiliVideoPage> 
-  with RouteAware, WidgetsBindingObserver { // 新增 RouteAware 混入
-
-  int currentTabIndex = 0; // 新增标签页索引
+class _BiliVideoPageState extends State<BiliVideoPage>
+    with RouteAware, WidgetsBindingObserver {
+  int currentTabIndex = 0;
   late BiliVideoController controller;
 
   @override
-  void initState() {
-    controller = Get.put(
-      BiliVideoController(
-        bvid: widget.bvid,
-        cid: widget.cid,
-        isBangumi: widget.isBangumi,
-        progress: widget.progress,
-        ssid: widget.ssid,
-      ),
-      tag: widget.tag, // 新增 tag 参数
-    );
-    WidgetsBinding.instance.addObserver(this);
-    super.initState();
-  }
-
-  // 新增路由监听订阅
-  @override
-  void didChangeDependencies() {
-    BiliVideoPage.routeObserver.subscribe(
-      this,
-      ModalRoute.of(context) as PageRoute,
-    );
-    super.didChangeDependencies();
-  }
-
-  // 新增应用生命周期监听
-  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused && 
-        !SettingsUtil.getValue(SettingsStorageKeys.isBackGroundPlay, defaultValue: true)) {
-      controller.biliVideoPlayerController.pause();
+    //当应用切换后台时
+    //如果不允许后台播放,就暂停视频
+    if (state == AppLifecycleState.paused) {
+      if (SettingsUtil.getValue(SettingsStorageKeys.isBackGroundPlay,
+              defaultValue: true) ==
+          false) {
+        controller.biliVideoPlayerController.pause();
+      }
     }
     super.didChangeAppLifecycleState(state);
   }
 
-  // 新增路由切换生命周期方法
+  @override
+  void didChangeDependencies() {
+    //订阅路由监听
+    BiliVideoPage.routeObserver
+        .subscribe(this, ModalRoute.of(context) as PageRoute);
+    super.didChangeDependencies();
+  }
+
   @override
   void didPushNext() async {
+    //当进入下一个页面时
+    //释放所有图片缓存
     CacheUtils.clearAllCacheImageMem();
+    //暂停视频
     await controller.biliVideoPlayerController.pause();
     super.didPushNext();
   }
 
   @override
   void didPopNext() async {
+    //回到当前页面时
+    //刷新页面
     await controller.biliVideoPlayerController.refreshPlayer();
     super.didPopNext();
   }
 
   @override
   void didPop() async {
+    //当退出页面时
+    //暂停视频
     var second = controller.biliVideoPlayerController.position.inSeconds;
     await controller.biliVideoPlayerController.pause();
-    await HistoryApi.reportVideoViewHistory(
-      aid: BvidAvidUtil.bvid2Av(controller.bvid),
-      cid: controller.cid,
-      progress: second,
-    );
+    await HistoryApi.reportVideoViewHistory(aid: BvidAvidUtil.bvid2Av(controller.bvid),cid: controller.cid,progress: second);
+    //释放所有图片缓存
     CacheUtils.clearAllCacheImageMem();
     super.didPop();
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     controller.dispose();
+    //取消路由监听
     BiliVideoPage.routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnnotatedRegion(
-      value: const SystemUiOverlayStyle(
-        statusBarIconBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        body: Column(
-          children: [
-            // 替换视频播放器为参考项目实现
-            BiliVideoPlayerWidget(
-              controller.biliVideoPlayerController,
-              heroTagId: "BiliVideoPage:${widget.bvid}",
-              buildControllPanel: () => BiliVideoPlayerPanel(
-                controller.biliVideoPlayerPanelController,
-              ),
-              buildDanmaku: () => BiliDanmaku(
-                controller: controller.biliDanmakuController,
-              ),
-            ),
-            // 实现标签页（简介+评论）
-            Expanded(
-              child: Column(
-                children: [
-                  TabBar(
-                    controller: controller.tabController,
-                    splashFactory: NoSplash.splashFactory,
-                    tabs: const [
-                      Tab(text: "简介"),
-                      Tab(text: "评论"),
-                    ],
-                    onTap: (value) {
-                      if (value == currentTabIndex) {
-                        switch (value) {
-                          case 0:
-                            Get.find<IntroductionController>(tag: widget.bvid)
-                                .scrollController
-                                .animateTo(0,
-                                    duration: const Duration(milliseconds: 500),
-                                    curve: Curves.linear);
-                            break;
-                          case 1:
-                            Get.find<ReplyController>(tag: widget.bvid)
-                                .scrollController
-                                .animateTo(0,
-                                    duration: const Duration(milliseconds: 500),
-                                    curve: Curves.linear);
-                            break;
-                        }
-                      } else {
-                        setState(() => currentTabIndex = value);
-                      }
-                    },
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      controller: controller.tabController,
-                      children: [
-                        IntroductionPage(
-                          changePartCallback: controller.changeVideoPart,
-                          refreshReply: controller.refreshReply,
-                          bvid: controller.bvid,
-                          cid: controller.cid,
-                          ssid: controller.ssid,
-                          isBangumi: controller.isBangumi,
-                        ),
-                        Builder(builder: (context) {
-                          return ReplyPage(
-                            replyId: controller.bvid,
-                            replyType: ReplyType.video,
-                          );
-                        })
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+  void initState() {
+    controller = Get.put(
+      BiliVideoController(
+          bvid: widget.bvid,
+          cid: widget.cid,
+          isBangumi: widget.isBangumi,
+          progress: widget.progress,
+          ssid: widget.ssid),
+      tag: widget.tag,
     );
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  Widget _buildView(context, BiliVideoController controller) {
+    return Column(
+      children: [
+        TabBar(
+          controller: controller.tabController,
+          splashFactory: NoSplash.splashFactory,
+          tabs: const [
+            Tab(
+              text: "简介",
+            ),
+            Tab(text: "评论")
+          ],
+          onTap: (value) {
+            if (value == currentTabIndex) {
+              //当按下的tab和当前的一样，就滚动到顶部
+              switch (value) {
+                case 0:
+                  Get.find<IntroductionController>(
+                          tag: "IntroductionPage:${widget.bvid}")
+                      .scrollController
+                      .animateTo(0,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.linear);
+                  break;
+                case 1:
+                  Get.find<ReplyController>(tag: "ReplyPage:${widget.bvid}")
+                      .scrollController
+                      .animateTo(0,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.linear);
+                  break;
+                default:
+                  break;
+              }
+            } else {
+              currentTabIndex = value;
+            }
+          },
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: controller.tabController,
+            children: [
+              IntroductionPage(
+                changePartCallback: controller.changeVideoPart,
+                refreshReply: controller.refreshReply,
+                bvid: controller.bvid,
+                cid: controller.cid,
+                ssid: controller.ssid,
+                isBangumi: controller.isBangumi,
+              ),
+              Builder(builder: (context) {
+                //Builder可以让ReplyPage在TabBarView显示到它的时候才取controller.bvid
+                return ReplyPage(
+                  replyId: controller.bvid,
+                  replyType: ReplyType.video,
+                );
+              })
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+            statusBarIconBrightness: Brightness.light),
+        child: Scaffold(
+          body: Column(
+            children: [
+              BiliVideoPlayerWidget(
+                controller.biliVideoPlayerController,
+                heroTagId: HeroTagId.lastId,
+                buildControllPanel: () {
+                  return BiliVideoPlayerPanel(
+                    controller.biliVideoPlayerPanelController,
+                  );
+                },
+                buildDanmaku: () {
+                  return BiliDanmaku(
+                      controller: controller.biliDanmakuController);
+                },
+              ),
+              Expanded(child: _buildView(context, controller)),
+            ],
+          ),
+        ));
   }
 }

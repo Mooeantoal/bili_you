@@ -1,4 +1,4 @@
-package com.mooeantoal.bili_you
+package com.lucinhu.bili_you
 
 import io.flutter.embedding.android.FlutterActivity
 

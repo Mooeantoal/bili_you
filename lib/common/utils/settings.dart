@@ -111,12 +111,12 @@ class SettingsUtil {
                           content:
                               Text("没有匹配到支持的abi!\n现跳转至下载页面,请自行选择合适的安装包.")));
                       launchUrlString(
-                          "https://github.com/mooeantoal/bili_you/releases",
+                          "https://github.com/lucinhu/bili_you/releases",
                           mode: LaunchMode.externalApplication);
                     } else if (Platform.isLinux) {
                       //linux
                       launchUrlString(
-                          "https://github.com/mooeantoal/bili_you/releases",
+                          "https://github.com/lucinhu/bili_you/releases",
                           mode: LaunchMode.externalApplication);
                     } else if (Platform.isIOS) {
                       //TODO ios

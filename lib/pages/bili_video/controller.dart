@@ -1,102 +1,67 @@
+import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_danmaku.dart';
+import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
+import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player_panel.dart';
+import 'package:bili_you/pages/bili_video/widgets/reply/index.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:bili_you/common/widget/video_audio_player.dart';
 
-/// 临时 BiliVideoController
-/// 注意：视频播放和互动功能都是占位
-class BiliVideoController extends GetxController with GetSingleTickerProviderStateMixin {
-  final String bvid;
-  final int cid;
-  final bool isBangumi;
-  final int? ssid;
-  final int? progress;
-
+class BiliVideoController extends GetxController
+    with GetTickerProviderStateMixin {
   BiliVideoController({
     required this.bvid,
     required this.cid,
-    this.isBangumi = false,
     this.ssid,
     this.progress,
+    required this.isBangumi,
   });
+  String bvid;
+  late String oldBvid;
+  int cid;
+  int? ssid;
+  int? progress;
+  bool isBangumi;
 
-  late VideoAudioController biliVideoPlayerController;
-  late TabController tabController;
+  late BiliVideoPlayerController biliVideoPlayerController;
+  late BiliVideoPlayerPanelController biliVideoPlayerPanelController;
+  late BiliDanmakuController biliDanmakuController;
+  late final TabController tabController;
 
-  final isLoading = true.obs;
-  final isError = false.obs;
-  final errorMessage = "".obs;
+  Future<void> changeVideoPart(String bvid, int cid) async {
+    this.cid = cid;
+    this.bvid = bvid;
+    biliVideoPlayerController.bvid = bvid;
+    biliVideoPlayerController.cid = cid;
+    await biliVideoPlayerController.changeCid(bvid, cid);
+  }
 
-  final isLiked = false.obs;
-  final isCoined = false.obs;
-  final isFaved = false.obs;
-
-  final likeCount = 0.obs;
-  final coinCount = 0.obs;
-  final favCount = 0.obs;
-  final shareCount = 0.obs;
+  refreshReply() {
+    Get.find<ReplyController>(tag: 'ReplyPage:$oldBvid').bvid = bvid;
+    Get.find<ReplyController>(tag: 'ReplyPage:$oldBvid')
+        .refreshController
+        .callRefresh();
+  }
 
   @override
-  void onInit() async {
+  void onInit() {
+    oldBvid = bvid;
+    tabController = TabController(
+        length: 2,
+        vsync: this,
+        animationDuration: const Duration(milliseconds: 200));
+    biliVideoPlayerController = BiliVideoPlayerController(
+        bvid: bvid,
+        cid: cid,
+        initVideoPosition:
+            progress != null ? Duration(seconds: progress!) : Duration.zero);
+    biliVideoPlayerPanelController =
+        BiliVideoPlayerPanelController(biliVideoPlayerController);
+    biliDanmakuController = BiliDanmakuController(biliVideoPlayerController);
     super.onInit();
-    try {
-      _initPlayer();
-      _initTabController();
-      _loadInteractionState();
-      isLoading.value = false;
-    } catch (e) {
-      isLoading.value = false;
-      isError.value = true;
-      errorMessage.value = e.toString();
-    }
-  }
-
-  void _initPlayer() {
-    // 占位 controller，不播放视频
-    biliVideoPlayerController = VideoAudioController();
-  }
-
-  void _initTabController() {
-    tabController = TabController(length: 2, vsync: this);
-  }
-
-  Future _loadInteractionState() async {
-    // 占位状态，默认 false
-    isLiked.value = false;
-    isCoined.value = false;
-    isFaved.value = false;
-  }
-
-  // 占位互动方法
-  Future toggleLike() async {
-    isLiked.value = !isLiked.value;
-    likeCount.value += isLiked.value ? 1 : -1;
-  }
-
-  Future addCoin(int num) async {
-    isCoined.value = true;
-    coinCount.value += num;
-  }
-
-  Future toggleFav() async {
-    isFaved.value = !isFaved.value;
-    favCount.value += isFaved.value ? 1 : -1;
-  }
-
-  Future shareVideo() async {
-    shareCount.value += 1;
-  }
-
-  void changeVideoPart(int partIndex, bool autoPlay) {
-    // 占位，不切换视频
-  }
-
-  Future refreshReply() async {
-    // 占位
   }
 
   @override
   void onClose() {
-    biliVideoPlayerController.dispose(); // 占位释放
+    biliVideoPlayerController.dispose();
     super.onClose();
   }
 }
