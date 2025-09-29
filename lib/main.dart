@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
           },
           navigatorObservers: [BiliVideoPage.routeObserver],
           useInheritedMediaQuery: true,
-          themeMode: SettingsUtil.currentThemeMode,
           theme: const CupertinoThemeData(
               brightness: Brightness.light,
               primaryColor: CupertinoColors.systemBlue,

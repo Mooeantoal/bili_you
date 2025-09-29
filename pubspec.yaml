@@ -53,10 +53,10 @@ dependencies:
   media_kit_libs_macos_video: ^1.0.6
   media_kit_libs_windows_video: ^1.0.5
   media_kit_native_event_loop: ^1.0.6
-  media_kit_video: ^1.1.1
+  media_kit_video: ^1.2.0
 
   # webview
-  webview_cookie_manager: ^2.0.6
+  webview_cookie_manager: ^3.0.0
   webview_flutter: ^4.2.2
 
   # 保持常亮
