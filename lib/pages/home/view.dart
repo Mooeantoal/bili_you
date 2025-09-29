@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // 你用到了 Obx、Get.find
+
 
   // 主视图
   Widget _buildView(context) {
