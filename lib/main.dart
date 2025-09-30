@@ -4,7 +4,7 @@ import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/bili_video/index.dart';
 import 'package:bili_you/pages/main/index.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
@@ -18,9 +18,9 @@ void main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: CupertinoColors.systemBackground,
-    systemNavigationBarDividerColor: CupertinoColors.systemBackground,
-    statusBarColor: CupertinoColors.systemBackground,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    statusBarColor: Colors.transparent,
   ));
 }
 
@@ -29,17 +29,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
-      return GetCupertinoApp(
+      return GetMaterialApp(
           onInit: () async {
             await HttpUtils().init();
           },
           navigatorObservers: [BiliVideoPage.routeObserver],
           useInheritedMediaQuery: true,
-          theme: const CupertinoThemeData(
-              brightness: Brightness.light,
-              primaryColor: CupertinoColors.systemBlue,
-              barBackgroundColor: CupertinoColors.systemBackground,
-              scaffoldBackgroundColor: CupertinoColors.systemBackground),
+          themeMode: SettingsUtil.currentThemeMode,
+          theme: ThemeData(
+              colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
+                  ? lightDynamic ?? BiliTheme.dynamic.themeDataLight.colorScheme
+                  : SettingsUtil.currentTheme.themeDataLight.colorScheme,
+              useMaterial3: true), // 使用MD3风格
+          darkTheme: ThemeData(
+              colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
+                  ? darkDynamic ?? BiliTheme.dynamic.themeDataDark.colorScheme
+                  : SettingsUtil.currentTheme.themeDataDark.colorScheme,
+              useMaterial3: true), // 使用MD3风格
           home: const MainPage(),
           builder: (context, child) => child == null
               ? const SizedBox()
