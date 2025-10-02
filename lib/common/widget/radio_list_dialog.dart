@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:bili_you/common/utils/settings.dart';
-import 'package:bili_you/common/utils/bili_you_storage.dart'; // 添加这行导入
+import 'package:bili_you/common/utils/bili_you_storage.dart';
+// 添加 Fluent UI 导入
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 class RadioListDialog<T> extends StatefulWidget {
   const RadioListDialog(
@@ -40,8 +42,9 @@ class _RadioListDialogState<T> extends State<RadioListDialog<T>> {
 
   @override
   Widget build(BuildContext context) {
-    // 检查当前是否使用 Cupertino UI
+    // 检查当前使用的 UI 框架
     final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+    final bool useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
     
     if (useCupertino) {
       // 使用 Cupertino 风格的对话框
@@ -55,6 +58,23 @@ class _RadioListDialogState<T> extends State<RadioListDialog<T>> {
         ),
         actions: [
           CupertinoDialogAction(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          )
+        ],
+      );
+    } else if (useFluent) {
+      // 使用 Fluent UI 风格的对话框
+      return fluent.ContentDialog(
+        title: Text(widget.title),
+        content: SizedBox(
+          height: 200,
+          child: SingleChildScrollView(
+            child: Column(children: items),
+          ),
+        ),
+        actions: [
+          fluent.Button(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('取消'),
           )

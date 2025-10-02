@@ -3,6 +3,8 @@ import 'package:bili_you/common/widget/settings_label.dart';
 import 'package:bili_you/common/widget/settings_switch_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+// 添加 Fluent UI 导入
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:get/get.dart';
 
 class AppearanceSettingsPage extends StatefulWidget {
@@ -15,6 +17,8 @@ class AppearanceSettingsPage extends StatefulWidget {
 class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
   // 检查当前是否使用 Cupertino UI
   bool get useCupertino => SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+  // 检查当前是否使用 Fluent UI
+  bool get useFluent => SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
 
   RadioListTile themeModeListTile(ThemeMode themeMode) {
     return RadioListTile<ThemeMode>(
@@ -98,6 +102,54 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
           ),
           // ... 其他设置项保持不变
         ]),
+      );
+    } else if (useFluent) {
+      // 使用 Fluent UI 风格的页面
+      return fluent.FluentApp(
+        home: fluent.NavigationView(
+          appBar: fluent.NavigationAppBar(
+            title: const Text("外观设置"),
+          ),
+          pane: fluent.Pane(
+            displayMode: fluent.PaneDisplayMode.auto,
+            items: [
+              fluent.PaneItem(
+                icon: const Icon(Icons.format_paint),
+                title: const Text("主题"),
+                body: ListView(
+                  children: [
+                    const SettingsLabel(text: '主题'),
+                    // ... 其他设置项保持不变，因为已经使用了适配的组件
+                    const SettingsLabel(text: '字体和界面密度'),
+                    // 添加 Fluent UI 切换选项
+                    SettingsSwitchTile(
+                      title: '使用 Fluent UI',
+                      subTitle: '启用微软 Fluent Design 风格界面',
+                      settingsKey: SettingsStorageKeys.useFluentUI,
+                      defualtValue: false,
+                      apply: () async {
+                        // 应用新的 UI 设置
+                        await Get.forceAppUpdate();
+                      },
+                    ),
+                    // 添加 Cupertino UI 切换选项
+                    SettingsSwitchTile(
+                      title: '使用 Cupertino UI',
+                      subTitle: '启用苹果 iOS 风格界面',
+                      settingsKey: SettingsStorageKeys.useCupertinoUI,
+                      defualtValue: false,
+                      apply: () async {
+                        // 应用新的 UI 设置
+                        await Get.forceAppUpdate();
+                      },
+                    ),
+                    // ... 其他设置项保持不变
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     } else {
       // 使用 Material 风格的页面
