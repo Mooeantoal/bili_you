@@ -105,47 +105,39 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
       );
     } else if (useFluent) {
       // 使用 Fluent UI 风格的页面
-      return fluent.NavigationView(
-        appBar: fluent.NavigationAppBar(
+      // 直接返回内容而不是NavigationView，避免与主页面的导航结构冲突
+      return fluent.ScaffoldPage(
+        header: fluent.PageHeader(
           title: const Text("外观设置"),
         ),
-        pane: fluent.NavigationPane(
-          displayMode: fluent.PaneDisplayMode.auto,
-          items: [
-            fluent.PaneItem(
-              icon: const Icon(fluent.FluentIcons.format_painter),
-              title: const Text("主题"),
-              body: ListView(
-                children: [
-                  const SettingsLabel(text: '主题'),
-                  // ... 其他设置项保持不变，因为已经使用了适配的组件
-                  const SettingsLabel(text: '字体和界面密度'),
-                  // 添加 Fluent UI 切换选项
-                  SettingsSwitchTile(
-                    title: '使用 Fluent UI',
-                    subTitle: '启用微软 Fluent Design 风格界面',
-                    settingsKey: SettingsStorageKeys.useFluentUI,
-                    defualtValue: false,
-                    apply: () async {
-                      // 应用新的 UI 设置
-                      await Get.forceAppUpdate();
-                    },
-                  ),
-                  // 添加 Cupertino UI 切换选项
-                  SettingsSwitchTile(
-                    title: '使用 Cupertino UI',
-                    subTitle: '启用苹果 iOS 风格界面',
-                    settingsKey: SettingsStorageKeys.useCupertinoUI,
-                    defualtValue: false,
-                    apply: () async {
-                      // 应用新的 UI 设置
-                      await Get.forceAppUpdate();
-                    },
-                  ),
-                  // ... 其他设置项保持不变
-                ],
-              ),
+        content: ListView(
+          children: [
+            const SettingsLabel(text: '主题'),
+            // ... 其他设置项保持不变，因为已经使用了适配的组件
+            const SettingsLabel(text: '字体和界面密度'),
+            // 添加 Fluent UI 切换选项
+            SettingsSwitchTile(
+              title: '使用 Fluent UI',
+              subTitle: '启用微软 Fluent Design 风格界面',
+              settingsKey: SettingsStorageKeys.useFluentUI,
+              defualtValue: false,
+              apply: () async {
+                // 应用新的 UI 设置
+                await Get.forceAppUpdate();
+              },
             ),
+            // 添加 Cupertino UI 切换选项
+            SettingsSwitchTile(
+              title: '使用 Cupertino UI',
+              subTitle: '启用苹果 iOS 风格界面',
+              settingsKey: SettingsStorageKeys.useCupertinoUI,
+              defualtValue: false,
+              apply: () async {
+                // 应用新的 UI 设置
+                await Get.forceAppUpdate();
+              },
+            ),
+            // ... 其他设置项保持不变
           ],
         ),
       );
