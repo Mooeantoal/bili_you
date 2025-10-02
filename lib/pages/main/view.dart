@@ -149,23 +149,34 @@ class _MainPageState extends State<MainPage> {
             ),
             // 移动端底部导航栏
             if (MediaQuery.of(context).size.width < 640)
-              fluent.NavigationBar(
-                selectedIndex: controller.selectedIndex.value,
-                onChanged: onDestinationSelected,
-                items: [
-                  fluent.NavigationDestination(
-                    icon: const Icon(fluent.FluentIcons.home),
-                    label: "首页",
+              Container(
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(width: 0.5, color: Colors.grey),
                   ),
-                  fluent.NavigationDestination(
-                    icon: const Icon(fluent.FluentIcons.activity_feed),
-                    label: "动态",
-                  ),
-                  fluent.NavigationDestination(
-                    icon: const Icon(fluent.FluentIcons.account_browser),
-                    label: "我的",
-                  ),
-                ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: IconButton(
+                        icon: const Icon(fluent.FluentIcons.home),
+                        onPressed: () => onDestinationSelected(0),
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        icon: const Icon(fluent.FluentIcons.activity_feed),
+                        onPressed: () => onDestinationSelected(1),
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        icon: const Icon(fluent.FluentIcons.account_browser),
+                        onPressed: () => onDestinationSelected(2),
+                      ),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
