@@ -57,9 +57,9 @@ class MinePage extends GetView<MineController> {
       );
     }
   }
-
-  // 主视图
-  Widget _buildView(context) {
+  
+  // 为不同UI框架提供不同的视图构建方法
+  Widget _buildView(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -402,15 +402,51 @@ class MineListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: icon,
-      title: Text(title),
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: Theme.of(context).textTheme.bodySmall?.color,
-      ),
-      onTap: onTap,
-    );
+    // 检查当前使用的 UI 框架
+    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+    final bool useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
+    
+    if (useCupertino) {
+      // 使用 Cupertino 风格的列表项
+      return cupertino.CupertinoListTile(
+        leading: icon,
+        title: Text(title),
+        trailing: const Icon(cupertino.CupertinoIcons.forward),
+        onTap: onTap,
+      );
+    } else if (useFluent) {
+      // 使用 Fluent UI 风格的列表项
+      return fluent.Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              icon,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(title),
+              ),
+              Icon(
+                fluent.FluentIcons.chevron_right,
+                size: 16,
+                color: fluent.FluentTheme.of(context).typography.caption?.color,
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // 使用 Material 风格的列表项
+      return ListTile(
+        leading: icon,
+        title: Text(title),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: Theme.of(context).textTheme.bodySmall?.color,
+        ),
+        onTap: onTap,
+      );
+    }
   }
 }

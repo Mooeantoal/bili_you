@@ -34,7 +34,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
       // 检查是否启用 Cupertino 主题
-      if (SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false)) {
+      final useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+      final useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
+      
+      if (useCupertino) {
         // 使用 Cupertino UI
         return cupertino.CupertinoApp(
           theme: const cupertino.CupertinoThemeData(),
@@ -51,7 +54,7 @@ class MyApp extends StatelessWidget {
         );
       }
       // 检查是否启用 Fluent UI 主题
-      else if (SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false)) {
+      else if (useFluent) {
         // 使用 Fluent UI
         return fluent.FluentApp(
           theme: fluent.FluentThemeData(

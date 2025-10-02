@@ -40,8 +40,10 @@ class _MainPageState extends State<MainPage> {
   }
 
   void onDestinationSelected(int value) {
+    print('onDestinationSelected called with value: $value');
     if (value == controller.selectedIndex.value) {
       var currentPage = controller.pages[value];
+      print('Current page type: ${currentPage.runtimeType}');
       if (currentPage is HomePage) {
         var homeController = Get.find<HomeController>();
         late dynamic pageController;
@@ -76,6 +78,7 @@ class _MainPageState extends State<MainPage> {
       }
     }
     controller.selectedIndex.value = value;
+    print('Selected index updated to: $value');
   }
 
   @override
