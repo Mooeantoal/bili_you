@@ -109,11 +109,11 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
         appBar: fluent.NavigationAppBar(
           title: const Text("外观设置"),
         ),
-        pane: fluent.Pane(
+        pane: fluent.NavigationPane(
           displayMode: fluent.PaneDisplayMode.auto,
           items: [
             fluent.PaneItem(
-              icon: const Icon(Icons.format_paint),
+              icon: const Icon(fluent.FluentIcons.format_painter),
               title: const Text("主题"),
               body: ListView(
                 children: [
