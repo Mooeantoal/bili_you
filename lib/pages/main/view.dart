@@ -118,30 +118,28 @@ class _MainPageState extends State<MainPage> {
       );
     } else if (useFluent) {
       // 使用 Fluent UI 风格的页面
-      return fluent.FluentApp(
-        home: fluent.NavigationView(
-          pane: fluent.Pane(
-            displayMode: fluent.PaneDisplayMode.auto,
-            items: [
-              fluent.PaneItem(
-                icon: const Icon(Icons.home_outlined),
-                title: const Text("首页"),
-                body: controller.pages[0],
-              ),
-              fluent.PaneItem(
-                icon: const Icon(Icons.star_border_outlined),
-                title: const Text("动态"),
-                body: controller.pages[1],
-              ),
-              fluent.PaneItem(
-                icon: const Icon(Icons.person_outline),
-                title: const Text("我的"),
-                body: controller.pages[2],
-              ),
-            ],
-            selected: controller.selectedIndex.value,
-            onChanged: (value) => onDestinationSelected(value),
-          ),
+      return fluent.NavigationView(
+        pane: fluent.Pane(
+          displayMode: fluent.PaneDisplayMode.auto,
+          items: [
+            fluent.PaneItem(
+              icon: const Icon(Icons.home_outlined),
+              title: const Text("首页"),
+              body: controller.pages[0],
+            ),
+            fluent.PaneItem(
+              icon: const Icon(Icons.star_border_outlined),
+              title: const Text("动态"),
+              body: controller.pages[1],
+            ),
+            fluent.PaneItem(
+              icon: const Icon(Icons.person_outline),
+              title: const Text("我的"),
+              body: controller.pages[2],
+            ),
+          ],
+          selected: controller.selectedIndex.value,
+          onChanged: (value) => onDestinationSelected(value),
         ),
       );
     } else {
