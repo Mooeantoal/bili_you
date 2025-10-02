@@ -7,6 +7,9 @@ import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+// 添加缺少的导入语句
+import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/common/utils/bili_you_storage.dart';
 
 import 'index.dart';
 

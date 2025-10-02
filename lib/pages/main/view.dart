@@ -149,21 +149,21 @@ class _MainPageState extends State<MainPage> {
             ),
             // 移动端底部导航栏
             if (MediaQuery.of(context).size.width < 640)
-              fluent.BottomNavigationBar(
-                index: controller.selectedIndex.value,
+              fluent.NavigationBar(
+                selectedIndex: controller.selectedIndex.value,
                 onChanged: onDestinationSelected,
                 items: [
-                  fluent.BottomNavigationBarItem(
+                  fluent.NavigationDestination(
                     icon: const Icon(fluent.FluentIcons.home),
-                    title: const Text("首页"),
+                    label: "首页",
                   ),
-                  fluent.BottomNavigationBarItem(
+                  fluent.NavigationDestination(
                     icon: const Icon(fluent.FluentIcons.activity_feed),
-                    title: const Text("动态"),
+                    label: "动态",
                   ),
-                  fluent.BottomNavigationBarItem(
+                  fluent.NavigationDestination(
                     icon: const Icon(fluent.FluentIcons.account_browser),
-                    title: const Text("我的"),
+                    label: "我的",
                   ),
                 ],
               ),

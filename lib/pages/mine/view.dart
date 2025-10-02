@@ -12,6 +12,7 @@ import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:bili_you/common/utils/settings.dart';
 
 import 'controller.dart';
 
