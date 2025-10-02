@@ -56,17 +56,23 @@ class _SearchInputPageState extends State<SearchInputPage> {
           future: controller.requestHotWordButtons(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.data!.length >= 10) {
-                return Wrap(
-                  children: snapshot.data!.sublist(0, 10),
-                );
-              } else {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                 return Wrap(
                   children: snapshot.data!,
                 );
+              } else {
+                // 修复：当没有数据时显示提示信息
+                return const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text("暂无热搜数据"),
+                );
               }
             } else {
-              return Container();
+              // 修复：加载时显示进度指示器
+              return const Padding(
+                padding: EdgeInsets.all(10),
+                child: CircularProgressIndicator(),
+              );
             }
           },
         ),

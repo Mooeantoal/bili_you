@@ -7,6 +7,8 @@ import 'package:bili_you/pages/login/qrcode_login/view.dart';
 import 'package:bili_you/pages/login/web_login/view.dart';
 import 'package:bili_you/pages/settings_page/settings_page.dart';
 import 'package:bili_you/pages/relation/view.dart';
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
+import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -18,18 +20,41 @@ class MinePage extends GetView<MineController> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<MineController>(
-      init: MineController(),
-      id: "user_face",
-      builder: (_) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text("我的"),
-          ),
-          body: _buildView(context),
-        );
-      },
-    );
+    // 检查当前使用的 UI 框架
+    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+    final bool useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
+    
+    if (useCupertino) {
+      // 使用 Cupertino 风格的页面
+      return cupertino.CupertinoPageScaffold(
+        navigationBar: const cupertino.CupertinoNavigationBar(
+          middle: Text("我的"),
+        ),
+        child: _buildView(context),
+      );
+    } else if (useFluent) {
+      // 使用 Fluent UI 风格的页面
+      return fluent.ScaffoldPage(
+        header: const fluent.PageHeader(
+          title: Text("我的"),
+        ),
+        content: _buildView(context),
+      );
+    } else {
+      // 使用 Material 风格的页面
+      return GetBuilder<MineController>(
+        init: MineController(),
+        id: "user_face",
+        builder: (_) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("我的"),
+            ),
+            body: _buildView(context),
+          );
+        },
+      );
+    }
   }
 
   // 主视图

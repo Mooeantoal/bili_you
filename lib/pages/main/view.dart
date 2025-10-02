@@ -92,19 +92,13 @@ class _MainPageState extends State<MainPage> {
     
     if (useCupertino) {
       // 使用 Cupertino 风格的页面
+      // 优化：使用适合移动端的 Cupertino 结构
       return cupertino.CupertinoPageScaffold(
-        child: Row(
+        navigationBar: const cupertino.CupertinoNavigationBar(
+          middle: Text("BiliYou"),
+        ),
+        child: Column(
           children: [
-            if (MediaQuery.of(context).size.width >= 640)
-              cupertino.CupertinoSlidingSegmentedControl<int>(
-                children: const {
-                  0: Text("首页"),
-                  1: Text("动态"),
-                  2: Text("我的"),
-                },
-                groupValue: controller.selectedIndex.value,
-                onValueChanged: (value) => onDestinationSelected(value!),
-              ),
             Expanded(
               child: Obx(
                 () => IndexedStack(
@@ -113,35 +107,66 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
             ),
+            // 移动端底部导航栏
+            if (MediaQuery.of(context).size.width < 640)
+              cupertino.CupertinoTabBar(
+                currentIndex: controller.selectedIndex.value,
+                onTap: onDestinationSelected,
+                items: const [
+                  cupertino.BottomNavigationBarItem(
+                    icon: cupertino.Icon(cupertino.CupertinoIcons.house),
+                    label: "首页",
+                  ),
+                  cupertino.BottomNavigationBarItem(
+                    icon: cupertino.Icon(cupertino.CupertinoIcons.star),
+                    label: "动态",
+                  ),
+                  cupertino.BottomNavigationBarItem(
+                    icon: cupertino.Icon(cupertino.CupertinoIcons.person),
+                    label: "我的",
+                  ),
+                ],
+              ),
           ],
         ),
       );
     } else if (useFluent) {
       // 使用 Fluent UI 风格的页面
-      return fluent.NavigationView(
-        appBar: fluent.NavigationAppBar(
-          title: const Text("BiliYou"),
-        ),
-        pane: fluent.NavigationPane(
-          displayMode: fluent.PaneDisplayMode.auto,
-          selected: controller.selectedIndex.value,
-          onChanged: (value) => onDestinationSelected(value),
-          items: [
-            fluent.PaneItem(
-              icon: const Icon(fluent.FluentIcons.home),
-              title: const Text("首页"),
-              body: controller.pages[0],
+      // 修复：使用适合移动端的导航结构，避免页面嵌套冲突
+      return fluent.ScaffoldPage(
+        header: MediaQuery.of(context).size.width >= 640
+            ? fluent.PageHeader(title: const Text("BiliYou"))
+            : null,
+        content: Column(
+          children: [
+            Expanded(
+              child: Obx(
+                () => IndexedStack(
+                  index: controller.selectedIndex.value,
+                  children: controller.pages,
+                ),
+              ),
             ),
-            fluent.PaneItem(
-              icon: const Icon(fluent.FluentIcons.activity_feed),
-              title: const Text("动态"),
-              body: controller.pages[1],
-            ),
-            fluent.PaneItem(
-              icon: const Icon(fluent.FluentIcons.account_browser),
-              title: const Text("我的"),
-              body: controller.pages[2],
-            ),
+            // 移动端底部导航栏
+            if (MediaQuery.of(context).size.width < 640)
+              fluent.BottomNavigationBar(
+                index: controller.selectedIndex.value,
+                onChanged: onDestinationSelected,
+                items: [
+                  fluent.BottomNavigationBarItem(
+                    icon: const Icon(fluent.FluentIcons.home),
+                    title: const Text("首页"),
+                  ),
+                  fluent.BottomNavigationBarItem(
+                    icon: const Icon(fluent.FluentIcons.activity_feed),
+                    title: const Text("动态"),
+                  ),
+                  fluent.BottomNavigationBarItem(
+                    icon: const Icon(fluent.FluentIcons.account_browser),
+                    title: const Text("我的"),
+                  ),
+                ],
+              ),
           ],
         ),
       );

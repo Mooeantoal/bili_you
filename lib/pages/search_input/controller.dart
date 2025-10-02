@@ -30,24 +30,34 @@ class SearchInputPageController extends GetxController {
       log("requestHotWordButtons:$e");
       return widgetList;
     }
+    
+    // 优化：确保即使在不同UI框架下也能正确显示
+    final context = Get.context!;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonWidth = screenWidth > 600 ? screenWidth * 0.3 : screenWidth * 0.4;
+    
     for (var i in wordList) {
       widgetList.add(
         SizedBox(
-            width: MediaQuery.of(Get.context!).size.width * 0.4, // 从 0.5 减少到 0.4，让更多按钮能显示在同一行
-            child: InkWell(
+            width: buttonWidth,
+            child: Card(
+              margin: const EdgeInsets.all(4),
+              child: InkWell(
                 onTap: () {
                   search(i.keyWord);
                   setTextFieldText(i.keyWord);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 5, 12, 5),
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
                   child: Text(
                     overflow: TextOverflow.ellipsis,
                     i.showWord,
                     maxLines: 1,
                     style: const TextStyle(fontSize: 14),
                   ),
-                ))),
+                ),
+              ),
+            )),
       );
     }
     return widgetList;
@@ -204,6 +214,8 @@ class SearchInputPageController extends GetxController {
   //   super.onClose();
   // }
 }
+
+
 
 
 

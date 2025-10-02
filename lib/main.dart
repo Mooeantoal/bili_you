@@ -39,6 +39,15 @@ class MyApp extends StatelessWidget {
         return cupertino.CupertinoApp(
           theme: const cupertino.CupertinoThemeData(),
           home: const MainPage(),
+          builder: (context, child) => child == null
+              ? const SizedBox()
+              : MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                      textScaleFactor: MediaQuery.of(context).textScaleFactor *
+                          SettingsUtil.getValue(
+                              SettingsStorageKeys.textScaleFactor,
+                              defaultValue: 1.0)),
+                  child: child),
         );
       }
       // 检查是否启用 Fluent UI 主题
@@ -54,6 +63,15 @@ class MyApp extends StatelessWidget {
           ),
           themeMode: SettingsUtil.currentThemeMode,
           home: const MainPage(),
+          builder: (context, child) => child == null
+              ? const SizedBox()
+              : MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                      textScaleFactor: MediaQuery.of(context).textScaleFactor *
+                          SettingsUtil.getValue(
+                              SettingsStorageKeys.textScaleFactor,
+                              defaultValue: 1.0)),
+                  child: child),
         );
       } else {
         // 使用默认的 Material UI
