@@ -354,8 +354,7 @@ class _ReplyItemWidgetState extends State<ReplyItemWidget> {
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
                                   color: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerHighest),
+                                      .cardColor),
                               padding: const EdgeInsets.only(
                                   left: 8, right: 8, bottom: 8),
                               child: GestureDetector(
@@ -443,17 +442,17 @@ class ThumUpButton extends StatelessWidget {
         onPressed: onPressed,
         style: ButtonStyle(
           visualDensity: VisualDensity.comfortable,
-          padding: const WidgetStatePropertyAll(
+          padding: MaterialStateProperty.all(
               EdgeInsets.all(5)),
           foregroundColor: selected == true
-              ? WidgetStatePropertyAll(
+              ? MaterialStateProperty.all(
                   Theme.of(context).colorScheme.onPrimary)
               : null,
           backgroundColor: selected == true
-              ? WidgetStatePropertyAll(Theme.of(context).colorScheme.primary)
+              ? MaterialStateProperty.all(Theme.of(context).colorScheme.primary)
               : null,
-          elevation: const WidgetStatePropertyAll(0),
-          minimumSize: const WidgetStatePropertyAll(Size(10, 5)),
+          elevation: MaterialStateProperty.all(0),
+          minimumSize: MaterialStateProperty.all(Size(10, 5)),
         ),
         child: Row(
           children: [

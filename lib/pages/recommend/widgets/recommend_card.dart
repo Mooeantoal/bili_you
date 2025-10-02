@@ -90,7 +90,7 @@ class RecommendCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           imageUrl: imageUrl,
                           placeholder: () => Container(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            color: Theme.of(context).colorScheme.surfaceVariant,
                           ),
                           errorWidget: () => const Center(
                             child: Icon(Icons.error),
