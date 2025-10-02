@@ -328,7 +328,7 @@ class _ReplyItemWidgetState extends State<ReplyItemWidget> {
                               Expanded(
                                 child: widget.reply.tags.isNotEmpty
                                     ? Padding(
-                                        padding: EdgeInsets.only(left: 10),
+                                        padding: const EdgeInsets.only(left: 10),
                                         child: Row(children: [
                                           for (var i in widget.reply.tags)
                                             Text("$i ", //标签,如热评,up觉得很赞
@@ -355,7 +355,7 @@ class _ReplyItemWidgetState extends State<ReplyItemWidget> {
                                   borderRadius: BorderRadius.circular(8),
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .surfaceVariant),
+                                      .surfaceContainerHighest),
                               padding: const EdgeInsets.only(
                                   left: 8, right: 8, bottom: 8),
                               child: GestureDetector(
@@ -443,17 +443,17 @@ class ThumUpButton extends StatelessWidget {
         onPressed: onPressed,
         style: ButtonStyle(
           visualDensity: VisualDensity.comfortable,
-          padding: const MaterialStatePropertyAll(
+          padding: const WidgetStatePropertyAll(
               EdgeInsets.all(5)),
           foregroundColor: selected == true
-              ? MaterialStatePropertyAll(
+              ? WidgetStatePropertyAll(
                   Theme.of(context).colorScheme.onPrimary)
               : null,
           backgroundColor: selected == true
-              ? MaterialStatePropertyAll(Theme.of(context).colorScheme.primary)
+              ? WidgetStatePropertyAll(Theme.of(context).colorScheme.primary)
               : null,
-          elevation: const MaterialStatePropertyAll(0),
-          minimumSize: const MaterialStatePropertyAll(Size(10, 5)),
+          elevation: const WidgetStatePropertyAll(0),
+          minimumSize: const WidgetStatePropertyAll(Size(10, 5)),
         ),
         child: Row(
           children: [

@@ -108,66 +108,113 @@ abstract class LoginApi {
   }
 
   static Future<raw.LoginUserInfoResponse> _requestLoginUserInfo() async {
-    var response = await HttpUtils().get(
-      ApiConstants.userInfo,
-    );
-    raw.LoginUserInfoResponse ret;
     try {
-      ret = raw.LoginUserInfoResponse.fromJson(response.data);
+      var response = await HttpUtils().get(
+        ApiConstants.userInfo,
+      );
+      raw.LoginUserInfoResponse ret;
+      try {
+        ret = raw.LoginUserInfoResponse.fromJson(response.data);
+      } catch (e) {
+        throw '$e, json:${response.data}';
+      }
+      return ret;
     } catch (e) {
-      throw '$e, json:${response.data}';
+      // 返回一个默认的响应，确保不会崩溃
+      return raw.LoginUserInfoResponse(
+        code: -1,
+        message: 'Network error: $e',
+        ttl: 0,
+        data: null,
+      );
     }
-    return ret;
   }
 
   ///获取当前cookie的用户信息
   static Future<LoginUserInfo> getLoginUserInfo() async {
-    var response = await _requestLoginUserInfo();
-    if (response.code != 0) {
-      throw "getLoginUserInfo: code:${response.code}, message:${response.message}";
+    try {
+      var response = await _requestLoginUserInfo();
+      
+      // 检查响应状态
+      if (response.code != 0) {
+        print("getLoginUserInfo API error: code:${response.code}, message:${response.message}");
+        // 返回默认用户信息而不是抛出异常
+        return _getDefaultUserInfo();
+      }
+      
+      if (response.data == null) {
+        print("getLoginUserInfo: data is null");
+        return _getDefaultUserInfo();
+      }
+      
+      var data = response.data!;
+      return LoginUserInfo(
+          mid: data.mid ?? 0,
+          name: data.uname ?? "未知用户",
+          avatarUrl: data.face ?? "https://i0.hdslb.com/bfs/face/member/noface.jpg",
+          levelInfo: LevelInfo(
+              currentLevel: data.levelInfo?.currentLevel ?? 0,
+              currentExp: data.levelInfo?.currentExp ?? 0,
+              currentMin: data.levelInfo?.currentMin ?? 0,
+              nextExp: data.levelInfo?.nextExp ?? _calculateNextExp(data.levelInfo?.currentLevel ?? 0)),
+          officialVerify: OfficialVerify(
+              type: OfficialVerifyTypeCode.fromCode(data.officialVerify?.type ?? 0),
+              description: data.officialVerify?.desc ?? ""),
+          vip: Vip(
+              isVip: data.vip?.status == 1,
+              type: _getVipType(data.vip?.type)),
+          isLogin: data.isLogin ?? false);
+    } catch (e, stackTrace) {
+      print("getLoginUserInfo exception: $e");
+      print("Stack trace: $stackTrace");
+      // 发生异常时返回默认用户信息
+      return _getDefaultUserInfo();
     }
-    if (response.data == null) {
-      return LoginUserInfo.zero;
-    }
-    var data = response.data!;
-    return LoginUserInfo(
-        mid: data.mid ?? 0,
-        name: data.uname ?? "",
-        avatarUrl: data.face ?? "",
-        levelInfo: LevelInfo(
-            currentLevel: data.levelInfo?.currentLevel ?? 0,
-            currentExp: data.levelInfo?.currentExp ?? 0,
-            currentMin: data.levelInfo?.currentMin ?? 0,
-            nextExp: data.levelInfo?.nextExp ?? 0),
-        officialVerify: OfficialVerify(
-            type:
-                OfficialVerifyTypeCode.fromCode(data.officialVerify?.type ?? 0),
-            description: data.officialVerify?.desc ?? ""),
-        vip: Vip(
-            isVip: data.vip?.status == 1,
-            type: VipType.values[data.vip?.type ?? 0]),
-        isLogin: data.isLogin ?? false);
   }
 
   ///获取当前cookie用户的状态：粉丝数，关注数，动态数
   static Future<raw.LoginUserStatResponse> _requestLoginUserStat() async {
-    var response = await HttpUtils().get(ApiConstants.userStat);
-    return raw.LoginUserStatResponse.fromJson(response.data);
+    try {
+      var response = await HttpUtils().get(ApiConstants.userStat);
+      return raw.LoginUserStatResponse.fromJson(response.data);
+    } catch (e) {
+      // 返回一个默认的响应，确保不会崩溃
+      return raw.LoginUserStatResponse(
+        code: -1,
+        message: 'Network error: $e',
+        ttl: 0,
+        data: null,
+      );
+    }
   }
 
   static Future<LoginUserStat> getLoginUserStat() async {
-    var response = await _requestLoginUserStat();
-    if (response.code != 0) {
-      throw "getLoginUserStat: code:${response.code}, message:${response.message}";
+    try {
+      var response = await _requestLoginUserStat();
+      
+      // 检查响应状态
+      if (response.code != 0) {
+        print("getLoginUserStat API error: code:${response.code}, message:${response.message}");
+        // 返回默认统计信息而不是抛出异常
+        return _getDefaultUserStat();
+      }
+      
+      if (response.data == null) {
+        print("getLoginUserStat: data is null");
+        return _getDefaultUserStat();
+      }
+      
+      var data = response.data!;
+      return LoginUserStat(
+          followerCount: data.follower ?? 0,
+          followingCount: data.following ?? 0,
+          dynamicCount: data.dynamicCount ?? 0);
+    } catch (e, stackTrace) {
+      print("getLoginUserStat exception: $e");
+      print("Stack trace: $stackTrace");
+      // 发生异常时返回默认统计信息
+      return _getDefaultUserStat();
     }
-    if (response.data == null) {
-      return LoginUserStat.zero;
-    }
-    var data = response.data!;
-    return LoginUserStat(
-        followerCount: data.follower ?? 0,
-        followingCount: data.following ?? 0,
-        dynamicCount: data.dynamicCount ?? 0);
   }
 
   ///获取二维码
@@ -193,5 +240,51 @@ abstract class LoginApi {
     }
     return LoginQrcodeStatExtension.fromCode(
         response.data?['data']?['code'] ?? -1);
+  }
+  
+  // 私有辅助方法
+  static LoginUserInfo _getDefaultUserInfo() {
+    return LoginUserInfo(
+      mid: 0,
+      name: "未登录用户",
+      avatarUrl: "https://i0.hdslb.com/bfs/face/member/noface.jpg",
+      levelInfo: LevelInfo(
+        currentLevel: 0,
+        currentExp: 0,
+        currentMin: 0,
+        nextExp: 100,
+      ),
+      officialVerify: OfficialVerify(
+        type: OfficialVerifyTypeCode.fromCode(0),
+        description: "",
+      ),
+      vip: Vip(
+        isVip: false,
+        type: VipType.none,
+      ),
+      isLogin: false,
+    );
+  }
+  
+  static LoginUserStat _getDefaultUserStat() {
+    return LoginUserStat(
+      followerCount: 0,
+      followingCount: 0,
+      dynamicCount: 0,
+    );
+  }
+  
+  static int _calculateNextExp(int currentLevel) {
+    // 简化的经验计算，实际应该根据B站的等级经验规则
+    if (currentLevel >= 6) return 0; // LV6为最高等级
+    return [100, 200, 300, 400, 500, 0][currentLevel];
+  }
+  
+  static VipType _getVipType(int? typeCode) {
+    if (typeCode == null) return VipType.none;
+    if (typeCode >= 0 && typeCode < VipType.values.length) {
+      return VipType.values[typeCode];
+    }
+    return VipType.none;
   }
 }

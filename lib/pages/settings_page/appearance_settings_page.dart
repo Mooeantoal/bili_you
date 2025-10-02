@@ -108,8 +108,8 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
       // 使用 Fluent UI 风格的页面
       // 直接返回内容而不是NavigationView，避免与主页面的导航结构冲突
       return fluent.ScaffoldPage(
-        header: fluent.PageHeader(
-          title: const Text("外观设置"),
+        header: const fluent.PageHeader(
+          title: Text("外观设置"),
         ),
         content: ListView(
           children: [

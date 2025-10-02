@@ -46,10 +46,10 @@ class MyApp extends StatelessWidget {
               ? const SizedBox()
               : MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                      textScaleFactor: MediaQuery.of(context).textScaleFactor *
+                      textScaler: TextScaler.linear(MediaQuery.of(context).textScaleFactor *
                           SettingsUtil.getValue(
                               SettingsStorageKeys.textScaleFactor,
-                              defaultValue: 1.0)),
+                              defaultValue: 1.0))),
                   child: child),
         );
       }
@@ -70,10 +70,10 @@ class MyApp extends StatelessWidget {
               ? const SizedBox()
               : MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                      textScaleFactor: MediaQuery.of(context).textScaleFactor *
+                      textScaler: TextScaler.linear(MediaQuery.of(context).textScaleFactor *
                           SettingsUtil.getValue(
                               SettingsStorageKeys.textScaleFactor,
-                              defaultValue: 1.0)),
+                              defaultValue: 1.0))),
                   child: child),
         );
       } else {
@@ -100,10 +100,10 @@ class MyApp extends StatelessWidget {
                 ? const SizedBox()
                 : MediaQuery(
                     data: MediaQuery.of(context).copyWith(
-                        textScaleFactor: MediaQuery.of(context).textScaleFactor *
+                        textScaler: TextScaler.linear(MediaQuery.of(context).textScaleFactor *
                             SettingsUtil.getValue(
                                 SettingsStorageKeys.textScaleFactor,
-                                defaultValue: 1.0)),
+                                defaultValue: 1.0))),
                     child: child));
       }
     }));

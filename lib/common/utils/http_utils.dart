@@ -19,13 +19,15 @@ class HttpUtils {
   ///初始化构造
   HttpUtils._internal() {
     BaseOptions options = BaseOptions(
+      baseUrl: 'https://api.bilibili.com',
       headers: {
         'keep-alive': true,
         'user-agent': ApiConstants.userAgent,
-        'Accept-Encoding': 'gzip'
+        'Accept-Encoding': 'gzip',
+        'Referer': 'https://www.bilibili.com/',
       },
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
       contentType: Headers.jsonContentType,
       persistentConnection: true,
     );
@@ -52,7 +54,7 @@ class HttpUtils {
             .loadForRequest(Uri.parse(ApiConstants.bilibiliBase)))
         .isEmpty) {
       try {
-        await dio.get(ApiConstants.bilibiliBase); //获取默认cookie
+        await dio.get("/"); //获取默认cookie
       } catch (e) {
         log("utils/my_dio, ${e.toString()}");
       }
@@ -71,13 +73,20 @@ class HttpUtils {
     Options? options,
     CancelToken? cancelToken,
   }) async {
-    var response = await dio.get(
-      path,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken ?? _cancelToken,
-    );
-    return response;
+    try {
+      print('HTTP GET request to: $path');
+      var response = await dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken ?? _cancelToken,
+      );
+      print('HTTP GET response status: ${response.statusCode}');
+      return response;
+    } catch (e) {
+      print('HTTP GET error for $path: $e');
+      rethrow;
+    }
   }
 
   Future post(
@@ -87,14 +96,21 @@ class HttpUtils {
     Options? options,
     CancelToken? cancelToken,
   }) async {
-    var response = await dio.post(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken ?? _cancelToken,
-    );
-    return response;
+    try {
+      print('HTTP POST request to: $path');
+      var response = await dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken ?? _cancelToken,
+      );
+      print('HTTP POST response status: ${response.statusCode}');
+      return response;
+    } catch (e) {
+      print('HTTP POST error for $path: $e');
+      rethrow;
+    }
   }
 }
 
@@ -109,39 +125,34 @@ class ErrorInterceptor extends Interceptor {
   @override
   Future<void> onError(
       DioException err, ErrorInterceptorHandler handler) async {
+    print('Dio error: ${err.type}, message: ${err.message}');
+    
     switch (err.type) {
-      // case DioErrorType.badCertificate:
-      //   Get.rawSnackbar(message: 'bad certificate');
-      //   break;
-      // case DioErrorType.badResponse:
-      //   Get.rawSnackbar(message: 'bad response');
-      //   break;
-      // case DioErrorType.cancel:
-      //   Get.rawSnackbar(message: 'canceled');
-      //   break;
-      // case DioErrorType.connectionError:
-      //   Get.rawSnackbar(message: 'connection error');
-      //   break;
-      // case DioErrorType.connectionTimeout:
-      //   Get.rawSnackbar(message: 'connection timeout');
-      //   break;
-      // case DioErrorType.receiveTimeout:
-      //   Get.rawSnackbar(message: 'receive timeout');
-      //   break;
-      // case DioErrorType.sendTimeout:
-      //   Get.rawSnackbar(message: 'send timeout');
-      //   break;
+      case DioExceptionType.connectionTimeout:
+        Get.rawSnackbar(title: '连接超时', message: '请检查网络连接');
+        break;
+      case DioExceptionType.receiveTimeout:
+        Get.rawSnackbar(title: '接收超时', message: '服务器响应超时');
+        break;
+      case DioExceptionType.sendTimeout:
+        Get.rawSnackbar(title: '发送超时', message: '请求发送超时');
+        break;
+      case DioExceptionType.badResponse:
+        Get.rawSnackbar(title: '服务器错误', message: '服务器返回错误状态码');
+        break;
+      case DioExceptionType.cancel:
+        // 请求被取消，通常不需要提示
+        break;
       case DioExceptionType.unknown:
         if (!await isConnected()) {
           //网络未连接
-          Get.rawSnackbar(title: '网络未连接 ', message: '请检查网络状态');
-          handler.reject(err);
+          Get.rawSnackbar(title: '网络未连接', message: '请检查网络状态');
+        } else {
+          Get.rawSnackbar(title: '网络错误', message: '未知网络错误');
         }
-        // else {
-        //   Get.rawSnackbar(message: '未知网络错误');
-        // }
         break;
       default:
+        Get.rawSnackbar(title: '请求失败', message: '网络请求失败');
     }
 
     return super.onError(err, handler);

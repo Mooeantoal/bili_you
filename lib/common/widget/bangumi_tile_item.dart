@@ -34,7 +34,7 @@ class BangumiTileItem extends StatelessWidget {
                 width: _height * (3 / 4),
                 cacheManager: CacheUtils.searchResultItemCoverCacheManager,
                 placeholder: () => Container(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
               ),
             ),

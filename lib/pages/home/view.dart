@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage>
                     )));
             controller.refreshDefaultSearchWord();
           },
-          color: Theme.of(context).colorScheme.surfaceVariant,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           height: 50,
           elevation: 0,
           shape: const RoundedRectangleBorder(

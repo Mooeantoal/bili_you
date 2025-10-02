@@ -78,7 +78,7 @@ class PhoneLoginPage extends GetView<PhoneLoginController> {
                     ],
                   ),
                   Divider(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     thickness: 2,
                     indent: 20,
                     endIndent: 20,

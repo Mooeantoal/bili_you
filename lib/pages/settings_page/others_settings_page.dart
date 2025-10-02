@@ -1,5 +1,4 @@
 import 'package:bili_you/common/widget/settings_label.dart';
-import 'package:bili_you/common/utils/fullscreen.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

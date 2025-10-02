@@ -128,6 +128,10 @@ class _MainPageState extends State<MainPage> {
                     icon: cupertino.Icon(cupertino.CupertinoIcons.person),
                     label: "我的",
                   ),
+                  cupertino.BottomNavigationBarItem(
+                    icon: cupertino.Icon(cupertino.CupertinoIcons.wrench),
+                    label: "调试",
+                  ),
                 ],
               ),
           ],
@@ -178,6 +182,12 @@ class _MainPageState extends State<MainPage> {
                         onPressed: () => onDestinationSelected(2),
                       ),
                     ),
+                    Expanded(
+                      child: IconButton(
+                        icon: const Icon(fluent.FluentIcons.settings),
+                        onPressed: () => onDestinationSelected(3),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -210,6 +220,11 @@ class _MainPageState extends State<MainPage> {
                     icon: Icon(Icons.person_outline),
                     label: Text("我的"),
                     selectedIcon: Icon(Icons.person),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.bug_report),
+                    label: Text("调试"),
+                    selectedIcon: Icon(Icons.bug_report),
                   ),
                 ],
                 selectedIndex: controller.selectedIndex.value,
@@ -251,6 +266,11 @@ class _MainPageState extends State<MainPage> {
                       icon: Icon(Icons.person_outline),
                       activeIcon: Icon(Icons.person),
                       label: "我的",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.bug_report),
+                      activeIcon: Icon(Icons.bug_report),
+                      label: "调试",
                     ),
                   ],
                 ),

@@ -21,12 +21,16 @@ class MinePage extends GetView<MineController> {
 
   @override
   Widget build(BuildContext context) {
+    print('MinePage build called');
     // 检查当前使用的 UI 框架
     final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
     final bool useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
     
+    print('UI Framework - Cupertino: $useCupertino, Fluent: $useFluent');
+    
     if (useCupertino) {
       // 使用 Cupertino 风格的页面
+      print('Building Cupertino page');
       return cupertino.CupertinoPageScaffold(
         navigationBar: const cupertino.CupertinoNavigationBar(
           middle: Text("我的"),
@@ -35,6 +39,7 @@ class MinePage extends GetView<MineController> {
       );
     } else if (useFluent) {
       // 使用 Fluent UI 风格的页面
+      print('Building Fluent UI page');
       return fluent.ScaffoldPage(
         header: const fluent.PageHeader(
           title: Text("我的"),
@@ -43,10 +48,12 @@ class MinePage extends GetView<MineController> {
       );
     } else {
       // 使用 Material 风格的页面
+      print('Building Material page');
       return GetBuilder<MineController>(
         init: MineController(),
         id: "user_face",
         builder: (_) {
+          print('GetBuilder builder called');
           return Scaffold(
             appBar: AppBar(
               title: const Text("我的"),
@@ -60,9 +67,21 @@ class MinePage extends GetView<MineController> {
   
   // 为不同UI框架提供不同的视图构建方法
   Widget _buildView(BuildContext context) {
+    print('MinePage _buildView called');
+    print('Controller isLogin value: ${controller.islogin_.value}');
+    print('Controller name value: ${controller.name.value}');
+    print('Controller level value: ${controller.level.value}');
+    
     return SingleChildScrollView(
       child: Column(
         children: [
+          // 添加调试信息
+          Container(
+            color: Colors.blue.withOpacity(0.2),
+            padding: const EdgeInsets.all(8.0),
+            child: const Text('个人页面顶部调试信息 - 如果能看到说明页面结构正常'),
+          ),
+          
           // 用户信息卡片
           _buildUserInfoCard(context),
           
@@ -71,6 +90,13 @@ class MinePage extends GetView<MineController> {
           
           // 功能列表
           _buildFunctionList(context),
+          
+          // 底部调试信息
+          Container(
+            color: Colors.green.withOpacity(0.2),
+            padding: const EdgeInsets.all(8.0),
+            child: const Text('个人页面底部调试信息 - 如果能看到说明页面完整渲染'),
+          ),
           
           const SizedBox(height: 20),
         ],
