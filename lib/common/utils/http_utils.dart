@@ -74,14 +74,32 @@ class HttpUtils {
     CancelToken? cancelToken,
   }) async {
     try {
-      print('HTTP GET request to: $path');
+      // 确保路径格式正确
+      String fullPath = path;
+      if (!path.startsWith('http') && dio.options.baseUrl.isNotEmpty) {
+        // 如果路径不以http开头，且baseUrl不为空，则使用baseUrl
+        if (!path.startsWith('/')) {
+          fullPath = '/$path';
+        }
+      } else if (!path.startsWith('http') && dio.options.baseUrl.isEmpty) {
+        // 如果路径不以http开头，且baseUrl为空，则添加默认baseUrl
+        if (!path.startsWith('/')) {
+          fullPath = '/$path';
+        }
+        fullPath = 'https://api.bilibili.com$fullPath';
+      }
+      
+      print('HTTP GET request to: $fullPath');
+      print('Query parameters: $queryParameters');
+      
       var response = await dio.get(
-        path,
+        fullPath,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken ?? _cancelToken,
       );
       print('HTTP GET response status: ${response.statusCode}');
+      print('HTTP GET response data: ${response.data}');
       return response;
     } catch (e) {
       print('HTTP GET error for $path: $e');

@@ -93,6 +93,9 @@ class _MainPageState extends State<MainPage> {
     final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
     final bool useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
     
+    // 获取系统底部安全区域高度
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     if (useCupertino) {
       // 使用 Cupertino 风格的页面
       // 优化：使用适合移动端的 Cupertino 结构
@@ -110,29 +113,33 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
             ),
-            // 移动端底部导航栏
+            // 移动端底部导航栏，避免与系统导航条冲突
             if (MediaQuery.of(context).size.width < 640)
-              cupertino.CupertinoTabBar(
-                currentIndex: controller.selectedIndex.value,
-                onTap: onDestinationSelected,
-                items: const [
-                  cupertino.BottomNavigationBarItem(
-                    icon: cupertino.Icon(cupertino.CupertinoIcons.house),
-                    label: "首页",
-                  ),
-                  cupertino.BottomNavigationBarItem(
-                    icon: cupertino.Icon(cupertino.CupertinoIcons.star),
-                    label: "动态",
-                  ),
-                  cupertino.BottomNavigationBarItem(
-                    icon: cupertino.Icon(cupertino.CupertinoIcons.person),
-                    label: "我的",
-                  ),
-                  cupertino.BottomNavigationBarItem(
-                    icon: cupertino.Icon(cupertino.CupertinoIcons.wrench),
-                    label: "调试",
-                  ),
-                ],
+              Container(
+                // 抬高导航栏，避免与系统导航条冲突
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+                child: cupertino.CupertinoTabBar(
+                  currentIndex: controller.selectedIndex.value,
+                  onTap: onDestinationSelected,
+                  items: const [
+                    cupertino.BottomNavigationBarItem(
+                      icon: cupertino.Icon(cupertino.CupertinoIcons.house),
+                      label: "首页",
+                    ),
+                    cupertino.BottomNavigationBarItem(
+                      icon: cupertino.Icon(cupertino.CupertinoIcons.star),
+                      label: "动态",
+                    ),
+                    cupertino.BottomNavigationBarItem(
+                      icon: cupertino.Icon(cupertino.CupertinoIcons.person),
+                      label: "我的",
+                    ),
+                    cupertino.BottomNavigationBarItem(
+                      icon: cupertino.Icon(cupertino.CupertinoIcons.lab_flask),
+                      label: "测试",
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -154,9 +161,11 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
             ),
-            // 移动端底部导航栏
+            // 移动端底部导航栏，避免与系统导航条冲突
             if (MediaQuery.of(context).size.width < 640)
               Container(
+                // 抬高导航栏，避免与系统导航条冲突
+                padding: EdgeInsets.only(bottom: bottomPadding),
                 decoration: const BoxDecoration(
                   border: Border(
                     top: BorderSide(width: 0.5, color: Colors.grey),
@@ -184,7 +193,7 @@ class _MainPageState extends State<MainPage> {
                     ),
                     Expanded(
                       child: IconButton(
-                        icon: const Icon(fluent.FluentIcons.settings),
+                        icon: const Icon(fluent.FluentIcons.developer_tools),
                         onPressed: () => onDestinationSelected(3),
                       ),
                     ),
@@ -223,7 +232,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.bug_report),
-                    label: Text("调试"),
+                    label: Text("测试"),
                     selectedIcon: Icon(Icons.bug_report),
                   ),
                 ],
@@ -241,38 +250,42 @@ class _MainPageState extends State<MainPage> {
           ],
         ),
         bottomNavigationBar: MediaQuery.of(context).size.width < 640
-            ? FrostedGlassCard(
-                borderRadius: 0.0,
-                blurSigma: 10.0,
-                backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
-                margin: EdgeInsets.zero,
-                padding: const EdgeInsets.all(0.0),
-                child: BottomNavigationBar(
-                  type: BottomNavigationBarType.fixed,
-                  currentIndex: controller.selectedIndex.value,
-                  onTap: (value) => onDestinationSelected(value),
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home_outlined),
-                      activeIcon: Icon(Icons.home),
-                      label: "首页",
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.star_border_outlined),
-                      activeIcon: Icon(Icons.star),
-                      label: "动态",
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.person_outline),
-                      activeIcon: Icon(Icons.person),
-                      label: "我的",
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.bug_report),
-                      activeIcon: Icon(Icons.bug_report),
-                      label: "调试",
-                    ),
-                  ],
+            ? Container(
+                // 抬高导航栏，避免与系统导航条冲突
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+                child: FrostedGlassCard(
+                  borderRadius: 0.0,
+                  blurSigma: 10.0,
+                  backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                  margin: EdgeInsets.zero,
+                  padding: const EdgeInsets.all(0.0),
+                  child: BottomNavigationBar(
+                    type: BottomNavigationBarType.fixed,
+                    currentIndex: controller.selectedIndex.value,
+                    onTap: (value) => onDestinationSelected(value),
+                    items: const [
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.home_outlined),
+                        activeIcon: Icon(Icons.home),
+                        label: "首页",
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.star_border_outlined),
+                        activeIcon: Icon(Icons.star),
+                        label: "动态",
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.person_outline),
+                        activeIcon: Icon(Icons.person),
+                        label: "我的",
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.bug_report),
+                        activeIcon: Icon(Icons.bug_report),
+                        label: "测试",
+                      ),
+                    ],
+                  ),
                 ),
               )
             : null,

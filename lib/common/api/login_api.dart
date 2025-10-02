@@ -109,17 +109,21 @@ abstract class LoginApi {
 
   static Future<raw.LoginUserInfoResponse> _requestLoginUserInfo() async {
     try {
+      print('Requesting user info from: ${ApiConstants.userInfo}');
       var response = await HttpUtils().get(
         ApiConstants.userInfo,
       );
+      print('User info response: ${response.data}');
       raw.LoginUserInfoResponse ret;
       try {
         ret = raw.LoginUserInfoResponse.fromJson(response.data);
       } catch (e) {
+        print('Error parsing user info: $e, json:${response.data}');
         throw '$e, json:${response.data}';
       }
       return ret;
     } catch (e) {
+      print('Error in _requestLoginUserInfo: $e');
       // 返回一个默认的响应，确保不会崩溃
       return raw.LoginUserInfoResponse(
         code: -1,
@@ -175,9 +179,12 @@ abstract class LoginApi {
   ///获取当前cookie用户的状态：粉丝数，关注数，动态数
   static Future<raw.LoginUserStatResponse> _requestLoginUserStat() async {
     try {
+      print('Requesting user stat from: ${ApiConstants.userStat}');
       var response = await HttpUtils().get(ApiConstants.userStat);
+      print('User stat response: ${response.data}');
       return raw.LoginUserStatResponse.fromJson(response.data);
     } catch (e) {
+      print('Error in _requestLoginUserStat: $e');
       // 返回一个默认的响应，确保不会崩溃
       return raw.LoginUserStatResponse(
         code: -1,

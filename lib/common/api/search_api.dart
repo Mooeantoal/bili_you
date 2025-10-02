@@ -18,45 +18,71 @@ import 'package:bili_you/common/utils/string_format_utils.dart';
 
 class SearchApi {
   static Future<DefaultSearchWordResponse> _requestDefaultSearchWords() async {
-    var response = await HttpUtils().get(ApiConstants.defualtSearchWord,
-        queryParameters: await WbiSign.encodeParams({}));
-    return DefaultSearchWordResponse.fromJson(response.data);
+    try {
+      print('Requesting default search words from: ${ApiConstants.defualtSearchWord}');
+      var response = await HttpUtils().get(ApiConstants.defualtSearchWord,
+          queryParameters: await WbiSign.encodeParams({}));
+      print('Default search words response: ${response.data}');
+      return DefaultSearchWordResponse.fromJson(response.data);
+    } catch (e) {
+      print('Error in _requestDefaultSearchWords: $e');
+      rethrow;
+    }
   }
 
   ///获取默认搜索词
   static Future<DefaultSearchWord> getDefaultSearchWords() async {
-    var response = await _requestDefaultSearchWords();
-    if (response.code != 0) {
-      throw "getRequestDefaultSearchWords: code:${response.code}, message:${response.message}";
-    }
-    if (response.data == null) {
+    try {
+      var response = await _requestDefaultSearchWords();
+      if (response.code != 0) {
+        print("getRequestDefaultSearchWords: code:${response.code}, message:${response.message}");
+        return DefaultSearchWord.zero;
+      }
+      if (response.data == null) {
+        return DefaultSearchWord.zero;
+      }
+      return DefaultSearchWord(
+          showName: response.data!.showName ?? "",
+          name: response.data!.name ?? "");
+    } catch (e) {
+      print('Error in getDefaultSearchWords: $e');
       return DefaultSearchWord.zero;
     }
-    return DefaultSearchWord(
-        showName: response.data!.showName ?? "",
-        name: response.data!.name ?? "");
   }
 
   static Future<HotWordResponse> _requestHotWords() async {
-    var response = await HttpUtils().get(ApiConstants.hotWordsMob);
-    return HotWordResponse.fromJson(response.data);
+    try {
+      print('Requesting hot words from: ${ApiConstants.hotWordsMob}');
+      var response = await HttpUtils().get(ApiConstants.hotWordsMob);
+      print('Hot words response: ${response.data}');
+      return HotWordResponse.fromJson(response.data);
+    } catch (e) {
+      print('Error in _requestHotWords: $e');
+      rethrow;
+    }
   }
 
   ///获取热词列表
   static Future<List<HotWordItem>> getHotWords() async {
     List<HotWordItem> list = [];
-    var response = await _requestHotWords();
-    if (response.code != 0) {
-      throw "getHotWords: code:${response.code}, message:${response.message}";
-    }
-    if (response.data == null || response.data!.list == null) {
+    try {
+      var response = await _requestHotWords();
+      if (response.code != 0) {
+        print("getHotWords: code:${response.code}, message:${response.message}");
+        return list;
+      }
+      if (response.data == null || response.data!.list == null) {
+        return list;
+      }
+      for (var i in response.data!.list!) {
+        list.add(
+            HotWordItem(keyWord: i.keyword ?? "", showWord: i.showName ?? ""));
+      }
+      return list;
+    } catch (e) {
+      print('Error in getHotWords: $e');
       return list;
     }
-    for (var i in response.data!.list!) {
-      list.add(
-          HotWordItem(keyWord: i.keyword ?? "", showWord: i.showName ?? ""));
-    }
-    return list;
   }
 
   static Future<SearchSuggestResponse> _requestSearchSuggests(
