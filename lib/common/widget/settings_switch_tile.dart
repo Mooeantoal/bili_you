@@ -1,6 +1,7 @@
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:bili_you/common/utils/bili_you_storage.dart'; // 添加这行导入
 
 class SettingsSwitchTile extends StatelessWidget {
   const SettingsSwitchTile(
