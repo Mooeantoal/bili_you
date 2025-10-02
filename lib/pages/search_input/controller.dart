@@ -64,7 +64,7 @@ class SearchInputPageController extends GetxController {
     searchSuggestionItems.clear();
     for (var i in list) {
       searchSuggestionItems.add(
-        SizedBox(
+        Container(
           width: double.infinity,
           child: InkWell(
             child: Padding(

@@ -1,5 +1,7 @@
 import 'package:bili_you/common/widget/radio_list_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:bili_you/common/utils/settings.dart';
 
 class SettingsRadiosTile<T> extends StatefulWidget {
   const SettingsRadiosTile(
@@ -32,27 +34,53 @@ class SettingsRadiosTile<T> extends StatefulWidget {
 class _SettingsRadiosTileState<T> extends State<SettingsRadiosTile<T>> {
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.title),
-      subtitle: Text(widget.subTitle),
-      trailing: Text(widget.buildTrailingText()),
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) => RadioListDialog(
-            title: widget.title,
-            itemNameValueMap: widget.itemNameValue,
-            groupValue: widget.buildGroupValue(),
-            onChanged: (value) {
-              if (value != null) widget.applyValue(value);
-              Navigator.of(context).pop();
-              setState(
-                () {},
-              );
-            },
-          ),
-        );
-      },
-    );
+    // 检查当前是否使用 Cupertino UI
+    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+    
+    if (useCupertino) {
+      // 使用 Cupertino 风格的组件
+      return CupertinoListTile(
+        title: Text(widget.title),
+        subtitle: Text(widget.subTitle),
+        trailing: Text(widget.buildTrailingText()),
+        onTap: () {
+          showCupertinoDialog(
+            context: context,
+            builder: (context) => RadioListDialog(
+              title: widget.title,
+              itemNameValueMap: widget.itemNameValue,
+              groupValue: widget.buildGroupValue(),
+              onChanged: (value) {
+                if (value != null) widget.applyValue(value);
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+            ),
+          );
+        },
+      );
+    } else {
+      // 使用 Material 风格的组件
+      return ListTile(
+        title: Text(widget.title),
+        subtitle: Text(widget.subTitle),
+        trailing: Text(widget.buildTrailingText()),
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => RadioListDialog(
+              title: widget.title,
+              itemNameValueMap: widget.itemNameValue,
+              groupValue: widget.buildGroupValue(),
+              onChanged: (value) {
+                if (value != null) widget.applyValue(value);
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+            ),
+          );
+        },
+      );
+    }
   }
 }

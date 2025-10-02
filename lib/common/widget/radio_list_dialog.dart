@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:bili_you/common/utils/settings.dart';
 
 class RadioListDialog<T> extends StatefulWidget {
   const RadioListDialog(
@@ -37,15 +39,38 @@ class _RadioListDialogState<T> extends State<RadioListDialog<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      title: Text(widget.title),
-      content: Column(children: items),
-      actions: [
-        TextButton(
+    // 检查当前是否使用 Cupertino UI
+    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+    
+    if (useCupertino) {
+      // 使用 Cupertino 风格的对话框
+      return CupertinoAlertDialog(
+        title: Text(widget.title),
+        content: SizedBox(
+          height: 200,
+          child: SingleChildScrollView(
+            child: Column(children: items),
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'))
-      ],
-    );
+            child: const Text('取消'),
+          )
+        ],
+      );
+    } else {
+      // 使用 Material 风格的对话框
+      return AlertDialog(
+        scrollable: true,
+        title: Text(widget.title),
+        content: Column(children: items),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'))
+        ],
+      );
+    }
   }
 }

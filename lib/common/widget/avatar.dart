@@ -55,7 +55,7 @@ class AvatarWidget extends StatelessWidget {
                     decoration: ShapeDecoration(
                         shape: CircleBorder(
                             side: BorderSide(
-                                color: Theme.of(context).colorScheme.surface,
+                                color: Theme.of(context).colorScheme.background,
                                 width: 2)),
                         color: officialVerifyType == OfficialVerifyType.person
                             ? Colors.amber

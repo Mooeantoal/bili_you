@@ -1,5 +1,6 @@
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class SettingsSwitchTile extends StatelessWidget {
   const SettingsSwitchTile(
@@ -19,19 +20,41 @@ class SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(title),
-      subtitle: Text(subTitle),
-      trailing: StatefulBuilder(builder: (context, setState) {
-        return Switch(
-          value: SettingsUtil.getValue(settingsKey, defaultValue: defualtValue),
-          onChanged: (value) async {
-            await SettingsUtil.setValue(settingsKey, value);
-            setState(() {});
-            apply?.call();
-          },
-        );
-      }),
-    );
+    // 检查当前是否使用 Cupertino UI
+    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
+    
+    if (useCupertino) {
+      // 使用 Cupertino 风格的组件
+      return CupertinoListTile(
+        title: Text(title),
+        subtitle: Text(subTitle),
+        trailing: StatefulBuilder(builder: (context, setState) {
+          return CupertinoSwitch(
+            value: SettingsUtil.getValue(settingsKey, defaultValue: defualtValue),
+            onChanged: (value) async {
+              await SettingsUtil.setValue(settingsKey, value);
+              setState(() {});
+              apply?.call();
+            },
+          );
+        }),
+      );
+    } else {
+      // 使用 Material 风格的组件
+      return ListTile(
+        title: Text(title),
+        subtitle: Text(subTitle),
+        trailing: StatefulBuilder(builder: (context, setState) {
+          return Switch(
+            value: SettingsUtil.getValue(settingsKey, defaultValue: defualtValue),
+            onChanged: (value) async {
+              await SettingsUtil.setValue(settingsKey, value);
+              setState(() {});
+              apply?.call();
+            },
+          );
+        }),
+      );
+    }
   }
 }

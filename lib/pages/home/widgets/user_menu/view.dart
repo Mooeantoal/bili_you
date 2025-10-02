@@ -1,7 +1,18 @@
+import 'dart:io';
 
+import 'package:bili_you/common/models/network/user_relations/user_relation_types.dart';
+import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:bili_you/common/widget/cached_network_image.dart';
+import 'package:bili_you/pages/about/about_page.dart';
+import 'package:bili_you/pages/history/history_page.dart';
+import 'package:bili_you/pages/login/qrcode_login/view.dart';
+import 'package:bili_you/pages/login/web_login/view.dart';
+import 'package:bili_you/pages/settings_page/settings_page.dart';
+import 'package:bili_you/pages/relation/view.dart';
 import 'package:bili_you/pages/mine/view.dart'; // 导入"我的"页面
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'index.dart';
 
 class UserMenuPage extends GetView<UserMenuController> {

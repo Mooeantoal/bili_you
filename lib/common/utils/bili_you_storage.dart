@@ -111,4 +111,10 @@ class SettingsStorageKeys {
 
   ///显示模式设置 - 自适应边到边显示
   static const String adaptiveEdgeToEdge = "adaptiveEdgeToEdge";
+
+  ///使用 Fluent UI
+  static const String useFluentUI = "useFluentUI";
+
+  ///使用 Cupertino UI
+  static const String useCupertinoUI = "useCupertinoUI";
 }

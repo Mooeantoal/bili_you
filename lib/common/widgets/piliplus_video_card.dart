@@ -32,7 +32,7 @@ class PiliPlusVideoCard extends StatelessWidget {
               child: AspectRatio(
                 aspectRatio: 16/9,
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
                   child: Image.network(
                     item.coverUrl,
                     fit: BoxFit.cover,
@@ -42,7 +42,7 @@ class PiliPlusVideoCard extends StatelessWidget {
             ),
             // 视频信息
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -53,7 +53,7 @@ class PiliPlusVideoCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   // UP主和播放信息
                   Row(
                     children: [
@@ -61,8 +61,8 @@ class PiliPlusVideoCard extends StatelessWidget {
                         item.upName,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                      const Spacer(),
-                      const Icon(Icons.play_arrow, size: 14),
+                      Spacer(),
+                      Icon(Icons.play_arrow, size: 14),
                       Text(
                         '${item.playNum}',
                         style: Theme.of(context).textTheme.bodySmall,

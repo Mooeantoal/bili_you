@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:auto_orientation/auto_orientation.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';

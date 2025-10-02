@@ -20,15 +20,15 @@ class IconTextButton extends StatelessWidget {
       style: ButtonStyle(
         visualDensity: VisualDensity.comfortable,
         foregroundColor: selected
-            ? WidgetStatePropertyAll(Theme.of(context).colorScheme.onPrimary)
+            ? MaterialStatePropertyAll(Theme.of(context).colorScheme.onPrimary)
             : null,
         backgroundColor: selected
-            ? WidgetStatePropertyAll(Theme.of(context).colorScheme.primary)
+            ? MaterialStatePropertyAll(Theme.of(context).colorScheme.primary)
             : null,
-        elevation: const WidgetStatePropertyAll(0),
-        padding: const WidgetStatePropertyAll(
+        elevation: const MaterialStatePropertyAll(0),
+        padding: const MaterialStatePropertyAll(
             EdgeInsets.only(left: 10, right: 10, bottom: 0, top: 0)),
-        minimumSize: const WidgetStatePropertyAll(Size(10, 10)),
+        minimumSize: const MaterialStatePropertyAll(Size(10, 10)),
       ),
       onPressed: onPressed ?? () {},
       child: FittedBox(
