@@ -133,7 +133,7 @@ class _MainPageState extends State<MainPage> {
               body: controller.pages[0],
             ),
             fluent.PaneItem(
-              icon: const Icon(fluent.FluentIcons.stream),
+              icon: const Icon(fluent.FluentIcons.activity_feed),
               title: const Text("动态"),
               body: controller.pages[1],
             ),
