@@ -257,8 +257,9 @@ class _SearchInputPageState extends State<SearchInputPage> {
                       onChanged: controller.onSearchWordChanged,
                       autofocus: true,
                       onEditingComplete: () {
-                        controller
-                            .search(controller.textEditingController.text);
+                        // 使用微任务确保搜索在UI更新后执行
+                        Future.microtask(() => controller
+                            .search(controller.textEditingController.text));
                       },
                       onSubmitted: (value) {
                         controller.search(value);
@@ -288,7 +289,8 @@ class _SearchInputPageState extends State<SearchInputPage> {
               width: 50, // 从 70 减少到 50，给 TextField 更多空间
               child: IconButton(
                 onPressed: () {
-                  controller.search(controller.textEditingController.text);
+                  // 使用微任务确保搜索在UI更新后执行
+                  Future.microtask(() => controller.search(controller.textEditingController.text));
                 },
                 icon: const Icon(Icons.search_rounded),
               ),

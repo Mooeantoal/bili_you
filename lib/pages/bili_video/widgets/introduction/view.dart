@@ -132,31 +132,45 @@ class _IntroductionPageState extends State<IntroductionPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return FutureBuilder(
+    return FutureBuilder<bool>(
       future: controller.loadVideoInfo(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.data == true && controller.videoInfo != null) {
-            return _buildView(context, controller);
-          } else {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("加载失败，请重试"),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () {
-                      setState(() {});
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-        } else {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("加载失败，请重试"),
+                Text(snapshot.error.toString()),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+          );
+        } else if (snapshot.hasData && snapshot.data == true && controller.videoInfo != null) {
+          return _buildView(context, controller);
+        } else {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("加载失败，请重试"),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
           );
         }
       },

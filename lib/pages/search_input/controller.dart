@@ -169,7 +169,8 @@ class SearchInputPageController extends GetxController {
           key: ValueKey('SearchResultPage:$keyWord'), keyWord: keyWord));
     } else if (keyWord.isEmpty && defaultSearchWord.isNotEmpty) {
       setTextFieldText(defaultSearchWord);
-      search(defaultSearchWord);
+      // 使用微任务确保文本设置完成后执行搜索
+      Future.microtask(() => search(defaultSearchWord));
     }
   }
 
