@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:bili_you/common/api/search_api.dart';
@@ -10,17 +11,58 @@ import 'package:bili_you/pages/search_result/view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class SearchInputPageController extends GetxController {
   SearchInputPageController();
+  
+  // 搜索建议相关
   RxBool showSearchSuggest = false.obs;
   RxList<Widget> searchSuggestionItems = <Widget>[].obs;
+  
+  // 文本输入控制
   TextEditingController textEditingController = TextEditingController();
   final FocusNode textFeildFocusNode = FocusNode();
   late String defaultSearchWord;
   RxBool showEditDelete = false.obs;
 
+  // 历史记录
   Rx<List<Widget>> historySearchedWords = Rx<List<Widget>>([]);
+  
+  // 防抖动搜索建议
+  StreamController<String>? _searchSuggestionController;
+  StreamSubscription<String>? _searchSuggestionSubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    
+    // 初始化防抖动搜索建议流
+    _searchSuggestionController = StreamController<String>();
+    _searchSuggestionSubscription = _searchSuggestionController!.stream
+        .debounce(const Duration(milliseconds: 300))
+        .listen(_requestSearchSuggestionsDebounced);
+        
+    _initData();
+  }
+
+  // 初始化数据
+  _initData() async {
+    _refreshHistoryWord();
+    textFeildFocusNode.addListener(() {
+      if (textFeildFocusNode.hasFocus &&
+          textEditingController.text.isNotEmpty) {
+        showEditDelete.value = true;
+      }
+    });
+  }
+
+  // 防抖动搜索建议请求
+  void _requestSearchSuggestionsDebounced(String keyWord) {
+    if (keyWord.trim().isNotEmpty) {
+      requestSearchSuggestions(keyWord);
+    }
+  }
 
   //构造热搜按钮列表，模仿PiliPlus样式
   Future<List<Widget>> requestHotWordButtons() async {
@@ -28,10 +70,9 @@ class SearchInputPageController extends GetxController {
     List<HotWordItem> wordList = [];
     try {
       wordList = await SearchApi.getHotWords();
-      print('Hot words count: ${wordList.length}');
+      log('Hot words count: ${wordList.length}');
     } catch (e) {
       log("requestHotWordButtons:$e");
-      // 即使出错也返回空列表而不是抛出异常
       wordList = [];
     }
     
@@ -127,15 +168,24 @@ class SearchInputPageController extends GetxController {
     );
   }
 
-//获取搜索建议并构造其控件
+  //获取搜索建议并构造其控件
   Future<void> requestSearchSuggestions(String keyWord) async {
-    late List<SearchSuggestItem> list;
+    // 如果关键词为空，清空搜索建议
+    if (keyWord.trim().isEmpty) {
+      searchSuggestionItems.clear();
+      return;
+    }
+    
+    List<SearchSuggestItem> list = [];
     try {
       list = await SearchApi.getSearchSuggests(keyWord: keyWord);
     } catch (e) {
       log("requestSearchSuggestions:$e");
+      // 出错时不清空现有建议，保持用户体验
       return;
     }
+    
+    // 更新搜索建议列表
     searchSuggestionItems.clear();
     for (var i in list) {
       searchSuggestionItems.add(
@@ -160,14 +210,16 @@ class SearchInputPageController extends GetxController {
     }
   }
 
-//搜索框内容改变
+  //搜索框内容改变
   onSearchWordChanged(String keyWord) {
     //搜索框不为空,且不为空字符,请求显示搜索提示
     if (keyWord.trim().isNotEmpty) {
       showSearchSuggest.value = true;
-      requestSearchSuggestions(keyWord);
+      // 使用防抖动流
+      _searchSuggestionController?.add(keyWord);
     } else {
       showSearchSuggest.value = false;
+      searchSuggestionItems.clear();
     }
 
     //搜索框不为空,显示删除按钮
@@ -209,7 +261,7 @@ class SearchInputPageController extends GetxController {
     }
   }
 
-//获取/刷新历史搜索词控件
+  //获取/刷新历史搜索词控件
   _refreshHistoryWord() async {
     var box = BiliYouStorage.history;
     List<Widget> widgetList = [];
@@ -239,11 +291,11 @@ class SearchInputPageController extends GetxController {
     historySearchedWords.value = widgetList;
   }
 
-//保存搜索词
+  //保存搜索词
   _saveSearchedWord(String keyWord) async {
     var box = BiliYouStorage.history;
     List<dynamic> list = box.get("searchHistory", defaultValue: <String>[]);
-//不存在相同的词就放进去
+    //不存在相同的词就放进去
     if (!list.contains(keyWord)) {
       list.add(keyWord);
       box.put("searchHistory", list);
@@ -251,14 +303,14 @@ class SearchInputPageController extends GetxController {
     _refreshHistoryWord(); //刷新历史记录控件
   }
 
-//删除所有搜索历史
+  //删除所有搜索历史
   clearAllSearchedWords() async {
     var box = BiliYouStorage.history;
     box.put("searchHistory", <String>[]);
     _refreshHistoryWord(); //刷新历史记录控件
   }
 
-//删除历史记录某个词
+  //删除历史记录某个词
   _deleteSearchedWord(String word) async {
     var box = BiliYouStorage.history;
     List<dynamic> list = box.get("searchHistory", defaultValue: <String>[]);
@@ -273,35 +325,12 @@ class SearchInputPageController extends GetxController {
         TextSelection.fromPosition(TextPosition(offset: text.length));
   }
 
-  _initData() async {
-    // update(["search"]);
-    _refreshHistoryWord();
-    textFeildFocusNode.addListener(() {
-      if (textFeildFocusNode.hasFocus &&
-          textEditingController.text.isNotEmpty) {
-        showEditDelete.value = true;
-      }
-    });
-  }
-
   @override
-  void onReady() {
-    super.onReady();
-    _initData();
+  void onClose() {
+    textFeildFocusNode.dispose();
+    textEditingController.dispose();
+    _searchSuggestionSubscription?.cancel();
+    _searchSuggestionController?.close();
+    super.onClose();
   }
-
-  // @override
-  // void onClose() {
-  //   super.onClose();
-  // }
 }
-
-
-
-
-
-
-
-
-
-

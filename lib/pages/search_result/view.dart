@@ -31,14 +31,16 @@ class _SearchResultPageState extends State<SearchResultPage>
       });
     }
     
-    controller = Get.put(SearchResultController(keyWord: widget.keyWord));
+    try {
+      controller = Get.put(SearchResultController(keyWord: widget.keyWord));
+    } catch (e) {
+      print("初始化SearchResultController时出错: $e");
+    }
     super.initState();
   }
 
   @override
   void dispose() {
-    // controller.onClose();
-    // controller.onDelete();
     try {
       controller.dispose();
     } catch (e) {
@@ -107,6 +109,16 @@ class _SearchResultPageState extends State<SearchResultPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    
+    // 检查控制器是否已初始化
+    if (controller == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("搜索结果")),
+        body: const Center(
+          child: Text("页面初始化失败"),
+        ),
+      );
+    }
     
     // 检查关键词是否为空
     if (widget.keyWord.isEmpty) {

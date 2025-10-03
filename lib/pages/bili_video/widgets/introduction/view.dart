@@ -125,7 +125,11 @@ class _IntroductionPageState extends State<IntroductionPage>
 
   @override
   void dispose() {
-    controller.dispose();
+    try {
+      controller.dispose();
+    } catch (e) {
+      print("释放IntroductionController时出错: $e");
+    }
     super.dispose();
   }
 
@@ -250,107 +254,102 @@ class IntroductionText extends StatelessWidget {
       return const SizedBox.shrink();
     }
     
-    return SelectableRegion(
-      magnifierConfiguration: const TextMagnifierConfiguration(),
-      focusNode: FocusNode(),
-      selectionControls: MaterialTextSelectionControls(),
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 视频标题区域（添加长按复制功能）
-            Padding(
-              padding: const EdgeInsets.only(top: 5, bottom: 5),
-              child: GestureDetector(
-                onLongPress: () {
-                  // 长按复制视频标题
-                  Clipboard.setData(ClipboardData(text: controller.title.value));
-                  Get.snackbar("提示", "已复制视频标题");
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 视频标题区域（添加长按复制功能）
+          Padding(
+            padding: const EdgeInsets.only(top: 5, bottom: 5),
+            child: GestureDetector(
+              onLongPress: () {
+                // 长按复制视频标题
+                Clipboard.setData(ClipboardData(text: controller.title.value));
+                Get.snackbar("提示", "已复制视频标题");
+              },
+              child: Obx(() => Text(
+                    controller.title.value,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  )),
+            ),
+          ),
+          // 播放统计信息
+          Row(
+            children: [
+              Icon(
+                Icons.slideshow_rounded,
+                size: 14,
+                color: Theme.of(context).hintColor,
+              ),
+              Text(
+                " ${StringFormatUtils.numFormat(controller.videoInfo!.playNum)}  ",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).hintColor,
+                ),
+              ),
+              Icon(
+                Icons.format_list_bulleted_rounded,
+                size: 14,
+                color: Theme.of(context).hintColor,
+              ),
+              Text(
+                " ${controller.videoInfo!.danmaukuNum}   ",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).hintColor,
+                ),
+              ),
+              Text(
+                "${StringFormatUtils.timeStampToDate(controller.videoInfo!.pubDate)} ${StringFormatUtils.timeStampToTime(controller.videoInfo!.pubDate)}",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).hintColor,
+                ),
+              )
+            ],
+          ),
+          // 视频ID和版权信息
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  // 点击复制BVID
+                  Clipboard.setData(ClipboardData(text: controller.videoInfo!.bvid));
+                  Get.snackbar("提示", "已复制视频ID: ${controller.videoInfo!.bvid}");
                 },
-                child: Obx(() => Text(
-                      controller.title.value,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    )),
-              ),
-            ),
-            // 播放统计信息
-            Row(
-              children: [
-                Icon(
-                  Icons.slideshow_rounded,
-                  size: 14,
+                child: Text(
+                  "${controller.videoInfo!.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo!.bvid)}   ${controller.videoInfo!.copyRight}",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).hintColor,
+                  ),
+                ),
+              )
+            ],
+          ),
+          // 视频简介（添加展开/收起功能）
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Obx(
+              () => FoldableText(
+                //简介详细
+                controller.describe.value,
+                style: TextStyle(
+                  fontSize: 14,
                   color: Theme.of(context).hintColor,
                 ),
-                Text(
-                  " ${StringFormatUtils.numFormat(controller.videoInfo!.playNum)}  ",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).hintColor,
-                  ),
-                ),
-                Icon(
-                  Icons.format_list_bulleted_rounded,
-                  size: 14,
-                  color: Theme.of(context).hintColor,
-                ),
-                Text(
-                  " ${controller.videoInfo!.danmaukuNum}   ",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).hintColor,
-                  ),
-                ),
-                Text(
-                  "${StringFormatUtils.timeStampToDate(controller.videoInfo!.pubDate)} ${StringFormatUtils.timeStampToTime(controller.videoInfo!.pubDate)}",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).hintColor,
-                  ),
-                )
-              ],
-            ),
-            // 视频ID和版权信息
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    // 点击复制BVID
-                    Clipboard.setData(ClipboardData(text: controller.videoInfo!.bvid));
-                    Get.snackbar("提示", "已复制视频ID: ${controller.videoInfo!.bvid}");
-                  },
-                  child: Text(
-                    "${controller.videoInfo!.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo!.bvid)}   ${controller.videoInfo!.copyRight}",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).hintColor,
-                    ),
-                  ),
-                )
-              ],
-            ),
-            // 视频简介（添加展开/收起功能）
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Obx(
-                () => FoldableText(
-                  //简介详细
-                  controller.describe.value,
-                  style: TextStyle(
+                maxLines: 6,
+                folderTextStyle: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).hintColor,
-                  ),
-                  maxLines: 6,
-                  folderTextStyle: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.primary),
-                ),
+                    color: Theme.of(context).colorScheme.primary),
               ),
             ),
-            // 视频标签
-            _buildVideoTags(context),
-          ],
-        ),
+          ),
+          // 视频标签
+          _buildVideoTags(context),
+        ],
       ),
     );
   }

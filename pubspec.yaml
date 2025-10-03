@@ -76,6 +76,9 @@ dependencies:
   # 分享
   share_plus: ^7.1.0
 
+  # 防抖动
+  stream_transform: ^2.0.0
+
   # scheme 
   appscheme: ^1.0.8
 

@@ -28,8 +28,6 @@ class _SearchInputPageState extends State<SearchInputPage> {
 
   @override
   void dispose() {
-    // controller.onClose();
-    // controller.onDelete();
     controller.dispose();
     super.dispose();
   }
@@ -104,21 +102,65 @@ class _SearchInputPageState extends State<SearchInputPage> {
           FutureBuilder(
             future: controller.requestHotWordButtons(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 10),
+                        Text("正在加载热搜..."),
+                      ],
+                    ),
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                        const SizedBox(height: 10),
+                        const Text("加载热搜失败"),
+                        const SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text("重新加载"),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else if (snapshot.hasData) {
+                if (snapshot.data!.isNotEmpty) {
                   return _buildHotKeywordList(snapshot.data!);
                 } else {
-                  // 修复：当没有数据时显示提示信息
                   return const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Text("暂无热搜数据"),
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      "暂无热搜数据",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
                   );
                 }
               } else {
-                // 修复：加载时显示进度指示器
                 return const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: CircularProgressIndicator(),
+                  padding: EdgeInsets.all(20),
+                  child: Text(
+                    "暂无热搜数据",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
                 );
               }
             },
@@ -244,7 +286,6 @@ class _SearchInputPageState extends State<SearchInputPage> {
     return AppBar(
         shape: UnderlineInputBorder(
             borderSide: BorderSide(color: Theme.of(context).dividerColor)),
-        // titleSpacing: 0,
         title: Row(
           children: [
             Expanded(
@@ -258,8 +299,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
                       autofocus: true,
                       onEditingComplete: () {
                         // 使用微任务确保搜索在UI更新后执行
-                        Future.microtask(() => controller
-                            .search(controller.textEditingController.text));
+                        Future.microtask(() => controller.search(controller.textEditingController.text));
                       },
                       onSubmitted: (value) {
                         // 使用微任务确保搜索在UI更新后执行
@@ -302,17 +342,11 @@ class _SearchInputPageState extends State<SearchInputPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<SearchInputPageController>(
-      init: SearchInputPageController(),
-      id: "search",
-      builder: (_) {
-        return Scaffold(
-          appBar: _appBar(context),
-          body: SafeArea(
-            child: _buildView(),
-          ),
-        );
-      },
+    return Scaffold(
+      appBar: _appBar(context),
+      body: SafeArea(
+        child: _buildView(),
+      ),
     );
   }
 }
