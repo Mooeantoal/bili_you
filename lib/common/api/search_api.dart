@@ -185,7 +185,8 @@ class SearchApi {
       // 检查响应状态
       if (response.code != 0) {
         print("getHotWords: code:${response.code}, message:${response.message}");
-        return list; // 返回空列表而不是抛出异常
+        // 即使API返回错误，也返回空列表而不是抛出异常
+        return list;
       }
       
       // 检查数据是否存在
@@ -202,15 +203,27 @@ class SearchApi {
       
       // 构造热词列表
       for (var i in response.data!.list!) {
-        list.add(
-            HotWordItem(keyWord: i.keyword ?? "", showWord: i.showName ?? ""));
+        // 确保关键词不为空
+        String keyword = i.keyword ?? "";
+        String showWord = i.showName ?? "";
+        
+        // 如果keyword为空但showWord不为空，使用showWord作为keyword
+        if (keyword.isEmpty && showWord.isNotEmpty) {
+          keyword = showWord;
+        }
+        
+        // 只有当keyword不为空时才添加
+        if (keyword.isNotEmpty) {
+          list.add(HotWordItem(keyWord: keyword, showWord: showWord));
+        }
       }
       print('Hot words list size: ${list.length}');
       return list;
     } catch (e, stackTrace) {
       print('Error in getHotWords: $e');
       print('Stack trace: $stackTrace');
-      return list; // 返回空列表而不是抛出异常
+      // 即使出现异常，也返回空列表而不是抛出异常
+      return list;
     }
   }
 

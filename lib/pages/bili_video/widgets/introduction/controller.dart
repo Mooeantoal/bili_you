@@ -55,29 +55,40 @@ class IntroductionController extends GetxController {
       // 确保videoInfo不为null
       if (videoInfo == null) {
         isLoading.value = false;
+        isInitialized.value = true; // 标记为已初始化但失败
         return false;
       }
     } catch (e) {
       log("loadVideoInfo:$e");
       isLoading.value = false;
+      isInitialized.value = true; // 标记为已初始化但失败
       return false;
     }
     
-    title.value = videoInfo!.title;
-    describe.value = videoInfo!.describe;
+    try {
+      title.value = videoInfo!.title;
+      describe.value = videoInfo!.describe;
+    } catch (e) {
+      log("设置标题或描述时出错:$e");
+    }
     
     // 清空之前的分P按钮
     partButtons.clear();
     
-    if (!isBangumi) {
-      //当是普通视频时
-      //初始化时构造分p按钮
-      _loadVideoPartButtons();
-      //构造相关视频
-      await _loadRelatedVideos();
-    } else {
-      //如果是番剧
-      await _loadBangumiPartButtons();
+    try {
+      if (!isBangumi) {
+        //当是普通视频时
+        //初始化时构造分p按钮
+        _loadVideoPartButtons();
+        //构造相关视频
+        await _loadRelatedVideos();
+      } else {
+        //如果是番剧
+        await _loadBangumiPartButtons();
+      }
+    } catch (e) {
+      log("加载分P按钮或相关视频时出错:$e");
+      // 即使这部分出错，也不影响主要信息显示
     }
     
     isInitialized.value = true;

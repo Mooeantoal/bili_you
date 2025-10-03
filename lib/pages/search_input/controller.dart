@@ -25,7 +25,7 @@ class SearchInputPageController extends GetxController {
   //构造热搜按钮列表，模仿PiliPlus样式
   Future<List<Widget>> requestHotWordButtons() async {
     List<Widget> widgetList = [];
-    late List<HotWordItem> wordList;
+    List<HotWordItem> wordList = [];
     try {
       wordList = await SearchApi.getHotWords();
       print('Hot words count: ${wordList.length}');
@@ -39,7 +39,7 @@ class SearchInputPageController extends GetxController {
     if (wordList.isEmpty) {
       widgetList.add(
         const Padding(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.all(20),
           child: Text(
             "暂无热搜数据",
             style: TextStyle(
@@ -54,10 +54,30 @@ class SearchInputPageController extends GetxController {
     
     // 构造热搜按钮，模仿PiliPlus样式
     for (var i in wordList) {
+      // 确保关键词不为空
+      if ((i.keyWord.isNotEmpty || i.showWord.isNotEmpty)) {
+        widgetList.add(
+          _buildHotKeywordItem(i),
+        );
+      }
+    }
+    
+    // 如果构造后仍然为空，添加提示信息
+    if (widgetList.isEmpty) {
       widgetList.add(
-        _buildHotKeywordItem(i),
+        const Padding(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            "暂无热搜数据",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+          ),
+        ),
       );
     }
+    
     return widgetList;
   }
 
@@ -163,14 +183,29 @@ class SearchInputPageController extends GetxController {
     //不为空且不为空字符,保存历史并搜索
     if (keyWord.trim().isNotEmpty) {
       log("searching: $keyWord");
-      _saveSearchedWord(keyWord.trim());
+      try {
+        _saveSearchedWord(keyWord.trim());
+      } catch (e) {
+        log("保存搜索历史时出错: $e");
+        // 即使保存历史出错，也不影响搜索功能
+      }
+      
       // 使用Get.to进行页面跳转，确保正确导航
-      Get.to(() => SearchResultPage(
-          key: ValueKey('SearchResultPage:$keyWord'), keyWord: keyWord));
+      try {
+        Get.to(() => SearchResultPage(
+            key: ValueKey('SearchResultPage:$keyWord'), keyWord: keyWord));
+      } catch (e) {
+        log("跳转到搜索结果页面时出错: $e");
+        // 显示错误提示
+        Get.snackbar("错误", "无法跳转到搜索结果页面，请重试");
+      }
     } else if (keyWord.isEmpty && defaultSearchWord.isNotEmpty) {
       setTextFieldText(defaultSearchWord);
       // 使用微任务确保文本设置完成后执行搜索
       Future.microtask(() => search(defaultSearchWord));
+    } else {
+      // 关键词为空且没有默认搜索词
+      Get.snackbar("提示", "请输入搜索关键词");
     }
   }
 
@@ -260,6 +295,8 @@ class SearchInputPageController extends GetxController {
   //   super.onClose();
   // }
 }
+
+
 
 
 

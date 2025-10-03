@@ -134,35 +134,53 @@ class _IntroductionPageState extends State<IntroductionPage>
     super.build(context);
     return Obx(() {
       // 检查控制器状态
-      if (controller.videoInfo == null && controller.isInitialized) {
+      if (controller.isLoading.value) {
+        // 正在加载
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 10),
+              Text("正在加载视频信息..."),
+            ],
+          ),
+        );
+      } else if (controller.videoInfo == null && controller.isInitialized.value) {
         // 加载失败
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+              const SizedBox(height: 10),
               const Text("加载失败，请重试"),
-              IconButton(
-                icon: const Icon(Icons.refresh),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
                 onPressed: () {
-                  controller.isInitialized = false;
+                  controller.isInitialized.value = false;
                   controller.loadVideoInfo();
                 },
+                icon: const Icon(Icons.refresh),
+                label: const Text("重新加载"),
               ),
             ],
           ),
-        );
-      } else if (controller.videoInfo == null && !controller.isInitialized) {
-        // 正在加载
-        return const Center(
-          child: CircularProgressIndicator(),
         );
       } else if (controller.videoInfo != null) {
         // 加载成功
         return _buildView(context, controller);
       } else {
-        // 默认状态
+        // 默认状态 - 开始加载
         return const Center(
-          child: CircularProgressIndicator(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 10),
+              Text("正在准备加载..."),
+            ],
+          ),
         );
       }
     });
