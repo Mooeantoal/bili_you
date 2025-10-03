@@ -9,6 +9,7 @@ import 'package:bili_you/pages/search_result/index.dart';
 import 'package:bili_you/pages/search_result/view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class SearchInputPageController extends GetxController {
   SearchInputPageController();
@@ -21,7 +22,7 @@ class SearchInputPageController extends GetxController {
 
   Rx<List<Widget>> historySearchedWords = Rx<List<Widget>>([]);
 
-  //构造热搜按钮列表
+  //构造热搜按钮列表，模仿PiliPlus样式
   Future<List<Widget>> requestHotWordButtons() async {
     List<Widget> widgetList = [];
     late List<HotWordItem> wordList;
@@ -51,36 +52,58 @@ class SearchInputPageController extends GetxController {
       return widgetList;
     }
     
-    // 优化：确保即使在不同UI框架下也能正确显示
-    final context = Get.context!;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final buttonWidth = screenWidth > 600 ? screenWidth * 0.3 : screenWidth * 0.4;
-    
+    // 构造热搜按钮，模仿PiliPlus样式
     for (var i in wordList) {
       widgetList.add(
-        SizedBox(
-            width: buttonWidth,
-            child: Card(
-              margin: const EdgeInsets.all(4),
-              child: InkWell(
-                onTap: () {
-                  search(i.keyWord);
-                  setTextFieldText(i.keyWord);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                  child: Text(
-                    overflow: TextOverflow.ellipsis,
-                    i.showWord,
-                    maxLines: 1,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-              ),
-            )),
+        _buildHotKeywordItem(i),
       );
     }
     return widgetList;
+  }
+
+  // 构建单个热搜关键词项，模仿PiliPlus的HotKeyword组件
+  Widget _buildHotKeywordItem(HotWordItem item) {
+    return Material(
+      type: MaterialType.transparency,
+      borderRadius: const BorderRadius.all(Radius.circular(3)),
+      child: InkWell(
+        borderRadius: const BorderRadius.all(Radius.circular(3)),
+        onTap: () {
+          search(item.keyWord);
+          setTextFieldText(item.keyWord);
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(left: 2, right: 10),
+          child: Tooltip(
+            message: item.keyWord,
+            child: Row(
+              children: [
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(6, 5, 0, 5),
+                    child: Text(
+                      item.showWord,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ),
+                // 如果有图标，显示图标（这里暂时不实现，因为当前数据模型没有图标字段）
+                // if (item.icon != null && item.icon!.isNotEmpty)
+                //   Padding(
+                //     padding: const EdgeInsets.only(left: 4),
+                //     child: CachedNetworkImage(
+                //       imageUrl: item.icon!,
+                //       height: 15,
+                //     ),
+                //   )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
 //获取搜索建议并构造其控件

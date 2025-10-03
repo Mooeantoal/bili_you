@@ -1,6 +1,7 @@
 import 'package:bili_you/common/utils/index.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'index.dart';
 
@@ -43,73 +44,167 @@ class _SearchInputPageState extends State<SearchInputPage> {
         defaultValue: true);
     if (showHotSearch) {
       list.addAll([
-        const Padding(
-          padding: EdgeInsets.all(10),
-          child: Text(
-            "热搜",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        FutureBuilder(
-          future: controller.requestHotWordButtons(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                return Wrap(
-                  children: snapshot.data!,
-                );
-              } else {
-                // 修复：当没有数据时显示提示信息
-                return const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text("暂无热搜数据"),
-                );
-              }
-            } else {
-              // 修复：加载时显示进度指示器
-              return const Padding(
-                padding: EdgeInsets.all(10),
-                child: CircularProgressIndicator(),
-              );
-            }
-          },
-        ),
+        _buildHotSearchSection(),
       ]);
     }
     if (showSearchHistory) {
       list.addAll([
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            height: 40,
-            child: Row(
-              children: [
-                const Text(
-                  "历史",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                    onPressed: controller.clearAllSearchedWords,
-                    icon: const Icon(Icons.delete_rounded))
-              ],
-            ),
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: Obx(() => Wrap(
-                spacing: 8,
-                children: controller.historySearchedWords.value,
-              )),
-        )
+        _buildHistorySection(),
       ]);
     }
     return ListView(children: list);
+  }
+
+  // 构建热搜部分，模仿PiliPlus布局
+  Widget _buildHotSearchSection() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 25, 4, 25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '大家都在搜',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: 34,
+                  child: TextButton.icon(
+                    style: const ButtonStyle(
+                      padding: WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                    ),
+                    onPressed: () {
+                      // 刷新热搜数据
+                      setState(() {});
+                    },
+                    icon: const Icon(
+                      Icons.refresh_outlined,
+                      size: 18,
+                    ),
+                    label: const Text(
+                      '刷新',
+                      style: TextStyle(
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          FutureBuilder(
+            future: controller.requestHotWordButtons(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  return _buildHotKeywordList(snapshot.data!);
+                } else {
+                  // 修复：当没有数据时显示提示信息
+                  return const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Text("暂无热搜数据"),
+                  );
+                }
+              } else {
+                // 修复：加载时显示进度指示器
+                return const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建热搜关键词列表，模仿PiliPlus的HotKeyword组件
+  Widget _buildHotKeywordList(List<Widget> hotWordButtons) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth / 2 - 4;
+        return Wrap(
+          runSpacing: 0.4,
+          spacing: 5.0,
+          children: hotWordButtons.map((widget) {
+            // 重新包装热搜按钮以匹配PiliPlus的样式
+            return SizedBox(
+              width: width,
+              child: widget,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  // 构建历史搜索部分
+  Widget _buildHistorySection() {
+    return Obx(() {
+      if (controller.historySearchedWords.value.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 6, 25),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+              child: Row(
+                children: [
+                  const Text(
+                    '搜索历史',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    height: 34,
+                    child: TextButton.icon(
+                      style: ButtonStyle(
+                        padding: WidgetStateProperty.all(
+                          const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                        ),
+                      ),
+                      onPressed: controller.clearAllSearchedWords,
+                      icon: const Icon(
+                        Icons.clear_all_outlined,
+                        size: 18,
+                      ),
+                      label: const Text('清空'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.only(left: 10, right: 10),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: controller.historySearchedWords.value,
+              ),
+            )
+          ],
+        ),
+      );
+    });
   }
 
   Widget _searchHintView() {
