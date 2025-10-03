@@ -136,7 +136,7 @@ class _MainPageState extends State<MainPage> {
                     ),
                     cupertino.BottomNavigationBarItem(
                       icon: cupertino.Icon(cupertino.CupertinoIcons.lab_flask),
-                      label: "测试",
+                      label: "热搜测试",
                     ),
                   ],
                 ),

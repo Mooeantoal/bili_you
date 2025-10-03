@@ -27,8 +27,27 @@ class SearchInputPageController extends GetxController {
     late List<HotWordItem> wordList;
     try {
       wordList = await SearchApi.getHotWords();
+      print('Hot words count: ${wordList.length}');
     } catch (e) {
       log("requestHotWordButtons:$e");
+      // 即使出错也返回空列表而不是抛出异常
+      wordList = [];
+    }
+    
+    // 如果没有热搜数据，添加提示信息
+    if (wordList.isEmpty) {
+      widgetList.add(
+        const Padding(
+          padding: EdgeInsets.all(10),
+          child: Text(
+            "暂无热搜数据",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+      );
       return widgetList;
     }
     
@@ -215,13 +234,3 @@ class SearchInputPageController extends GetxController {
   //   super.onClose();
   // }
 }
-
-
-
-
-
-
-
-
-
-

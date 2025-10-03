@@ -54,11 +54,122 @@ class SearchApi {
     try {
       print('Requesting hot words from: ${ApiConstants.hotWordsMob}');
       var response = await HttpUtils().get(ApiConstants.hotWordsMob);
-      print('Hot words response: ${response.data}');
-      return HotWordResponse.fromJson(response.data);
-    } catch (e) {
+      print('Hot words raw response: ${response.data}');
+      
+      // 检查响应数据格式
+      if (response.data is Map<String, dynamic>) {
+        var data = response.data as Map<String, dynamic>;
+        if (data.containsKey('code') && data['code'] == 0) {
+          print('Hot words response success');
+          return HotWordResponse.fromJson(data);
+        } else {
+          print('Hot words response error: ${data['message'] ?? 'Unknown error'}');
+          // 如果手机版接口失败，尝试Web端接口
+          return await _requestHotWordsWeb();
+        }
+      } else {
+        print('Hot words response format error: not a map');
+        // 如果手机版接口失败，尝试Web端接口
+        return await _requestHotWordsWeb();
+      }
+    } catch (e, stackTrace) {
       print('Error in _requestHotWords: $e');
-      rethrow;
+      print('Stack trace: $stackTrace');
+      // 如果手机版接口失败，尝试Web端接口
+      return await _requestHotWordsWeb();
+    }
+  }
+
+  static Future<HotWordResponse> _requestHotWordsWeb() async {
+    try {
+      print('Requesting hot words from Web API: ${ApiConstants.hotWordsWeb}');
+      var response = await HttpUtils().get(ApiConstants.hotWordsWeb,
+          queryParameters: await WbiSign.encodeParams({}));
+      print('Hot words Web API raw response: ${response.data}');
+      
+      // 检查响应数据格式
+      if (response.data is Map<String, dynamic>) {
+        var data = response.data as Map<String, dynamic>;
+        if (data.containsKey('code') && data['code'] == 0) {
+          print('Hot words Web API response success');
+          // 需要转换Web端数据格式为App端格式
+          return _convertWebHotWordsResponse(data);
+        } else {
+          print('Hot words Web API response error: ${data['message'] ?? 'Unknown error'}');
+          // 返回一个空的响应而不是抛出异常
+          return HotWordResponse(
+            code: data['code'] ?? -1,
+            message: data['message'] ?? 'Unknown error',
+            ttl: data['ttl'] ?? 0,
+            data: null,
+          );
+        }
+      } else {
+        print('Hot words Web API response format error: not a map');
+        return HotWordResponse(
+          code: -1,
+          message: 'Response format error',
+          ttl: 0,
+          data: null,
+        );
+      }
+    } catch (e, stackTrace) {
+      print('Error in _requestHotWordsWeb: $e');
+      print('Stack trace: $stackTrace');
+      // 返回一个空的响应而不是抛出异常
+      return HotWordResponse(
+        code: -1,
+        message: 'Network error: $e',
+        ttl: 0,
+        data: null,
+      );
+    }
+  }
+
+  static HotWordResponse _convertWebHotWordsResponse(Map<String, dynamic> webData) {
+    try {
+      // Web端返回的数据结构与App端不同，需要转换
+      // Web端数据结构: {"code":0,"message":"0","ttl":1,"data":{"trending":{"title":"大家还在搜","trackid":"web_search_trending","list":[{"keyword":"...","show_name":"...","icon":"...","goto_type":"..."}]}}}
+      if (webData['data'] is Map<String, dynamic> &&
+          (webData['data'] as Map<String, dynamic>).containsKey('trending')) {
+        var trendingData = (webData['data'] as Map<String, dynamic>)['trending'];
+        if (trendingData is Map<String, dynamic> && trendingData.containsKey('list')) {
+          var list = trendingData['list'] as List;
+          var convertedList = list.map((item) {
+            if (item is Map<String, dynamic>) {
+              return <String, dynamic>{
+                'keyword': item['keyword'] ?? '',
+                'show_name': item['show_name'] ?? item['keyword'] ?? '',
+                'position': 0,
+                'word_type': 0,
+                'icon': item['icon'] ?? '',
+                'hot_id': 0,
+                'is_commercial': '0',
+              };
+            }
+            return <String, dynamic>{};
+          }).toList();
+          
+          return HotWordResponse(
+            code: webData['code'],
+            message: webData['message'],
+            ttl: webData['ttl'],
+            data: HotWordResponseData(
+              trackid: trendingData['trackid'] ?? '',
+              list: convertedList.map((item) => ListElement.fromJson(item as Map<String, dynamic>)).toList(),
+              expStr: '',
+              topList: [],
+            ),
+          );
+        }
+      }
+      
+      // 如果转换失败，返回原始数据
+      return HotWordResponse.fromJson(webData);
+    } catch (e) {
+      print('Error converting Web hot words response: $e');
+      // 如果转换失败，返回原始数据
+      return HotWordResponse.fromJson(webData);
     }
   }
 
@@ -67,21 +178,39 @@ class SearchApi {
     List<HotWordItem> list = [];
     try {
       var response = await _requestHotWords();
+      print('Hot words response code: ${response.code}');
+      print('Hot words response message: ${response.message}');
+      print('Hot words response data: ${response.data}');
+      
+      // 检查响应状态
       if (response.code != 0) {
         print("getHotWords: code:${response.code}, message:${response.message}");
+        return list; // 返回空列表而不是抛出异常
+      }
+      
+      // 检查数据是否存在
+      if (response.data == null) {
+        print("getHotWords: data is null");
         return list;
       }
-      if (response.data == null || response.data!.list == null) {
+      
+      // 检查列表是否存在
+      if (response.data!.list == null) {
+        print("getHotWords: list is null");
         return list;
       }
+      
+      // 构造热词列表
       for (var i in response.data!.list!) {
         list.add(
             HotWordItem(keyWord: i.keyword ?? "", showWord: i.showName ?? ""));
       }
+      print('Hot words list size: ${list.length}');
       return list;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error in getHotWords: $e');
-      return list;
+      print('Stack trace: $stackTrace');
+      return list; // 返回空列表而不是抛出异常
     }
   }
 

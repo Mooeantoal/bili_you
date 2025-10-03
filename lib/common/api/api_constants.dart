@@ -106,6 +106,10 @@ class ApiConstants {
   ///test: http://app.bilibili.com/x/v2/search/trending/ranking
   static const String hotWordsMob = "$appBase/x/v2/search/trending/ranking";
 
+  ///Web端热搜接口
+  ///test: https://api.bilibili.com/x/web-interface/wbi/search/square
+  static const String hotWordsWeb = "$apiBase/x/web-interface/wbi/search/square";
+
   ///搜索建议
   ///test: http://s.search.bilibili.com/main/suggest
   static const String searchSuggest = "$sSearchBase/main/suggest";
