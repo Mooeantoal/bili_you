@@ -27,8 +27,8 @@ class IconTextButton extends StatelessWidget {
             : null,
         elevation: MaterialStateProperty.all(0),
         padding: MaterialStateProperty.all(
-            EdgeInsets.only(left: 10, right: 10, bottom: 0, top: 0)),
-        minimumSize: MaterialStateProperty.all(Size(10, 10)),
+            const EdgeInsets.only(left: 10, right: 10, bottom: 0, top: 0)),
+        minimumSize: MaterialStateProperty.all(const Size(10, 10)),
       ),
       onPressed: onPressed ?? () {},
       child: FittedBox(

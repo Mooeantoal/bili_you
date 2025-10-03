@@ -77,9 +77,9 @@ class _SearchInputPageState extends State<SearchInputPage> {
                 SizedBox(
                   height: 34,
                   child: TextButton.icon(
-                    style: const ButtonStyle(
-                      padding: WidgetStatePropertyAll(
-                        EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    style: ButtonStyle(
+                      padding: MaterialStateProperty.all(
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
                     onPressed: () {
@@ -175,7 +175,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
                     height: 34,
                     child: TextButton.icon(
                       style: ButtonStyle(
-                        padding: WidgetStateProperty.all(
+                        padding: MaterialStateProperty.all(
                           const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 6,

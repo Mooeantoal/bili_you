@@ -443,7 +443,7 @@ class ThumUpButton extends StatelessWidget {
         style: ButtonStyle(
           visualDensity: VisualDensity.comfortable,
           padding: MaterialStateProperty.all(
-              EdgeInsets.all(5)),
+              const EdgeInsets.all(5)),
           foregroundColor: selected == true
               ? MaterialStateProperty.all(
                   Theme.of(context).colorScheme.onPrimary)
@@ -452,7 +452,7 @@ class ThumUpButton extends StatelessWidget {
               ? MaterialStateProperty.all(Theme.of(context).colorScheme.primary)
               : null,
           elevation: MaterialStateProperty.all(0),
-          minimumSize: MaterialStateProperty.all(Size(10, 5)),
+          minimumSize: MaterialStateProperty.all(const Size(10, 5)),
         ),
         child: Row(
           children: [
