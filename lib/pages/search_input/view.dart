@@ -260,6 +260,9 @@ class _SearchInputPageState extends State<SearchInputPage> {
                         controller
                             .search(controller.textEditingController.text);
                       },
+                      onSubmitted: (value) {
+                        controller.search(value);
+                      },
                       style: const TextStyle(fontSize: 18),
                       decoration: InputDecoration(
                           //删除键

@@ -69,8 +69,8 @@ class SearchInputPageController extends GetxController {
       child: InkWell(
         borderRadius: const BorderRadius.all(Radius.circular(3)),
         onTap: () {
-          search(item.keyWord);
           setTextFieldText(item.keyWord);
+          search(item.keyWord);
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 2, right: 10),
@@ -161,11 +161,9 @@ class SearchInputPageController extends GetxController {
     if (keyWord.trim().isNotEmpty) {
       log("searching: $keyWord");
       _saveSearchedWord(keyWord.trim());
-      // Get.to(() => SearchResultPage(
-      //     key: ValueKey('SearchResultPage:$keyWord'), keyWord: keyWord));
-      Navigator.of(Get.context!).pushReplacement(GetPageRoute(
-          page: () => SearchResultPage(
-              key: ValueKey('SearchResultPage:$keyWord'), keyWord: keyWord)));
+      // 使用Get.to进行页面跳转，确保正确导航
+      Get.to(() => SearchResultPage(
+          key: ValueKey('SearchResultPage:$keyWord'), keyWord: keyWord));
     } else if (keyWord.isEmpty && defaultSearchWord.isNotEmpty) {
       setTextFieldText(defaultSearchWord);
       search(defaultSearchWord);
@@ -191,8 +189,8 @@ class SearchInputPageController extends GetxController {
             ),
             onTap: () {
               //点击某条历史记录
-              search(i);
               setTextFieldText(i);
+              search(i);
             },
           ),
         ),
