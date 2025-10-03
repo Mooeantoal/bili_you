@@ -70,7 +70,8 @@ class SearchInputPageController extends GetxController {
         borderRadius: const BorderRadius.all(Radius.circular(3)),
         onTap: () {
           setTextFieldText(item.keyWord);
-          search(item.keyWord);
+          // 使用小延迟确保文本设置完成后再搜索
+          Future.microtask(() => search(item.keyWord));
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 2, right: 10),
@@ -113,6 +114,7 @@ class SearchInputPageController extends GetxController {
       list = await SearchApi.getSearchSuggests(keyWord: keyWord);
     } catch (e) {
       log("requestSearchSuggestions:$e");
+      return;
     }
     searchSuggestionItems.clear();
     for (var i in list) {
@@ -129,7 +131,8 @@ class SearchInputPageController extends GetxController {
             ),
             onTap: () {
               setTextFieldText(i.realWord);
-              search(i.realWord);
+              // 使用小延迟确保文本设置完成后再搜索
+              Future.microtask(() => search(i.realWord));
             },
           ),
         ),
@@ -190,7 +193,8 @@ class SearchInputPageController extends GetxController {
             onTap: () {
               //点击某条历史记录
               setTextFieldText(i);
-              search(i);
+              // 使用小延迟确保文本设置完成后再搜索
+              Future.microtask(() => search(i));
             },
           ),
         ),
@@ -255,3 +259,11 @@ class SearchInputPageController extends GetxController {
   //   super.onClose();
   // }
 }
+
+
+
+
+
+
+
+

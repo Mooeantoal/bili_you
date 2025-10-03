@@ -136,15 +136,21 @@ class _IntroductionPageState extends State<IntroductionPage>
       future: controller.loadVideoInfo(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.data == true) {
+          if (snapshot.data == true && controller.videoInfo != null) {
             return _buildView(context, controller);
           } else {
             return Center(
-              child: IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () {
-                  setState(() {});
-                },
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("加载失败，请重试"),
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      setState(() {});
+                    },
+                  ),
+                ],
               ),
             );
           }
@@ -164,12 +170,17 @@ class UpperTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 确保视频信息已加载
+    if (controller.videoInfo == null) {
+      return const SizedBox.shrink();
+    }
+    
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(GetPageRoute(
           page: () => UserSpacePage(
-              key: ValueKey('UserSpacePage:${controller.videoInfo.ownerMid}'),
-              mid: controller.videoInfo.ownerMid),
+              key: ValueKey('UserSpacePage:${controller.videoInfo!.ownerMid}'),
+              mid: controller.videoInfo!.ownerMid),
         ));
       },
       child: Row(
@@ -177,7 +188,7 @@ class UpperTile extends StatelessWidget {
           Padding(
               padding: const EdgeInsets.only(right: 20),
               child: AvatarWidget(
-                avatarUrl: controller.videoInfo.ownerFace,
+                avatarUrl: controller.videoInfo!.ownerFace,
                 radius: 20,
                 cacheWidthHeight: 200,
               )),
@@ -185,7 +196,7 @@ class UpperTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                controller.videoInfo.ownerName,
+                controller.videoInfo!.ownerName,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 16,
@@ -206,50 +217,16 @@ class IntroductionText extends StatelessWidget {
   // 构建视频标签组件（参考PiliPlus）
   Widget _buildVideoTags(BuildContext context) {
     // 暂时注释掉标签功能，因为VideoInfo模型中没有tags字段
-    /*
-    if (controller.videoInfo.tags == null || controller.videoInfo.tags!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: controller.videoInfo.tags!.map((tag) {
-          return GestureDetector(
-            onTap: () {
-              // TODO: 跳转到标签搜索页面
-            },
-            onLongPress: () {
-              // 长按复制标签名
-              Clipboard.setData(ClipboardData(text: tag.tagName));
-              Get.snackbar("提示", "已复制标签名: ${tag.tagName}");
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                tag.tagName,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-    */
     return const SizedBox.shrink();
   }
 
   @override
   Widget build(BuildContext context) {
+    // 确保视频信息已加载
+    if (controller.videoInfo == null) {
+      return const SizedBox.shrink();
+    }
+    
     return SelectableRegion(
       magnifierConfiguration: const TextMagnifierConfiguration(),
       focusNode: FocusNode(),
@@ -283,7 +260,7 @@ class IntroductionText extends StatelessWidget {
                   color: Theme.of(context).hintColor,
                 ),
                 Text(
-                  " ${StringFormatUtils.numFormat(controller.videoInfo.playNum)}  ",
+                  " ${StringFormatUtils.numFormat(controller.videoInfo!.playNum)}  ",
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).hintColor,
@@ -295,14 +272,14 @@ class IntroductionText extends StatelessWidget {
                   color: Theme.of(context).hintColor,
                 ),
                 Text(
-                  " ${controller.videoInfo.danmaukuNum}   ",
+                  " ${controller.videoInfo!.danmaukuNum}   ",
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).hintColor,
                   ),
                 ),
                 Text(
-                  "${StringFormatUtils.timeStampToDate(controller.videoInfo.pubDate)} ${StringFormatUtils.timeStampToTime(controller.videoInfo.pubDate)}",
+                  "${StringFormatUtils.timeStampToDate(controller.videoInfo!.pubDate)} ${StringFormatUtils.timeStampToTime(controller.videoInfo!.pubDate)}",
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).hintColor,
@@ -316,11 +293,11 @@ class IntroductionText extends StatelessWidget {
                 GestureDetector(
                   onTap: () {
                     // 点击复制BVID
-                    Clipboard.setData(ClipboardData(text: controller.videoInfo.bvid));
-                    Get.snackbar("提示", "已复制视频ID: ${controller.videoInfo.bvid}");
+                    Clipboard.setData(ClipboardData(text: controller.videoInfo!.bvid));
+                    Get.snackbar("提示", "已复制视频ID: ${controller.videoInfo!.bvid}");
                   },
                   child: Text(
-                    "${controller.videoInfo.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo.bvid)}   ${controller.videoInfo.copyRight}",
+                    "${controller.videoInfo!.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo!.bvid)}   ${controller.videoInfo!.copyRight}",
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).hintColor,
@@ -370,6 +347,11 @@ class _IntroductionOperationButtonsState
   final TextStyle operationButtonTextStyle = const TextStyle(fontSize: 10);
   @override
   Widget build(BuildContext context) {
+    // 确保视频信息已加载
+    if (widget.controller.videoInfo == null) {
+      return const SizedBox.shrink();
+    }
+    
     var buttonWidth = (MediaQuery.of(context).size.width) / 6;
     var buttonHeight = (MediaQuery.of(context).size.width) / 6 * 0.8;
     widget.controller.refreshOperationButton = () => setState(() {});
@@ -380,37 +362,25 @@ class _IntroductionOperationButtonsState
           width: buttonWidth,
           height: buttonHeight,
           child: IconTextButton(
-            selected: widget.controller.videoInfo.hasLike,
+            selected: widget.controller.videoInfo!.hasLike,
             icon: const Icon(Icons.thumb_up_rounded),
             text: Text(
-              StringFormatUtils.numFormat(widget.controller.videoInfo.likeNum),
+              StringFormatUtils.numFormat(widget.controller.videoInfo!.likeNum),
               style: operationButtonTextStyle,
             ),
             onPressed: widget.controller.onLikePressed,
           ),
         ),
-        // const Spacer(),
-        // SizedBox(
-        //     width: buttonWidth,
-        //   height: buttonHeight,
-        //     child: IconTextButton(
-        //       icon: const Icon(Icons.thumb_down_alt_rounded),
-        //       text: Text(
-        //         "不喜欢",
-        //         style: operationButtonTextStyle,
-        //       ),
-        //       onPressed: () {},
-        //     )),
         const Spacer(),
         SizedBox(
             width: buttonWidth,
             height: buttonHeight,
             child: IconTextButton(
-                selected: widget.controller.videoInfo.hasAddCoin,
+                selected: widget.controller.videoInfo!.hasAddCoin,
                 icon: const Icon(Icons.circle_rounded),
                 text: Text(
                     StringFormatUtils.numFormat(
-                        widget.controller.videoInfo.coinNum),
+                        widget.controller.videoInfo!.coinNum),
                     style: operationButtonTextStyle),
                 onPressed: widget.controller.onAddCoinPressed)),
         const Spacer(),
@@ -418,11 +388,11 @@ class _IntroductionOperationButtonsState
             width: buttonWidth,
             height: buttonHeight,
             child: IconTextButton(
-              selected: widget.controller.videoInfo.hasFavourite,
+              selected: widget.controller.videoInfo!.hasFavourite,
               icon: const Icon(Icons.star_rounded),
               text: Text(
                   StringFormatUtils.numFormat(
-                      widget.controller.videoInfo.favariteNum),
+                      widget.controller.videoInfo!.favariteNum),
                   style: operationButtonTextStyle),
               onPressed: () {},
             )),
@@ -434,7 +404,7 @@ class _IntroductionOperationButtonsState
               icon: const Icon(Icons.share_rounded),
               text: Text(
                   StringFormatUtils.numFormat(
-                      widget.controller.videoInfo.shareNum),
+                      widget.controller.videoInfo!.shareNum),
                   style: operationButtonTextStyle),
               onPressed: widget.controller.onAddSharePressed,
             )),

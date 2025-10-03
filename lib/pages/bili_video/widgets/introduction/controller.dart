@@ -27,7 +27,7 @@ class IntroductionController extends GetxController {
   RxString title = "".obs;
   RxString describe = "".obs;
 
-  late VideoInfo videoInfo;
+  VideoInfo? videoInfo; // 允许为null，直到加载完成
   bool isInitialized = false;
 
   final bool isBangumi;
@@ -48,12 +48,16 @@ class IntroductionController extends GetxController {
     }
     try {
       videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
+      // 确保videoInfo不为null
+      if (videoInfo == null) {
+        return false;
+      }
     } catch (e) {
       log("loadVideoInfo:$e");
       return false;
     }
-    title.value = videoInfo.title;
-    describe.value = videoInfo.describe;
+    title.value = videoInfo!.title;
+    describe.value = videoInfo!.describe;
     if (!isBangumi) {
       //当是普通视频时
       //初始化时构造分p按钮
@@ -86,8 +90,8 @@ class IntroductionController extends GetxController {
                 videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
                 //刷新操作按钮(如点赞之类的按钮)
                 refreshOperationButton?.call();
-                title.value = videoInfo.title;
-                describe.value = videoInfo.describe;
+                title.value = videoInfo!.title;
+                describe.value = videoInfo!.describe;
                 //评论区也要刷新
                 refreshReply();
               }
@@ -99,15 +103,19 @@ class IntroductionController extends GetxController {
 
   //构造分p按钮列表
   void _loadVideoPartButtons() {
-    if (videoInfo.parts.length > 1) {
-      for (int i = 0; i < videoInfo.parts.length; i++) {
-        _addAButtion(bvid, videoInfo.parts[i].cid, videoInfo.parts[i].title, i);
+    if (videoInfo != null && videoInfo!.parts.length > 1) {
+      for (int i = 0; i < videoInfo!.parts.length; i++) {
+        _addAButtion(bvid, videoInfo!.parts[i].cid, videoInfo!.parts[i].title, i);
       }
     }
   }
 
 //构造番剧剧集按钮
   Future<void> _loadBangumiPartButtons() async {
+    // 确保ssid不为null
+    if (ssid == null) {
+      return;
+    }
     var bangumiInfo = await BangumiApi.getBangumiInfo(ssid: ssid);
     for (int i = 0; i < bangumiInfo.episodes.length; i++) {
       _addAButtion(bangumiInfo.episodes[i].bvid, bangumiInfo.episodes[i].cid,
@@ -122,16 +130,22 @@ class IntroductionController extends GetxController {
       list = await RelatedVideoApi.getRelatedVideo(bvid: bvid);
     } catch (e) {
       log("构造相关视频失败:${e.toString()}");
+      return;
     }
     relatedVideoInfos.addAll(list);
   }
 
   ///点赞按钮点击时
   Future<void> onLikePressed() async {
+    // 确保videoInfo不为null
+    if (videoInfo == null) {
+      return;
+    }
+    
     late ClickLikeResult result;
     try {
       result = await VideoOperationApi.clickLike(
-          bvid: videoInfo.bvid, likeOrCancelLike: !videoInfo.hasLike);
+          bvid: videoInfo!.bvid, likeOrCancelLike: !videoInfo!.hasLike);
     } catch (e) {
       Get.showSnackbar(GetSnackBar(
         message: "失败:${result.error}",
@@ -141,13 +155,13 @@ class IntroductionController extends GetxController {
     }
 
     if (result.isSuccess) {
-      videoInfo.hasLike = result.haslike;
+      videoInfo!.hasLike = result.haslike;
       if (result.haslike) {
         log('${result.haslike}');
-        videoInfo.likeNum++;
+        videoInfo!.likeNum++;
       } else {
         log('${result.haslike}');
-        videoInfo.likeNum--;
+        videoInfo!.likeNum--;
       }
     } else {
       Get.showSnackbar(GetSnackBar(
@@ -159,12 +173,17 @@ class IntroductionController extends GetxController {
   }
 
   Future<void> onAddCoinPressed() async {
+    // 确保videoInfo不为null
+    if (videoInfo == null) {
+      return;
+    }
+    
     late ClickAddCoinResult result;
     try {
       result = await VideoOperationApi.addCoin(bvid: bvid);
       if (result.isSuccess) {
-        videoInfo.hasAddCoin = result.isSuccess;
-        videoInfo.coinNum++;
+        videoInfo!.hasAddCoin = result.isSuccess;
+        videoInfo!.coinNum++;
         refreshOperationButton!.call();
       } else {
         Get.showSnackbar(GetSnackBar(
@@ -182,10 +201,15 @@ class IntroductionController extends GetxController {
   }
 
   Future<void> onAddSharePressed() async {
+    // 确保videoInfo不为null
+    if (videoInfo == null) {
+      return;
+    }
+    
     try {
       ClickAddShareResult result = await VideoOperationApi.share(bvid: bvid);
       if (result.isSuccess) {
-        videoInfo.shareNum = result.currentShareNum;
+        videoInfo!.shareNum = result.currentShareNum;
       } else {
         log('分享失败:${result.error}');
       }
