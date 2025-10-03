@@ -8,6 +8,7 @@ import 'package:bili_you/common/widget/video_tile_item.dart';
 import 'package:bili_you/pages/bili_video/view.dart';
 import 'package:bili_you/pages/user_space/view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'index.dart';
@@ -202,6 +203,51 @@ class IntroductionText extends StatelessWidget {
   const IntroductionText({super.key, required this.controller});
   final IntroductionController controller;
 
+  // 构建视频标签组件（参考PiliPlus）
+  Widget _buildVideoTags(BuildContext context) {
+    // 暂时注释掉标签功能，因为VideoInfo模型中没有tags字段
+    /*
+    if (controller.videoInfo.tags == null || controller.videoInfo.tags!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: controller.videoInfo.tags!.map((tag) {
+          return GestureDetector(
+            onTap: () {
+              // TODO: 跳转到标签搜索页面
+            },
+            onLongPress: () {
+              // 长按复制标签名
+              Clipboard.setData(ClipboardData(text: tag.tagName));
+              Get.snackbar("提示", "已复制标签名: ${tag.tagName}");
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                tag.tagName,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+    */
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SelectableRegion(
@@ -213,13 +259,22 @@ class IntroductionText extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 视频标题区域（添加长按复制功能）
             Padding(
               padding: const EdgeInsets.only(top: 5, bottom: 5),
-              child: Obx(() => Text(
-                    controller.title.value,
-                    style: const TextStyle(fontSize: 16),
-                  )),
+              child: GestureDetector(
+                onLongPress: () {
+                  // 长按复制视频标题
+                  Clipboard.setData(ClipboardData(text: controller.title.value));
+                  Get.snackbar("提示", "已复制视频标题");
+                },
+                child: Obx(() => Text(
+                      controller.title.value,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    )),
+              ),
             ),
+            // 播放统计信息
             Row(
               children: [
                 Icon(
@@ -255,17 +310,26 @@ class IntroductionText extends StatelessWidget {
                 )
               ],
             ),
+            // 视频ID和版权信息
             Row(
               children: [
-                Text(
-                  "${controller.videoInfo.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo.bvid)}   ${controller.videoInfo.copyRight}",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).hintColor,
+                GestureDetector(
+                  onTap: () {
+                    // 点击复制BVID
+                    Clipboard.setData(ClipboardData(text: controller.videoInfo.bvid));
+                    Get.snackbar("提示", "已复制视频ID: ${controller.videoInfo.bvid}");
+                  },
+                  child: Text(
+                    "${controller.videoInfo.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo.bvid)}   ${controller.videoInfo.copyRight}",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).hintColor,
+                    ),
                   ),
                 )
               ],
             ),
+            // 视频简介（添加展开/收起功能）
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Obx(
@@ -282,7 +346,9 @@ class IntroductionText extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary),
                 ),
               ),
-            )
+            ),
+            // 视频标签
+            _buildVideoTags(context),
           ],
         ),
       ),
