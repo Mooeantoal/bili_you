@@ -28,7 +28,8 @@ class IntroductionController extends GetxController {
   RxString describe = "".obs;
 
   VideoInfo? videoInfo; // 允许为null，直到加载完成
-  bool isInitialized = false;
+  RxBool isInitialized = false.obs;
+  RxBool isLoading = false.obs;
 
   final bool isBangumi;
   final Function(String bvid, int cid) changePartCallback;
@@ -43,21 +44,31 @@ class IntroductionController extends GetxController {
 
 //加载视频信息
   Future<bool> loadVideoInfo() async {
-    if (isInitialized) {
-      return true;
+    // 如果已经在加载或已初始化，则直接返回
+    if (isLoading.value || isInitialized.value) {
+      return isInitialized.value;
     }
+    
+    isLoading.value = true;
     try {
       videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
       // 确保videoInfo不为null
       if (videoInfo == null) {
+        isLoading.value = false;
         return false;
       }
     } catch (e) {
       log("loadVideoInfo:$e");
+      isLoading.value = false;
       return false;
     }
+    
     title.value = videoInfo!.title;
     describe.value = videoInfo!.describe;
+    
+    // 清空之前的分P按钮
+    partButtons.clear();
+    
     if (!isBangumi) {
       //当是普通视频时
       //初始化时构造分p按钮
@@ -68,7 +79,9 @@ class IntroductionController extends GetxController {
       //如果是番剧
       await _loadBangumiPartButtons();
     }
-    isInitialized = true;
+    
+    isInitialized.value = true;
+    isLoading.value = false;
     return true;
   }
 
@@ -90,8 +103,10 @@ class IntroductionController extends GetxController {
                 videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
                 //刷新操作按钮(如点赞之类的按钮)
                 refreshOperationButton?.call();
-                title.value = videoInfo!.title;
-                describe.value = videoInfo!.describe;
+                if (videoInfo != null) {
+                  title.value = videoInfo!.title;
+                  describe.value = videoInfo!.describe;
+                }
                 //评论区也要刷新
                 refreshReply();
               }

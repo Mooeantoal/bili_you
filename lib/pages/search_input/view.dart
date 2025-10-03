@@ -262,7 +262,8 @@ class _SearchInputPageState extends State<SearchInputPage> {
                             .search(controller.textEditingController.text));
                       },
                       onSubmitted: (value) {
-                        controller.search(value);
+                        // 使用微任务确保搜索在UI更新后执行
+                        Future.microtask(() => controller.search(value));
                       },
                       style: const TextStyle(fontSize: 18),
                       decoration: InputDecoration(
