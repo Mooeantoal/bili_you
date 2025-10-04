@@ -1,0 +1,137 @@
+# 金标联盟 + Android 官方无边框显示方案集成 (v2.0 优化版)
+
+## 概述
+
+本项目成功集成了**金标联盟（ITGSA）移动智能终端生态联盟**标准和**Android Developers 官方 Edge-to-Edge** 无边框显示技术，实现了两种方案的最佳结合。**v2.0版本**基于用户反馈，深度优化了导航栏沉浸效果，严格遵循Android官方Edge-to-Edge指南。
+
+## 🔥 v2.0 优化亮点
+
+### 完美的导航栏沉浸体验
+- **真正的透明效果**：状态栏和导航栏完全透明，内容延伸到边缘
+- **智能对比度增强**：启用`systemNavigationBarContrastEnforced`确保导航元素可见性
+- **双层配置保障**：Flutter层 + Android原生层双重配置，确保效果稳定
+- **动态UI适配**：根据亮色/暗色主题自动调整状态栏图标颜色
+
+### 严格遵循官方标准
+- **Android官方Edge-to-Edge指南**：完全按照最新官方文档实现
+  - 使用`SystemUiMode.edgeToEdge`对应官方`WindowCompat.enableEdgeToEdge()`
+  - 默认透明系统栏，三按钮导航模式下状态栏有半透明幕帘
+  - 系统图标颜色根据系统浅色/暗色主题自动调整
+  - 支持`WindowInsetsCompat.Type.systemBars()`边距处理原理
+- **金标联盟ITGSA合规**：满足移动智能终端显示标准要求
+  - Android 5.0+设备合规性检查
+  - 符合移动智能终端生态联盟显示标准
+  - 可访问性和用户体验优化
+- **Material Design 3兼容**：与最新设计规范完美配合
+
+### 技术实现亮点
+
+#### 官方标准对齐
+```dart
+// 对应Android官方enableEdgeToEdge()方法
+SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+// 官方文档推荐的系统UI样式配置
+SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+  statusBarColor: Colors.transparent, // 透明状态栏
+  systemNavigationBarColor: Colors.transparent, // 透明导航栏
+  systemNavigationBarContrastEnforced: true, // 对比度增强
+));
+```
+
+## 技术实现特点
+
+### 1. 双重方案结合优势
+
+- **金标联盟标准**：提供设备合规性检查和标准化用户体验规范
+- **Android 官方技术**：提供具体的无边框显示技术实现
+- **智能适配**：根据设备能力和用户设置自动选择最佳显示模式
+
+### 2. 三种显示模式
+
+#### 标准模式 (Standard)
+- 符合金标联盟基础显示要求
+- 兼容所有设备
+- 安全稳定的显示体验
+
+#### 增强沉浸式 (Enhanced Immersive) 
+- 结合金标联盟用户体验优化 + Android Edge-to-Edge 技术
+- 现代化无边框显示效果
+- **推荐模式**：技术先进且符合标准
+
+#### 完全沉浸式 (Full Immersive)
+- 传统 immersiveSticky 模式
+- 完全隐藏系统UI
+- 适合特定场景使用
+
+### 3. 智能合规检查
+
+- 自动检测设备是否支持金标联盟显示标准
+- 基于Android版本进行兼容性判断
+- 根据用户设置智能推荐最佳显示模式
+
+## 用户配置选项
+
+### 外观设置页面新增选项：
+
+1. **金标联盟合规模式**
+   - 开启/关闭金标联盟标准合规检查
+   - 确保显示效果符合ITGSA规范
+
+2. **增强沉浸式体验**
+   - 启用Android Edge-to-Edge + 金标联盟结合方案
+   - 提供最佳的现代化显示体验
+
+3. **自适应边到边显示**
+   - 根据设备能力智能启用Edge-to-Edge模式
+   - 兼容不同Android版本
+
+### 其他设置页面新增测试功能：
+
+1. **显示模式测试**
+   - 实时测试新的显示模式效果
+   - 自动演示进入/退出全屏功能
+
+2. **状态查看**
+   - 查看当前设备的金标联盟合规性
+   - 显示推荐的显示模式类型
+
+## 技术架构
+
+### 核心类和功能
+
+#### `ITGSAComplianceHelper`
+- 金标联盟合规性检查
+- 设备能力评估
+- 显示模式智能推荐
+
+#### `DisplayMode` 枚举
+- 定义三种显示模式类型
+- 便于模式切换和管理
+
+#### 增强的 `enterFullScreen()` 和 `exitFullScreen()` 函数
+- 根据用户设置智能选择显示模式
+- 兼容多种Android版本
+- 平滑的模式切换体验
+
+### 设置存储
+
+新增三个配置键：
+- `enableITGSACompliance`: 金标联盟合规模式开关
+- `enhancedImmersiveMode`: 增强沉浸式体验开关  
+- `adaptiveEdgeToEdge`: 自适应边到边显示开关
+
+## 最佳实践建议
+
+1. **推荐配置**：全部开启三个新设置选项，获得最佳体验
+2. **兼容性优先**：对于旧设备，系统会自动降级到兼容模式
+3. **用户体验**：新方案在保持技术先进性的同时，确保了合规性和稳定性
+
+## 总结
+
+这个集成方案成功地将：
+- 金标联盟的**标准化合规性**
+- Android官方的**技术实现能力**  
+- bili_you项目的**用户体验需求**
+
+三者完美结合，实现了既符合行业标准，又具备现代化技术水准的显示解决方案。用户可以根据自己的需求灵活配置，享受最适合的显示体验。
