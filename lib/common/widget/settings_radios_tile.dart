@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 class SettingsRadiosTile<T> extends StatefulWidget {
   const SettingsRadiosTile(
@@ -35,53 +36,26 @@ class SettingsRadiosTile<T> extends StatefulWidget {
 class _SettingsRadiosTileState<T> extends State<SettingsRadiosTile<T>> {
   @override
   Widget build(BuildContext context) {
-    // 检查当前是否使用 Cupertino UI
-    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
-    
-    if (useCupertino) {
-      // 使用 Cupertino 风格的组件
-      return CupertinoListTile(
-        title: Text(widget.title),
-        subtitle: Text(widget.subTitle),
-        trailing: Text(widget.buildTrailingText()),
-        onTap: () {
-          showCupertinoDialog(
-            context: context,
-            builder: (context) => RadioListDialog(
-              title: widget.title,
-              itemNameValueMap: widget.itemNameValue,
-              groupValue: widget.buildGroupValue(),
-              onChanged: (value) {
-                if (value != null) widget.applyValue(value);
-                Navigator.of(context).pop();
-                setState(() {});
-              },
-            ),
-          );
-        },
-      );
-    } else {
-      // 使用 Material 风格的组件
-      return ListTile(
-        title: Text(widget.title),
-        subtitle: Text(widget.subTitle),
-        trailing: Text(widget.buildTrailingText()),
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (context) => RadioListDialog(
-              title: widget.title,
-              itemNameValueMap: widget.itemNameValue,
-              groupValue: widget.buildGroupValue(),
-              onChanged: (value) {
-                if (value != null) widget.applyValue(value);
-                Navigator.of(context).pop();
-                setState(() {});
-              },
-            ),
-          );
-        },
-      );
-    }
+    // 默认使用 Fluent UI 风格的组件
+    return fluent.ListTile(
+      title: fluent.Text(widget.title),
+      subtitle: fluent.Text(widget.subTitle),
+      trailing: fluent.Text(widget.buildTrailingText()),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) => RadioListDialog(
+            title: widget.title,
+            itemNameValueMap: widget.itemNameValue,
+            groupValue: widget.buildGroupValue(),
+            onChanged: (value) {
+              if (value != null) widget.applyValue(value);
+              Navigator.of(context).pop();
+              setState(() {});
+            },
+          ),
+        );
+      },
+    );
   }
 }
