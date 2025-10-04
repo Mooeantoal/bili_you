@@ -65,15 +65,11 @@ class MyApp extends StatelessWidget {
             useInheritedMediaQuery: true,
             themeMode: SettingsUtil.currentThemeMode,
             theme: ThemeData(
-                colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
-                    ? lightDynamic ?? BiliTheme.dynamic.themeDataLight.colorScheme
-                    : SettingsUtil.currentTheme.themeDataLight.colorScheme,
-                useMaterial3: true), // 使用MD3风格
+                colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff0078d4)),
+                useMaterial3: true), // 使用MD3风格并应用FluentUI蓝色
             darkTheme: ThemeData(
-                colorScheme: SettingsUtil.currentTheme == BiliTheme.dynamic
-                    ? darkDynamic ?? BiliTheme.dynamic.themeDataDark.colorScheme
-                    : SettingsUtil.currentTheme.themeDataDark.colorScheme,
-                useMaterial3: true), // 使用MD3风格
+                colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff0078d4), brightness: Brightness.dark),
+                useMaterial3: true), // 使用MD3风格并应用FluentUI蓝色
             home: const MainPage(),
             builder: (context, child) => child == null
                 ? const SizedBox()

@@ -74,28 +74,6 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
           const SettingsLabel(text: '主题'),
           // ... 其他设置项保持不变，因为已经使用了适配的组件
           const SettingsLabel(text: '字体和界面密度'),
-          // 添加 Fluent UI 切换选项
-          SettingsSwitchTile(
-            title: '使用 Fluent UI',
-            subTitle: '启用微软 Fluent Design 风格界面',
-            settingsKey: SettingsStorageKeys.useFluentUI,
-            defualtValue: false,
-            apply: () async {
-              // 应用新的 UI 设置
-              await Get.forceAppUpdate();
-            },
-          ),
-          // 添加 Cupertino UI 切换选项
-          SettingsSwitchTile(
-            title: '使用 Cupertino UI',
-            subTitle: '启用苹果 iOS 风格界面',
-            settingsKey: SettingsStorageKeys.useCupertinoUI,
-            defualtValue: false,
-            apply: () async {
-              // 应用新的 UI 设置
-              await Get.forceAppUpdate();
-            },
-          ),
           // ... 其他设置项保持不变
         ]),
       );
@@ -189,28 +167,6 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
             //   },
             // ),
             const SettingsLabel(text: '字体和界面密度'),
-            // 添加 Fluent UI 切换选项
-            SettingsSwitchTile(
-              title: '使用 Fluent UI',
-              subTitle: '启用微软 Fluent Design 风格界面',
-              settingsKey: SettingsStorageKeys.useFluentUI,
-              defualtValue: false,
-              apply: () async {
-                // 应用新的 UI 设置
-                await Get.forceAppUpdate();
-              },
-            ),
-            // 添加 Cupertino UI 切换选项
-            SettingsSwitchTile(
-              title: '使用 Cupertino UI',
-              subTitle: '启用苹果 iOS 风格界面',
-              settingsKey: SettingsStorageKeys.useCupertinoUI,
-              defualtValue: false,
-              apply: () async {
-                // 应用新的 UI 设置
-                await Get.forceAppUpdate();
-              },
-            ),
             ListTile(
               title: const Text('字体缩放倍数'),
               subtitle: Text('当前: ${SettingsUtil.getValue(
