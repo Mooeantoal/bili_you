@@ -275,10 +275,6 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                 if (_controller.isEditing.value &&
                     _controller.favState.value.isSuccess) {
                   bool? isFav = _controller.favInfo[item.id];
-                  if (isFav == null) {
-                    isFav = _controller.favState.value.data.contains(item);
-                    _controller.favInfo[item.id] = isFav;
-                  }
                   return iconButton(
                     size: 17,
                     iconSize: 13,

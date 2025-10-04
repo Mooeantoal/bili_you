@@ -4849,13 +4849,6 @@ class EditableTextState extends State<EditableText>
     Rect? composingRect = renderEditable.getRectForComposingRange(
       composingRange,
     );
-    // Send the caret location instead if there's no marked text yet.
-    if (composingRect == null) {
-      final int offset = composingRange.isValid ? composingRange.start : 0;
-      composingRect = renderEditable.getLocalRectForCaret(
-        TextPosition(offset: offset),
-      );
-    }
     _textInputConnection!.setComposingRect(composingRect);
   }
 

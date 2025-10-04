@@ -95,8 +95,7 @@ class _AtMePageState extends State<AtMePage> {
                   return ListTile(
                     onTap: () {
                       String? nativeUri = item.item?.nativeUri;
-                      if (nativeUri == null ||
-                          nativeUri.isEmpty ||
+                      if (nativeUri.isEmpty ||
                           nativeUri.startsWith('?')) {
                         return;
                       }

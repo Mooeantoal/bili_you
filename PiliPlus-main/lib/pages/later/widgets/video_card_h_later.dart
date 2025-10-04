@@ -118,7 +118,7 @@ class VideoCardHLater extends StatelessWidget {
                             top: 6.0,
                             right: 6.0,
                           ),
-                        if (progress != null && progress != 0) ...[
+                        if (progress != 0) ...[
                           PBadge(
                             text: progress == -1
                                 ? '已看完'

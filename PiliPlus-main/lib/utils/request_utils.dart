@@ -278,12 +278,10 @@ class RequestUtils {
           final ctr = Get.find<DynamicsTabController>(tag: 'all');
           if (ctr.loadingState.value.isSuccess) {
             List<DynamicItemModel>? list = ctr.loadingState.value.data;
-            if (list != null) {
-              list.insert(0, res['data']);
-              ctr.loadingState.refresh();
-              return;
-            }
-          }
+            list.insert(0, res['data']);
+            ctr.loadingState.refresh();
+            return;
+                    }
           ctr.loadingState.value = Success([res['data']]);
         }
       }
@@ -493,8 +491,8 @@ class RequestUtils {
     captchaData.token = res['data']?['token'];
 
     bool isGeeArgumentValid() {
-      return geeGt?.isNotEmpty == true &&
-          geeChallenge?.isNotEmpty == true &&
+      return geeGt.isNotEmpty == true &&
+          geeChallenge.isNotEmpty == true &&
           captchaData.token?.isNotEmpty == true;
     }
 

@@ -57,8 +57,8 @@ class HistoryController
   void handleSelect([bool checked = false, bool disableSelect = true]) {
     if (loadingState.value.isSuccess) {
       List<HistoryItemModel>? list = loadingState.value.data;
-      if (list?.isNotEmpty == true) {
-        for (HistoryItemModel item in list!) {
+      if (list.isNotEmpty == true) {
+        for (HistoryItemModel item in list) {
           item.checked = checked;
         }
         baseCtr.checkedCount.value = checked ? list.length : 0;

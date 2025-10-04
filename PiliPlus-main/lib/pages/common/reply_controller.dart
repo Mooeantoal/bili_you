@@ -174,19 +174,15 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
               ReplyInfo replyInfo = RequestUtils.replyCast(res);
               if (loadingState.value.isSuccess) {
                 List<ReplyInfo>? list = loadingState.value.data;
-                if (list == null) {
-                  loadingState.value = Success([replyInfo]);
+                if (oid != null) {
+                  list.insert(hasUpTop ? 1 : 0, replyInfo);
                 } else {
-                  if (oid != null) {
-                    list.insert(hasUpTop ? 1 : 0, replyInfo);
-                  } else {
-                    replyItem!
-                      ..count += 1
-                      ..replies.add(replyInfo);
-                  }
-                  loadingState.refresh();
+                  replyItem!
+                    ..count += 1
+                    ..replies.add(replyInfo);
                 }
-              } else {
+                loadingState.refresh();
+                            } else {
                 loadingState.value = Success([replyInfo]);
               }
               count.value += 1;

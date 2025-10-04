@@ -576,15 +576,14 @@ class _ArticlePageState extends State<ArticlePage>
                                 fontSize: theme.textTheme.titleSmall!.fontSize,
                               ),
                             ),
-                            if (pubTime != null)
-                              Text(
-                                DateUtil.format(pubTime),
-                                style: TextStyle(
-                                  color: theme.colorScheme.outline,
-                                  fontSize:
-                                      theme.textTheme.labelSmall!.fontSize,
-                                ),
+                            Text(
+                              DateUtil.format(pubTime),
+                              style: TextStyle(
+                                color: theme.colorScheme.outline,
+                                fontSize:
+                                    theme.textTheme.labelSmall!.fontSize,
                               ),
+                            ),
                           ],
                         ),
                       ],

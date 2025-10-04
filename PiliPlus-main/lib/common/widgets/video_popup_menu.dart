@@ -67,7 +67,7 @@ class VideoCustomActions {
           const Icon(MdiIcons.thumbDownOutline, size: 16),
           () {
             String? accessKey = Accounts.get(AccountType.recommend).accessKey;
-            if (accessKey == null || accessKey == "") {
+            if (accessKey == "") {
               SmartDialog.showToast("请退出账号后重新登录");
               return;
             }

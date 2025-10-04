@@ -404,27 +404,23 @@ class PageUtils {
             item.modules.moduleDynamic!.major!.archive!.jumpUrl!,
             false,
           );
-          if (redirectUrl != null) {
-            viewPgcFromUri(redirectUrl);
-            return;
-          }
-        }
+          viewPgcFromUri(redirectUrl);
+          return;
+                }
 
         try {
           String bvid = item.modules.moduleDynamic!.major!.archive!.bvid!;
           String cover = item.modules.moduleDynamic!.major!.archive!.cover!;
           int? cid = await SearchHttp.ab2c(bvid: bvid);
-          if (cid != null) {
-            toVideoPage(
-              'bvid=$bvid&cid=$cid',
-              arguments: {
-                'pic': cover,
-                'heroTag': Utils.makeHeroTag(bvid),
-              },
-              preventDuplicates: false,
-            );
-          }
-        } catch (err) {
+          toVideoPage(
+            'bvid=$bvid&cid=$cid',
+            arguments: {
+              'pic': cover,
+              'heroTag': Utils.makeHeroTag(bvid),
+            },
+            preventDuplicates: false,
+          );
+                } catch (err) {
           SmartDialog.showToast(err.toString());
         }
         break;
@@ -458,17 +454,15 @@ class PageUtils {
         String bvid = IdUtils.av2bv(aid);
         String cover = ugcSeason.cover!;
         int? cid = await SearchHttp.ab2c(bvid: bvid);
-        if (cid != null) {
-          toVideoPage(
-            'bvid=$bvid&cid=$cid',
-            arguments: {
-              'pic': cover,
-              'heroTag': Utils.makeHeroTag(bvid),
-            },
-            preventDuplicates: false,
-          );
-        }
-        break;
+        toVideoPage(
+          'bvid=$bvid&cid=$cid',
+          arguments: {
+            'pic': cover,
+            'heroTag': Utils.makeHeroTag(bvid),
+          },
+          preventDuplicates: false,
+        );
+              break;
 
       /// 番剧查看
       case 'DYNAMIC_TYPE_PGC_UNION':

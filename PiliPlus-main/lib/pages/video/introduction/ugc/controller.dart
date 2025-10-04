@@ -569,9 +569,6 @@ class VideoIntroController extends CommonIntroController with ReloadMixin {
       return;
     }
     int? mid = videoDetail.value.owner?.mid;
-    if (mid == null) {
-      return;
-    }
     int attr = followStatus['attribute'] ?? 0;
     if (attr == 128) {
       var res = await VideoHttp.relationMod(

@@ -180,7 +180,7 @@ class _MediaPageState extends CommonPageState<MediaPage, MediaController>
           if (favFolderList.isNullOrEmpty) {
             return const SizedBox.shrink();
           }
-          bool flag = controller.count.value > favFolderList!.length;
+          bool flag = controller.count.value > favFolderList.length;
           return ListView.separated(
             padding: const EdgeInsets.only(left: 20),
             itemCount: response.list.length + (flag ? 1 : 0),

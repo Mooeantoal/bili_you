@@ -634,7 +634,7 @@ class LoginPageController extends GetxController
           String? captureUrl = res['data']?['recaptcha_url'];
           String? geeGt;
           String? geeChallenge;
-          if (captureUrl != null && captureUrl.isNotEmpty) {
+          if (captureUrl.isNotEmpty) {
             Uri captureUri = Uri.parse(captureUrl);
             captchaData.token = captureUri.queryParameters['recaptcha_token'];
             geeGt = captureUri.queryParameters['gee_gt'];

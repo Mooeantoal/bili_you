@@ -114,7 +114,7 @@ class _FollowPageState extends State<FollowPage> {
                         child: Row(
                           children: [
                             Text(
-                              '${item.name}${count != null ? '($count)' : ''} ',
+                              '${item.name}${'($count)'} ',
                             ),
                             const Icon(Icons.menu, size: 18),
                           ],
@@ -123,7 +123,7 @@ class _FollowPageState extends State<FollowPage> {
                     );
                   }
                   return Tab(
-                    text: '${item.name}${count != null ? '($count)' : ''}',
+                    text: '${item.name}${'($count)'}',
                   );
                 });
               }),

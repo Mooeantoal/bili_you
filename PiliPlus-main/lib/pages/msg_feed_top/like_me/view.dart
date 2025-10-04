@@ -167,7 +167,7 @@ class _LikeMePageState extends State<LikeMePage> {
       onTap: () {
         String? nativeUri = item.item?.nativeUri;
         bool isInvalid =
-            nativeUri == null || nativeUri.isEmpty || nativeUri.startsWith('?');
+            nativeUri.isEmpty || nativeUri.startsWith('?');
         if (item.counts! > 1) {
           Get.toNamed(
             'msgLikeDetail',

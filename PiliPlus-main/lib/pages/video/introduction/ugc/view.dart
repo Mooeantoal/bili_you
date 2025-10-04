@@ -123,20 +123,18 @@ class _VideoIntroPanelState extends State<VideoIntroPanel>
                                   child: _buildAvatar(
                                     theme,
                                     () {
-                                      if (mid != null) {
-                                        feedBack();
-                                        if (context.orientation ==
-                                                Orientation.landscape &&
-                                            introController
-                                                .horizontalMemberPage) {
-                                          widget.onShowMemberPage(mid);
-                                        } else {
-                                          Get.toNamed(
-                                            '/member?mid=$mid&from_view_aid=${videoDetailCtr.oid.value}',
-                                          );
-                                        }
+                                      feedBack();
+                                      if (context.orientation ==
+                                              Orientation.landscape &&
+                                          introController
+                                              .horizontalMemberPage) {
+                                        widget.onShowMemberPage(mid);
+                                      } else {
+                                        Get.toNamed(
+                                          '/member?mid=$mid&from_view_aid=${videoDetailCtr.oid.value}',
+                                        );
                                       }
-                                    },
+                                                                        },
                                   ),
                                 ),
                               ),

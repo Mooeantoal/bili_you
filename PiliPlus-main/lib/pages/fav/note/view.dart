@@ -62,9 +62,9 @@ class _FavNotePageState extends State<FavNotePage>
                     const TextStyle(fontSize: 14),
                 labelColor: theme.colorScheme.onSecondaryContainer,
                 unselectedLabelColor: theme.colorScheme.outline,
-                tabs: [
-                  const Tab(text: '未发布笔记'),
-                  const Tab(text: '公开笔记'),
+                tabs: const [
+                  Tab(text: '未发布笔记'),
+                  Tab(text: '公开笔记'),
                 ],
                 onTap: (index) {
                   try {

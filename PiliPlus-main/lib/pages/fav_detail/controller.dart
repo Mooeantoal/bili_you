@@ -153,7 +153,7 @@ class FavDetailController
       List<FavDetailItemModel>? list = loadingState.value.data;
       if (list.isNullOrEmpty) return;
 
-      for (FavDetailItemModel element in list!) {
+      for (FavDetailItemModel element in list) {
         if (element.ugc?.firstCid == null) {
           continue;
         } else {

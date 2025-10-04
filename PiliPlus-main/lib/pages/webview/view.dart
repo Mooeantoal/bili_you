@@ -180,10 +180,8 @@ class _WebviewPageState extends State<WebviewPage> {
                   WebUri? uri = await controller.getUrl();
                   if (uri != null) {
                     String? oid = uri.queryParameters['oid'];
-                    if (oid != null) {
-                      PiliScheme.videoPush(int.parse(oid), null);
-                    }
-                  }
+                    PiliScheme.videoPush(int.parse(oid), null);
+                                    }
                 },
               );
           },

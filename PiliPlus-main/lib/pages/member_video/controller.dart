@@ -179,7 +179,7 @@ class MemberVideoCtr
 
       if (list.isNullOrEmpty) return;
 
-      for (SpaceArchiveItem element in list!) {
+      for (SpaceArchiveItem element in list) {
         if (element.cid == null) {
           continue;
         } else {

@@ -29,7 +29,7 @@ class UrlUtils {
       );
       redirectUrl = response.headers['location']?.firstOrNull;
       if (kDebugMode) debugPrint('redirectUrl: $redirectUrl');
-      if (redirectUrl != null && !redirectUrl.startsWith('http')) {
+      if (!redirectUrl.startsWith('http')) {
         redirectUrl = Uri.parse(url).resolve(redirectUrl).toString();
       }
     } catch (_) {}

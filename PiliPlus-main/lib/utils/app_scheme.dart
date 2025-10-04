@@ -482,7 +482,7 @@ class PiliScheme {
         String? bvid = IdUtils.bvRegexExact.matchAsPrefix(path)?.group(0);
         if (aid != null || bvid != null) {
           videoPush(
-            aid != null ? int.parse(aid) : null,
+            int.parse(aid),
             bvid,
             off: off,
           );
@@ -530,11 +530,9 @@ class PiliScheme {
     // redirect
     if (host.contains('b23.tv')) {
       String? redirectUrl = await UrlUtils.parseRedirectUrl(uri.toString());
-      if (redirectUrl != null) {
-        uri = Uri.parse(redirectUrl);
-        host = uri.host;
-      }
-      if (!host.contains('bilibili.com')) {
+      uri = Uri.parse(redirectUrl);
+      host = uri.host;
+          if (!host.contains('bilibili.com')) {
         launchURL();
         return false;
       }
@@ -625,29 +623,27 @@ class PiliScheme {
         String? bvid =
             uri.queryParameters['bvid'] ??
             IdUtils.bvRegex.firstMatch(path)?.group(0);
-        if (bvid != null) {
-          if (mediaId != null) {
-            final int? cid = await SearchHttp.ab2c(bvid: bvid);
-            if (cid != null) {
-              PageUtils.toVideoPage(
-                'bvid=$bvid&cid=$cid',
-                arguments: {
-                  'heroTag': Utils.makeHeroTag(bvid),
-                  'sourceType': SourceType.playlist,
-                  'favTitle': '播放列表',
-                  'mediaId': mediaId,
-                  'mediaType': 3,
-                  'desc': true,
-                  'isContinuePlaying': true,
-                },
-              );
-            }
-          } else {
-            videoPush(null, bvid, off: off);
+        if (mediaId != null) {
+          final int? cid = await SearchHttp.ab2c(bvid: bvid);
+          if (cid != null) {
+            PageUtils.toVideoPage(
+              'bvid=$bvid&cid=$cid',
+              arguments: {
+                'heroTag': Utils.makeHeroTag(bvid),
+                'sourceType': SourceType.playlist,
+                'favTitle': '播放列表',
+                'mediaId': mediaId,
+                'mediaType': 3,
+                'desc': true,
+                'isContinuePlaying': true,
+              },
+            );
           }
-          return true;
+        } else {
+          videoPush(null, bvid, off: off);
         }
-        launchURL();
+        return true;
+              launchURL();
         return false;
       case 'bangumi':
         // www.bilibili.com/bangumi/play/ep{eid}?start_progress={offset}&thumb_up_dm_id={dmid}

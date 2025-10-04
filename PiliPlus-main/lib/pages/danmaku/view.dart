@@ -102,39 +102,37 @@ class _PlDanmakuState extends State<PlDanmaku> {
 
     List<DanmakuElem>? currentDanmakuList = _plDanmakuController
         .getCurrentDanmaku(currentPosition);
-    if (currentDanmakuList != null) {
-      for (DanmakuElem e in currentDanmakuList) {
-        if (e.mode == 7) {
-          try {
-            _controller!.addDanmaku(
-              SpecialDanmakuContentItem.fromList(
-                DmUtils.decimalToColor(e.color),
-                e.fontsize.toDouble(),
-                jsonDecode(e.content.replaceAll('\n', '\\n')),
-              ),
-            );
-          } catch (_) {}
-        } else {
+    for (DanmakuElem e in currentDanmakuList) {
+      if (e.mode == 7) {
+        try {
           _controller!.addDanmaku(
-            DanmakuContentItem(
-              e.content,
-              color: playerController.blockTypes.contains(6)
-                  ? Colors.white
-                  : DmUtils.decimalToColor(e.color),
-              type: DmUtils.getPosition(e.mode),
-              isColorful:
-                  playerController.showVipDanmaku &&
-                      e.colorful == DmColorfulType.VipGradualColor
-                  ? true
-                  : null,
-              count: e.hasCount() ? e.count : null,
-              selfSend: e.isSelf,
+            SpecialDanmakuContentItem.fromList(
+              DmUtils.decimalToColor(e.color),
+              e.fontsize.toDouble(),
+              jsonDecode(e.content.replaceAll('\n', '\\n')),
             ),
           );
-        }
+        } catch (_) {}
+      } else {
+        _controller!.addDanmaku(
+          DanmakuContentItem(
+            e.content,
+            color: playerController.blockTypes.contains(6)
+                ? Colors.white
+                : DmUtils.decimalToColor(e.color),
+            type: DmUtils.getPosition(e.mode),
+            isColorful:
+                playerController.showVipDanmaku &&
+                    e.colorful == DmColorfulType.VipGradualColor
+                ? true
+                : null,
+            count: e.hasCount() ? e.count : null,
+            selfSend: e.isSelf,
+          ),
+        );
       }
     }
-  }
+    }
 
   @override
   void dispose() {

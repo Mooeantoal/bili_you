@@ -97,13 +97,13 @@ class PgcController
       }
 
       if (isRefresh) {
-        if (list!.length >= followCount.value) {
+        if (list.length >= followCount.value) {
           followEnd = true;
         }
         followState.value = Success(list);
         followController?.animToTop();
       } else if (followState.value.isSuccess) {
-        final currentList = followState.value.data!..addAll(list!);
+        final currentList = followState.value.data!..addAll(list);
         if (currentList.length >= followCount.value) {
           followEnd = true;
         }

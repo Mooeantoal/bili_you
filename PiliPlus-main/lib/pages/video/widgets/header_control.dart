@@ -413,10 +413,6 @@ class HeaderControlState extends State<HeaderControl> {
                   leading: const Icon(Icons.info_outline, size: 20),
                   onTap: () {
                     Player? player = widget.controller.videoPlayerController;
-                    if (player == null) {
-                      SmartDialog.showToast('播放器未初始化');
-                      return;
-                    }
                     showDialog(
                       context: context,
                       builder: (context) {

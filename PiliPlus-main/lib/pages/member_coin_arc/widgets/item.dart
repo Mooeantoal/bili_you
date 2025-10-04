@@ -38,16 +38,14 @@ class MemberCoinLikeItem extends StatelessWidget {
 
           if (item.param != null) {
             int? cid = await SearchHttp.ab2c(aid: item.param);
-            if (cid != null) {
-              PageUtils.toVideoPage(
-                'bvid=${IdUtils.av2bv(int.parse(item.param!))}&cid=$cid',
-                arguments: {
-                  'videoItem': item,
-                  'heroTag': Utils.makeHeroTag(item.param),
-                },
-              );
-            }
-          }
+            PageUtils.toVideoPage(
+              'bvid=${IdUtils.av2bv(int.parse(item.param!))}&cid=$cid',
+              arguments: {
+                'videoItem': item,
+                'heroTag': Utils.makeHeroTag(item.param),
+              },
+            );
+                    }
         },
         onLongPress: () => imageSaveDialog(
           title: item.title,

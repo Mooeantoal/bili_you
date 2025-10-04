@@ -4,7 +4,6 @@ import 'package:bili_you/common/api/search_api.dart';
 import 'package:bili_you/common/models/local/search/hot_word_item.dart';
 import 'package:bili_you/common/models/local/search/search_suggest_item.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
-import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/search_result/index.dart';
 import 'package:bili_you/pages/search_result/view.dart';
 import 'package:flutter/material.dart';

@@ -76,10 +76,8 @@ class VideoCardH extends StatelessWidget {
                   } else if (type == 'live_room') {
                     if (videoItem case SearchVideoItemModel item) {
                       int? roomId = item.id;
-                      if (roomId != null) {
-                        Get.toNamed('/liveRoom?roomid=$roomId');
-                      }
-                    } else {
+                      Get.toNamed('/liveRoom?roomid=$roomId');
+                                        } else {
                       SmartDialog.showToast(
                         'err: live_room : ${videoItem.runtimeType}',
                       );

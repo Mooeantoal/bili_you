@@ -156,7 +156,7 @@ class SearchApi {
             ttl: webData['ttl'],
             data: HotWordResponseData(
               trackid: trendingData['trackid'] ?? '',
-              list: convertedList.map((item) => ListElement.fromJson(item as Map<String, dynamic>)).toList(),
+              list: convertedList.map((item) => ListElement.fromJson(item)).toList(),
               expStr: '',
               topList: [],
             ),

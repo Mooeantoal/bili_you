@@ -379,7 +379,7 @@ class AuthorPanel extends StatelessWidget {
                           "title": title,
                           "headline": "",
                           "source": source,
-                          if (thumb?.isNotEmpty == true) "thumb": thumb,
+                          if (thumb.isNotEmpty == true) "thumb": thumb,
                           "author": item.modules.moduleAuthor!.name,
                           "author_id": item.modules.moduleAuthor!.mid
                               .toString(),

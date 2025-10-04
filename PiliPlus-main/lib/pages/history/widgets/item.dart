@@ -76,16 +76,14 @@ class HistoryItem extends StatelessWidget {
                   bvid: bvid,
                   part: item.history.page,
                 );
-            if (cid != null) {
-              PageUtils.toVideoPage(
-                'bvid=$bvid&cid=$cid',
-                arguments: {
-                  'heroTag': Utils.makeHeroTag(aid),
-                  'pic': item.cover,
-                },
-              );
-            }
-          }
+            PageUtils.toVideoPage(
+              'bvid=$bvid&cid=$cid',
+              arguments: {
+                'heroTag': Utils.makeHeroTag(aid),
+                'pic': item.cover,
+              },
+            );
+                    }
         },
         onLongPress: () {
           if (ctr is MultiSelectController || ctr is HistoryBaseController) {

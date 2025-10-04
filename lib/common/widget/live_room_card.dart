@@ -39,7 +39,7 @@ class LiveRoomCard extends StatelessWidget {
                         imageUrl: info.cover,
                         fit: BoxFit.cover,
                         placeholder: () => Container(
-                          color: Theme.of(context).colorScheme.surfaceVariant,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         ),
                         errorWidget: () => const Center(
                           child: Icon(Icons.error),

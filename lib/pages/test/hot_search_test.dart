@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:bili_you/common/api/search_api.dart';
 import 'package:bili_you/common/models/local/search/hot_word_item.dart';
 

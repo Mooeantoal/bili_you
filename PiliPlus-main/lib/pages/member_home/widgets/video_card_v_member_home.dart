@@ -42,18 +42,16 @@ class VideoCardVMemberHome extends StatelessWidget {
           return;
         }
 
-        bvid ??= IdUtils.av2bv(int.parse(aid!));
+        bvid ??= IdUtils.av2bv(int.parse(aid));
         int? cid = videoItem.cid ?? await SearchHttp.ab2c(aid: aid, bvid: bvid);
-        if (cid != null) {
-          PageUtils.toVideoPage(
-            'bvid=$bvid&cid=$cid',
-            arguments: {
-              'pic': videoItem.cover,
-              'heroTag': heroTag,
-            },
-          );
-        }
-        break;
+        PageUtils.toVideoPage(
+          'bvid=$bvid&cid=$cid',
+          arguments: {
+            'pic': videoItem.cover,
+            'heroTag': heroTag,
+          },
+        );
+              break;
 
       default:
         if (videoItem.uri?.isNotEmpty == true) {

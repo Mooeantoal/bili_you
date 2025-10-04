@@ -28,8 +28,8 @@ abstract class MultiSelectController<R, T extends MultiSelectData>
   void handleSelect([bool checked = false, bool disableSelect = true]) {
     if (loadingState.value.isSuccess) {
       List<T>? list = loadingState.value.data;
-      if (list?.isNotEmpty == true) {
-        for (T item in list!) {
+      if (list.isNotEmpty == true) {
+        for (T item in list) {
           item.checked = checked;
         }
         loadingState.refresh();

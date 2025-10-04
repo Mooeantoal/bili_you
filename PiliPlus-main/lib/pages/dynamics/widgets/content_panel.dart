@@ -61,21 +61,20 @@ Widget content(
               ),
             ),
           ),
-        if (richNodes != null)
-          isDetail && floor == 1
-              ? SelectableText.rich(
-                  richNodes,
-                  style: isSave
-                      ? const TextStyle(fontSize: 15)
-                      : const TextStyle(fontSize: 16),
-                )
-              : custom_text.Text.rich(
-                  style: floor == 1
-                      ? const TextStyle(fontSize: 15)
-                      : const TextStyle(fontSize: 14),
-                  richNodes,
-                  maxLines: isSave ? null : 6,
-                ),
+        isDetail && floor == 1
+            ? SelectableText.rich(
+                richNodes,
+                style: isSave
+                    ? const TextStyle(fontSize: 15)
+                    : const TextStyle(fontSize: 16),
+              )
+            : custom_text.Text.rich(
+                style: floor == 1
+                    ? const TextStyle(fontSize: 15)
+                    : const TextStyle(fontSize: 14),
+                richNodes,
+                maxLines: isSave ? null : 6,
+              ),
         if (item.modules.moduleDynamic?.major?.opus?.pics?.isNotEmpty == true)
           LayoutBuilder(
             builder: (context, constraints) {

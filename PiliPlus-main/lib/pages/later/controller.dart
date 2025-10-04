@@ -51,8 +51,8 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel> {
   void handleSelect([bool checked = false, bool disableSelect = true]) {
     if (loadingState.value.isSuccess) {
       List<LaterItemModel>? list = loadingState.value.data;
-      if (list?.isNotEmpty == true) {
-        for (LaterItemModel item in list!) {
+      if (list.isNotEmpty == true) {
+        for (LaterItemModel item in list) {
           item.checked = checked;
         }
         baseCtr.checkedCount.value = checked ? list.length : 0;
@@ -208,7 +208,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel> {
       List<LaterItemModel>? list = loadingState.value.data;
       if (list.isNullOrEmpty) return;
 
-      for (LaterItemModel item in list!) {
+      for (LaterItemModel item in list) {
         if (item.cid == null || item.pgcLabel?.isNotEmpty == true) {
           continue;
         } else {

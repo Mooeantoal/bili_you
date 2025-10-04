@@ -318,29 +318,24 @@ class ChatItem extends StatelessWidget {
                   String? bvid = IdUtils.bvRegex
                       .firstMatch(i['jump_url'])
                       ?.group(0);
-                  if (bvid != null) {
-                    try {
-                      SmartDialog.showLoading();
-                      final int? cid = await SearchHttp.ab2c(bvid: bvid);
-                      SmartDialog.dismiss();
-                      if (cid != null) {
-                        PageUtils.toVideoPage(
-                          'bvid=$bvid&cid=$cid',
-                          arguments: {
-                            'pic': i['cover_url'],
-                            'heroTag': Utils.makeHeroTag(bvid),
-                          },
-                        );
-                      }
-                    } catch (err) {
-                      SmartDialog.dismiss();
-                      SmartDialog.showToast(err.toString());
+                  try {
+                    SmartDialog.showLoading();
+                    final int? cid = await SearchHttp.ab2c(bvid: bvid);
+                    SmartDialog.dismiss();
+                    if (cid != null) {
+                      PageUtils.toVideoPage(
+                        'bvid=$bvid&cid=$cid',
+                        arguments: {
+                          'pic': i['cover_url'],
+                          'heroTag': Utils.makeHeroTag(bvid),
+                        },
+                      );
                     }
-                  } else {
-                    SmartDialog.showToast('未匹配到 BV 号');
-                    PageUtils.handleWebview(i['jump_url']);
+                  } catch (err) {
+                    SmartDialog.dismiss();
+                    SmartDialog.showToast(err.toString());
                   }
-                },
+                                },
                 child: Row(
                   spacing: 6,
                   children: [

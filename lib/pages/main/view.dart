@@ -149,7 +149,7 @@ class _MainPageState extends State<MainPage> {
       // 修复：使用适合移动端的导航结构，避免页面嵌套冲突
       return fluent.ScaffoldPage(
         header: MediaQuery.of(context).size.width >= 640
-            ? fluent.PageHeader(title: const Text("BiliYou"))
+            ? const fluent.PageHeader(title: Text("BiliYou"))
             : null,
         content: Column(
           children: [
