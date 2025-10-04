@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/common/utils/bili_you_storage.dart';
 
 class SettingsLabel extends StatelessWidget {
   const SettingsLabel({super.key, required this.text});
