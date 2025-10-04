@@ -8,7 +8,6 @@ import 'package:bili_you/pages/home/index.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
-import 'package:bili_you/pages/mine/view.dart';
 import 'package:flutter/material.dart';
 // 添加 Fluent UI 和 Cupertino 导入
 import 'package:fluent_ui/fluent_ui.dart' as fluent;

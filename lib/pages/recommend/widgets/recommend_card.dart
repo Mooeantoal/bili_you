@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:bili_you/pages/bili_video/view.dart';
 import 'package:get/get.dart';
-import 'dart:ui'; // 导入用于高斯模糊的库
+// 导入用于高斯模糊的库
 
 class RecommendCard extends StatelessWidget {
   const RecommendCard(
