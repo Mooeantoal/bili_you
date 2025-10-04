@@ -8,7 +8,6 @@ import 'package:bili_you/common/widget/video_tile_item.dart';
 import 'package:bili_you/pages/bili_video/view.dart';
 import 'package:bili_you/pages/user_space/view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'index.dart';
@@ -125,69 +124,36 @@ class _IntroductionPageState extends State<IntroductionPage>
 
   @override
   void dispose() {
-    try {
-      controller.dispose();
-    } catch (e) {
-      print("释放IntroductionController时出错: $e");
-    }
+    controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Obx(() {
-      // 检查控制器状态
-      if (controller.isLoading.value) {
-        // 正在加载
-        return const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 10),
-              Text("正在加载视频信息..."),
-            ],
-          ),
-        );
-      } else if (controller.videoInfo == null && controller.isInitialized.value) {
-        // 加载失败
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.grey),
-              const SizedBox(height: 10),
-              const Text("加载失败，请重试"),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: () {
-                  controller.isInitialized.value = false;
-                  controller.loadVideoInfo();
-                },
+    return FutureBuilder(
+      future: controller.loadVideoInfo(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.data == true && controller.videoInfo != null) {
+            return _buildView(context, controller);
+          } else {
+            return Center(
+              child: IconButton(
                 icon: const Icon(Icons.refresh),
-                label: const Text("重新加载"),
+                onPressed: () {
+                  setState(() {});
+                },
               ),
-            ],
-          ),
-        );
-      } else if (controller.videoInfo != null) {
-        // 加载成功
-        return _buildView(context, controller);
-      } else {
-        // 默认状态 - 开始加载
-        return const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 10),
-              Text("正在准备加载..."),
-            ],
-          ),
-        );
-      }
-    });
+            );
+          }
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
   }
 }
 
@@ -241,12 +207,6 @@ class IntroductionText extends StatelessWidget {
   const IntroductionText({super.key, required this.controller});
   final IntroductionController controller;
 
-  // 构建视频标签组件（参考PiliPlus）
-  Widget _buildVideoTags(BuildContext context) {
-    // 暂时注释掉标签功能，因为VideoInfo模型中没有tags字段
-    return const SizedBox.shrink();
-  }
-
   @override
   Widget build(BuildContext context) {
     // 确保视频信息已加载
@@ -254,102 +214,87 @@ class IntroductionText extends StatelessWidget {
       return const SizedBox.shrink();
     }
     
-    return Padding(
-      padding: const EdgeInsets.all(4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 视频标题区域（添加长按复制功能）
-          Padding(
-            padding: const EdgeInsets.only(top: 5, bottom: 5),
-            child: GestureDetector(
-              onLongPress: () {
-                // 长按复制视频标题
-                Clipboard.setData(ClipboardData(text: controller.title.value));
-                Get.snackbar("提示", "已复制视频标题");
-              },
+    return SelectableRegion(
+      magnifierConfiguration: const TextMagnifierConfiguration(),
+      focusNode: FocusNode(),
+      selectionControls: MaterialTextSelectionControls(),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 5, bottom: 5),
               child: Obx(() => Text(
                     controller.title.value,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 16),
                   )),
             ),
-          ),
-          // 播放统计信息
-          Row(
-            children: [
-              Icon(
-                Icons.slideshow_rounded,
-                size: 14,
-                color: Theme.of(context).hintColor,
-              ),
-              Text(
-                " ${StringFormatUtils.numFormat(controller.videoInfo!.playNum)}  ",
-                style: TextStyle(
-                  fontSize: 12,
+            Row(
+              children: [
+                Icon(
+                  Icons.slideshow_rounded,
+                  size: 14,
                   color: Theme.of(context).hintColor,
                 ),
-              ),
-              Icon(
-                Icons.format_list_bulleted_rounded,
-                size: 14,
-                color: Theme.of(context).hintColor,
-              ),
-              Text(
-                " ${controller.videoInfo!.danmaukuNum}   ",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).hintColor,
-                ),
-              ),
-              Text(
-                "${StringFormatUtils.timeStampToDate(controller.videoInfo!.pubDate)} ${StringFormatUtils.timeStampToTime(controller.videoInfo!.pubDate)}",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).hintColor,
-                ),
-              )
-            ],
-          ),
-          // 视频ID和版权信息
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  // 点击复制BVID
-                  Clipboard.setData(ClipboardData(text: controller.videoInfo!.bvid));
-                  Get.snackbar("提示", "已复制视频ID: ${controller.videoInfo!.bvid}");
-                },
-                child: Text(
-                  "${controller.videoInfo!.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo!.bvid)}   ${controller.videoInfo!.copyRight}",
+                Text(
+                  " ${StringFormatUtils.numFormat(controller.videoInfo!.playNum)}  ",
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).hintColor,
                   ),
                 ),
-              )
-            ],
-          ),
-          // 视频简介（添加展开/收起功能）
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Obx(
-              () => FoldableText(
-                //简介详细
-                controller.describe.value,
-                style: TextStyle(
-                  fontSize: 14,
+                Icon(
+                  Icons.format_list_bulleted_rounded,
+                  size: 14,
                   color: Theme.of(context).hintColor,
                 ),
-                maxLines: 6,
-                folderTextStyle: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary),
-              ),
+                Text(
+                  " ${controller.videoInfo!.danmaukuNum}   ",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).hintColor,
+                  ),
+                ),
+                Text(
+                  "${StringFormatUtils.timeStampToDate(controller.videoInfo!.pubDate)} ${StringFormatUtils.timeStampToTime(controller.videoInfo!.pubDate)}",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).hintColor,
+                  ),
+                )
+              ],
             ),
-          ),
-          // 视频标签
-          _buildVideoTags(context),
-        ],
+            Row(
+              children: [
+                Text(
+                  "${controller.videoInfo!.bvid}  AV${BvidAvidUtil.bvid2Av(controller.videoInfo!.bvid)}   ${controller.videoInfo!.copyRight}",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).hintColor,
+                  ),
+                )
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Obx(
+                () => FoldableText(
+                  //简介详细
+                  controller.describe.value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).hintColor,
+                  ),
+                  maxLines: 6,
+                  folderTextStyle: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.primary),
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

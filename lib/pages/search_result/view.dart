@@ -23,29 +23,13 @@ class _SearchResultPageState extends State<SearchResultPage>
 
   @override
   void initState() {
-    // 确保关键词不为空
-    if (widget.keyWord.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar("错误", "搜索关键词不能为空");
-        Get.back();
-      });
-    }
-    
-    try {
-      controller = Get.put(SearchResultController(keyWord: widget.keyWord));
-    } catch (e) {
-      print("初始化SearchResultController时出错: $e");
-    }
+    controller = Get.put(SearchResultController(keyWord: widget.keyWord));
     super.initState();
   }
 
   @override
   void dispose() {
-    try {
-      controller.dispose();
-    } catch (e) {
-      print("释放SearchResultController时出错: $e");
-    }
+    controller.dispose();
     super.dispose();
   }
 
@@ -64,10 +48,11 @@ class _SearchResultPageState extends State<SearchResultPage>
                   border: InputBorder.none,
                 ),
                 onTap: () {
-                  Get.to(() => SearchInputPage(
-                        defaultHintSearchWord: widget.keyWord,
-                        defaultInputSearchWord: widget.keyWord,
-                      ));
+                  Navigator.of(context).pushReplacement(GetPageRoute(
+                      page: () => SearchInputPage(
+                            defaultHintSearchWord: widget.keyWord,
+                            defaultInputSearchWord: widget.keyWord,
+                          )));
                 },
               ),
             ),
@@ -85,18 +70,14 @@ class _SearchResultPageState extends State<SearchResultPage>
         bottom: TabBar(
             controller: controller.tabController,
             onTap: (value) {
-              try {
-                if (controller.currentSelectedTabIndex == value) {
-                  //移动到顶部
-                  Get.find<SearchTabViewController>(
-                          tag: controller.getTabTagNameByIndex(value))
-                      .animateToTop();
-                }
-                controller.currentSelectedTabIndex = value;
-                controller.tabController.animateTo(value);
-              } catch (e) {
-                print("Tab切换时出错: $e");
+              if (controller.currentSelectedTabIndex == value) {
+                //移动到顶部
+                Get.find<SearchTabViewController>(
+                        tag: controller.getTabTagNameByIndex(value))
+                    .animateToTop();
               }
+              controller.currentSelectedTabIndex = value;
+              controller.tabController.animateTo(value);
             },
             tabs: [
               for (var i in SearchType.values)
@@ -109,27 +90,6 @@ class _SearchResultPageState extends State<SearchResultPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
-    // 检查控制器是否已初始化
-    if (controller == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("搜索结果")),
-        body: const Center(
-          child: Text("页面初始化失败"),
-        ),
-      );
-    }
-    
-    // 检查关键词是否为空
-    if (widget.keyWord.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("搜索结果")),
-        body: const Center(
-          child: Text("搜索关键词不能为空"),
-        ),
-      );
-    }
-    
     return Scaffold(
       appBar: _appBar(context, controller),
       body: TabBarView(

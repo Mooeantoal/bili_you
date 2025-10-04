@@ -28,8 +28,7 @@ class IntroductionController extends GetxController {
   RxString describe = "".obs;
 
   VideoInfo? videoInfo; // 允许为null，直到加载完成
-  RxBool isInitialized = false.obs;
-  RxBool isLoading = false.obs;
+  bool isInitialized = false;
 
   final bool isBangumi;
   final Function(String bvid, int cid) changePartCallback;
@@ -42,57 +41,34 @@ class IntroductionController extends GetxController {
   final List<Widget> partButtons = []; //分p按钮列表
   final List<VideoTileInfo> relatedVideoInfos = []; //相关视频列表
 
-  //加载视频信息
+//加载视频信息
   Future<bool> loadVideoInfo() async {
-    // 如果已经在加载或已初始化，则直接返回
-    if (isLoading.value || isInitialized.value) {
-      return isInitialized.value;
+    if (isInitialized) {
+      return true;
     }
-    
-    isLoading.value = true;
     try {
       videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
       // 确保videoInfo不为null
       if (videoInfo == null) {
-        isLoading.value = false;
-        isInitialized.value = true; // 标记为已初始化但失败
         return false;
       }
     } catch (e) {
       log("loadVideoInfo:$e");
-      isLoading.value = false;
-      isInitialized.value = true; // 标记为已初始化但失败
       return false;
     }
-    
-    try {
-      title.value = videoInfo!.title;
-      describe.value = videoInfo!.describe;
-    } catch (e) {
-      log("设置标题或描述时出错:$e");
+    title.value = videoInfo!.title;
+    describe.value = videoInfo!.describe;
+    if (!isBangumi) {
+      //当是普通视频时
+      //初始化时构造分p按钮
+      _loadVideoPartButtons();
+      //构造相关视频
+      await _loadRelatedVideos();
+    } else {
+      //如果是番剧
+      await _loadBangumiPartButtons();
     }
-    
-    // 清空之前的分P按钮
-    partButtons.clear();
-    
-    try {
-      if (!isBangumi) {
-        //当是普通视频时
-        //初始化时构造分p按钮
-        _loadVideoPartButtons();
-        //构造相关视频
-        await _loadRelatedVideos();
-      } else {
-        //如果是番剧
-        await _loadBangumiPartButtons();
-      }
-    } catch (e) {
-      log("加载分P按钮或相关视频时出错:$e");
-      // 即使这部分出错，也不影响主要信息显示
-    }
-    
-    isInitialized.value = true;
-    isLoading.value = false;
+    isInitialized = true;
     return true;
   }
 
@@ -111,20 +87,13 @@ class IntroductionController extends GetxController {
               changePartCallback(bvid, cid);
               if (isBangumi) {
                 //如果是番剧的还，切换时还需要改变标题，简介
-                try {
-                  videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
-                  //刷新操作按钮(如点赞之类的按钮)
-                  refreshOperationButton?.call();
-                  if (videoInfo != null) {
-                    title.value = videoInfo!.title;
-                    describe.value = videoInfo!.describe;
-                  }
-                  //评论区也要刷新
-                  refreshReply();
-                } catch (e) {
-                  log("切换番剧分集时出错:$e");
-                  Get.snackbar("错误", "切换分集失败");
-                }
+                videoInfo = await VideoInfoApi.getVideoInfo(bvid: bvid);
+                //刷新操作按钮(如点赞之类的按钮)
+                refreshOperationButton?.call();
+                title.value = videoInfo!.title;
+                describe.value = videoInfo!.describe;
+                //评论区也要刷新
+                refreshReply();
               }
             },
             child: Text(text)),
@@ -141,26 +110,22 @@ class IntroductionController extends GetxController {
     }
   }
 
-  //构造番剧剧集按钮
+//构造番剧剧集按钮
   Future<void> _loadBangumiPartButtons() async {
     // 确保ssid不为null
     if (ssid == null) {
       return;
     }
-    try {
-      var bangumiInfo = await BangumiApi.getBangumiInfo(ssid: ssid);
-      for (int i = 0; i < bangumiInfo.episodes.length; i++) {
-        _addAButtion(bangumiInfo.episodes[i].bvid, bangumiInfo.episodes[i].cid,
-            bangumiInfo.episodes[i].title, i);
-      }
-    } catch (e) {
-      log("加载番剧剧集按钮时出错:$e");
+    var bangumiInfo = await BangumiApi.getBangumiInfo(ssid: ssid);
+    for (int i = 0; i < bangumiInfo.episodes.length; i++) {
+      _addAButtion(bangumiInfo.episodes[i].bvid, bangumiInfo.episodes[i].cid,
+          bangumiInfo.episodes[i].title, i);
     }
   }
 
-  //构造相关视频
+//构造相关视频
   Future<void> _loadRelatedVideos() async {
-    List<VideoTileInfo> list = [];
+    late List<VideoTileInfo> list;
     try {
       list = await RelatedVideoApi.getRelatedVideo(bvid: bvid);
     } catch (e) {
@@ -174,53 +139,52 @@ class IntroductionController extends GetxController {
   Future<void> onLikePressed() async {
     // 确保videoInfo不为null
     if (videoInfo == null) {
-      Get.snackbar("提示", "视频信息未加载完成");
       return;
     }
     
+    late ClickLikeResult result;
     try {
-      ClickLikeResult result = await VideoOperationApi.clickLike(
+      result = await VideoOperationApi.clickLike(
           bvid: videoInfo!.bvid, likeOrCancelLike: !videoInfo!.hasLike);
-      
-      if (result.isSuccess) {
-        videoInfo!.hasLike = result.haslike;
-        if (result.haslike) {
-          log('${result.haslike}');
-          videoInfo!.likeNum++;
-        } else {
-          log('${result.haslike}');
-          videoInfo!.likeNum--;
-        }
-      } else {
-        Get.showSnackbar(GetSnackBar(
-          message: "失败:${result.error}",
-          duration: const Duration(milliseconds: 1000),
-        ));
-      }
-      refreshOperationButton!.call();
     } catch (e) {
-      log('onLikePressed错误:$e');
       Get.showSnackbar(GetSnackBar(
-        message: "操作失败，请重试",
+        message: "失败:${result.error}",
+        duration: const Duration(milliseconds: 1000),
+      ));
+      return;
+    }
+
+    if (result.isSuccess) {
+      videoInfo!.hasLike = result.haslike;
+      if (result.haslike) {
+        log('${result.haslike}');
+        videoInfo!.likeNum++;
+      } else {
+        log('${result.haslike}');
+        videoInfo!.likeNum--;
+      }
+    } else {
+      Get.showSnackbar(GetSnackBar(
+        message: "失败:${result.error}",
         duration: const Duration(milliseconds: 1000),
       ));
     }
+    refreshOperationButton!.call();
   }
 
   Future<void> onAddCoinPressed() async {
     // 确保videoInfo不为null
     if (videoInfo == null) {
-      Get.snackbar("提示", "视频信息未加载完成");
       return;
     }
     
+    late ClickAddCoinResult result;
     try {
-      ClickAddCoinResult result = await VideoOperationApi.addCoin(bvid: bvid);
+      result = await VideoOperationApi.addCoin(bvid: bvid);
       if (result.isSuccess) {
         videoInfo!.hasAddCoin = result.isSuccess;
         videoInfo!.coinNum++;
         refreshOperationButton!.call();
-        Get.snackbar("提示", "投币成功");
       } else {
         Get.showSnackbar(GetSnackBar(
           message: "失败:${result.error}",
@@ -228,9 +192,9 @@ class IntroductionController extends GetxController {
         ));
       }
     } catch (e) {
-      log('onAddCoinPressed错误:$e');
+      log('onAddCoinPressed$e');
       Get.showSnackbar(GetSnackBar(
-        message: "投币失败，请重试",
+        message: "失败:${result.error}",
         duration: const Duration(milliseconds: 1000),
       ));
     }
@@ -239,7 +203,6 @@ class IntroductionController extends GetxController {
   Future<void> onAddSharePressed() async {
     // 确保videoInfo不为null
     if (videoInfo == null) {
-      Get.snackbar("提示", "视频信息未加载完成");
       return;
     }
     
@@ -247,14 +210,11 @@ class IntroductionController extends GetxController {
       ClickAddShareResult result = await VideoOperationApi.share(bvid: bvid);
       if (result.isSuccess) {
         videoInfo!.shareNum = result.currentShareNum;
-        Get.snackbar("提示", "分享成功");
       } else {
         log('分享失败:${result.error}');
-        Get.snackbar("提示", "分享失败: ${result.error}");
       }
       Share.share('${ApiConstants.bilibiliBase}/video/$bvid');
     } catch (e) {
-      log('onAddSharePressed错误:$e');
       Get.rawSnackbar(message: '分享失败:$e');
     }
     refreshOperationButton!.call();
@@ -262,11 +222,7 @@ class IntroductionController extends GetxController {
 
   @override
   void onClose() {
-    try {
-      cacheManager.emptyCache();
-    } catch (e) {
-      log("清空缓存时出错:$e");
-    }
+    cacheManager.emptyCache();
     super.onClose();
   }
 }
