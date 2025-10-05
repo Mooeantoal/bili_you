@@ -36,9 +36,9 @@ class MyApp extends StatelessWidget {
       // 检查是否启用 Cupertino 主题
       if (SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false)) {
         // 使用 Cupertino UI
-        return cupertino.CupertinoApp(
-          theme: const cupertino.CupertinoThemeData(),
-          home: const MainPage(),
+        return const cupertino.CupertinoApp(
+          theme: cupertino.CupertinoThemeData(),
+          home: MainPage(),
         );
       }
       // 检查是否启用 Fluent UI 主题
@@ -75,10 +75,10 @@ class MyApp extends StatelessWidget {
                 ? const SizedBox()
                 : MediaQuery(
                     data: MediaQuery.of(context).copyWith(
-                        textScaleFactor: MediaQuery.of(context).textScaleFactor *
+                        textScaler: TextScaler.linear(MediaQuery.of(context).textScaleFactor *
                             SettingsUtil.getValue(
                                 SettingsStorageKeys.textScaleFactor,
-                                defaultValue: 1.0)),
+                                defaultValue: 1.0))),
                     child: child));
       }
     }));

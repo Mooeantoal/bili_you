@@ -34,16 +34,12 @@ class _HomePageState extends State<HomePage>
   void initState() {
     controller = Get.put(HomeController());
     tabsList = controller.tabsList;
-    controller.tabController = TabController(
-        length: tabsList.length,
-        vsync: this,
-        initialIndex: controller.tabInitIndex);
     super.initState();
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    // 注意：这里不再需要 dispose tabController，因为我们不再使用它
     super.dispose();
   }
 
@@ -91,43 +87,53 @@ class _HomePageState extends State<HomePage>
           ),
         ),
         centerTitle: true,
-        bottom: TabBar(
-          isScrollable: true,
-          tabs: tabsList.map((e) => Tab(text: e['text'])).toList(),
-          controller: controller.tabController,
-          onTap: (index) {
-            if (controller.tabController!.indexIsChanging) return;
-            switch (index) {
-              case 0:
-                Get.find<LiveTabPageController>().animateToTop();
-                break;
-              case 1:
-                Get.find<RecommendController>().animateToTop();
-                break;
-              case 2:
-                Get.find<PopularVideoController>().animateToTop();
-                break;
-              default:
-            }
-          },
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Container(
+            height: 60,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Obx(() => SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: '直播', label: Text('直播')),
+                ButtonSegment(value: '推荐', label: Text('推荐')),
+                ButtonSegment(value: '热门', label: Text('热门')),
+                ButtonSegment(value: '番剧', label: Text('番剧')),
+              ],
+              selected: <String>{controller.selectedTab.value},
+              onSelectionChanged: (Set<String> newSelection) {
+                controller.selectedTab.value = newSelection.first;
+                // 根据选择的标签滚动到对应页面的顶部
+                switch (newSelection.first) {
+                  case '直播':
+                    Get.find<LiveTabPageController>().animateToTop();
+                    break;
+                  case '推荐':
+                    Get.find<RecommendController>().animateToTop();
+                    break;
+                  case '热门':
+                    Get.find<PopularVideoController>().animateToTop();
+                    break;
+                  default:
+                }
+              },
+            )),
+          ),
         ),
       ),
-      body: TabBarView(
-        controller: controller.tabController,
-        // 修复类型不匹配错误：显式指定Widget类型
-        children: tabsList.map<Widget>((e) {
-          switch (e['text']) {
-            case '直播':
-              return liveTabPage;
-            case '推荐':
-              return recommendPage;
-            case '热门':
-              return popularVideoPage;
-            default:
-              return const Center(child: Text("该功能暂无"));
-          }
-        }).toList(),
-      ),
+      body: Obx(() {
+        switch (controller.selectedTab.value) {
+          case '直播':
+            return liveTabPage;
+          case '推荐':
+            return recommendPage;
+          case '热门':
+            return popularVideoPage;
+          case '番剧':
+            return const Center(child: Text("该功能暂无"));
+          default:
+            return const Center(child: Text("该功能暂无"));
+        }
+      }),
     );
   }
 

@@ -26,6 +26,7 @@ class HomeController extends GetxController {
   late TabController? tabController;
   final int tabInitIndex = 1;
   RxInt tabIndex = 1.obs;
+  RxString selectedTab = "推荐".obs; // 添加选中的标签状态
 
   _initData() async {
     refreshDefaultSearchWord();

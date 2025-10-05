@@ -1,7 +1,6 @@
 import 'package:bili_you/common/models/local/home/recommend_item_info.dart';
 import 'package:bili_you/common/utils/string_format_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'dart:ui'; // 导入用于毛玻璃效果的库
 
 class WebStyleVideoCard extends StatelessWidget {
