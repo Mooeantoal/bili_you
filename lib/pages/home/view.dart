@@ -6,7 +6,7 @@ import 'package:bili_you/pages/home/controller.dart';
 import 'package:bili_you/pages/live_tab_page/view.dart';
 import 'package:bili_you/pages/recommend/view.dart';
 import 'package:bili_you/pages/popular_video/view.dart';
-import 'package:bili_you/pages/dynamic_page/view.dart'; // 添加动态页面导入
+// 移除了动态页面的导入
 
 // 移除UiTestPage导入
 // 添加控制器导入
@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage>
   final RecommendPage recommendPage = const RecommendPage();
   final PopularVideoPage popularVideoPage = const PopularVideoPage();
   final LiveTabPage liveTabPage = const LiveTabPage();
-  final DynamicPage dynamicPage = const DynamicPage(); // 添加动态页面实例
+  // 移除了动态页面实例
   List<Map<String, dynamic>> tabsList = [];
 
   @override
@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage>
                 Get.find<PopularVideoController>().animateToTop();
                 break;
               default:
-                // 动态、番剧等页面暂时没有滚动控制器
+                // 番剧等页面暂时没有滚动控制器
                 break;
             }
           },
@@ -101,8 +101,7 @@ class _HomePageState extends State<HomePage>
           Expanded(
             child: Obx(() {
               switch (controller.selectedTab.value) {
-                case '动态':
-                  return dynamicPage;
+                // 删除了动态页面的case
                 case '直播':
                   return liveTabPage;
                 case '推荐':
@@ -123,7 +122,7 @@ class _HomePageState extends State<HomePage>
             child: Obx(() => Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildCardButton('动态', controller.selectedTab.value == '动态'),
+                // 删除了动态标签按钮
                 _buildCardButton('直播', controller.selectedTab.value == '直播'),
                 _buildCardButton('推荐', controller.selectedTab.value == '推荐'),
                 _buildCardButton('热门', controller.selectedTab.value == '热门'),

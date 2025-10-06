@@ -16,7 +16,7 @@ class HomeController extends GetxController {
   late LoginUserInfo userInfo;
 
   final List<Map<String, String>> tabsList = [
-    {'text': '动态', 'id': '', 'controller': ''}, // 添加动态标签
+    // 删除了动态标签
     {'text': '直播', 'id': '', 'controller': 'LiveTabPageController'},
     {'text': '推荐', 'id': '', 'controller': 'RecommendController'},
     {'text': '热门', 'id': '', 'controller': 'PopularVideoController'},

@@ -63,7 +63,14 @@ class _MainPageState extends State<MainPage> {
           }
         }
       }
-      // 移除了对 DynamicPage 的处理，因为现在已经被 SearchInputPage 替代
+      if (currentPage is DynamicPage) {
+        var dynamicController = Get.find<DynamicController>();
+        if (dynamicController.scrollController.offset == 0) {
+          dynamicController.refreshController.callRefresh();
+        } else {
+          dynamicController.animateToTop();
+        }
+      }
     }
     controller.selectedIndex.value = value;
   }
@@ -90,6 +97,11 @@ class _MainPageState extends State<MainPage> {
                   icon: Icon(Icons.home_outlined),
                   selectedIcon: Icon(Icons.home),
                   label: Text("首页"),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.star_border_outlined),
+                  label: Text("动态"),
+                  selectedIcon: Icon(Icons.star),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.search_outlined),
@@ -131,6 +143,11 @@ class _MainPageState extends State<MainPage> {
                     icon: Icon(Icons.home_outlined),
                     activeIcon: Icon(Icons.home),
                     label: "首页",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.star_border_outlined),
+                    activeIcon: Icon(Icons.star),
+                    label: "动态",
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.search_outlined),

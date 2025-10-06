@@ -13,7 +13,8 @@ class MainController extends GetxController {
   void onInit() {
     pages = [
       const HomePage(),
-      const SearchInputPage(defaultHintSearchWord: "搜索"),
+      const DynamicPage(), // 恢复动态页面
+      const SearchInputPage(defaultHintSearchWord: "搜索"), // 保留搜索页面
       const MinePage(),
     ];
     super.onInit();
