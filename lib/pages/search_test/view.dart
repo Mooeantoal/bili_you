@@ -199,7 +199,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                   height: 34,
                   child: TextButton.icon(
                     style: const ButtonStyle(
-                      padding: MaterialStatePropertyAll(
+                      padding: WidgetStatePropertyAll(
                         EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
@@ -227,7 +227,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
           Obx(
             () => _buildHotKey(
               isHot
-                  ? _searchController.hotSearchData.value
+                  ? _searchController.hotSearchData.value // 使用复用的热搜数据
                   : _searchController.recommendData.value,
               isHot,
             ),
@@ -307,7 +307,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                       height: 34,
                       child: TextButton.icon(
                         style: ButtonStyle(
-                          padding: MaterialStateProperty.all(
+                          padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,
@@ -356,7 +356,21 @@ class _SearchTestPageState extends State<SearchTestPage> {
       return const SizedBox.shrink();
     }
 
-    if (data is SearchTrendingData || data is SearchRcmdData) {
+    // 处理复用的热搜数据
+    if (isHot && data is List) {
+      // 如果是复用的热搜数据 (List<HotWordItem>)
+      if (data.isNotEmpty) {
+        return LayoutBuilder(
+          builder: (context, constraints) => HotKeyword(
+            width: constraints.maxWidth,
+            hotSearchList: data as List<dynamic>, // 直接使用数据
+            onClick: _searchController.onClickKeyword,
+          ),
+        );
+      }
+    } 
+    // 处理搜索推荐数据
+    else if (data is SearchTrendingData || data is SearchRcmdData) {
       final list = data.list;
       if (list != null && list.isNotEmpty) {
         return LayoutBuilder(

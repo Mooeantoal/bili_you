@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:bili_you/common/api/search_api.dart'; // 导入SearchApi
+import 'package:bili_you/common/models/local/search/hot_word_item.dart'; // 导入HotWordItem
 import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/search_test/api.dart';
@@ -34,7 +36,7 @@ class SearchTestController extends GetxController {
 
   // trending
   final bool enableHotKey = true;
-  late final Rx<SearchTrendingData?> hotSearchData;
+  late final Rx<List<HotWordItem>> hotSearchData; // 修改为复用的HotWordItem列表
 
   // rcmd
   final bool enableSearchRcmd = true;
@@ -63,8 +65,8 @@ class SearchTestController extends GetxController {
     }
 
     if (enableHotKey) {
-      hotSearchData = Rx<SearchTrendingData?>(null);
-      queryHotSearchList();
+      hotSearchData = Rx<List<HotWordItem>>([]); // 初始化为空列表
+      queryHotSearchList(); // 获取热搜数据
     }
 
     if (enableSearchRcmd) {
@@ -122,13 +124,11 @@ class SearchTestController extends GetxController {
     searchFocusNode.requestFocus();
   }
 
-  // 获取热搜关键词
+  // 获取热搜关键词 - 复用当前搜索页面的热搜数据
   Future<void> queryHotSearchList() async {
     try {
-      var res = await SearchTestApi.getHotSearchList(limit: 10);
-      if (res['code'] == 0) {
-        hotSearchData.value = SearchTrendingData.fromJson(res['data']);
-      }
+      List<HotWordItem> wordList = await SearchApi.getHotWords();
+      hotSearchData.value = wordList;
     } catch (e) {
       print('获取热搜榜失败: $e');
     }
