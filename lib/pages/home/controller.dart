@@ -1,9 +1,8 @@
 import 'dart:developer';
 
-import 'package:bili_you/common/api/index.dart';
+import 'package:bili_you/common/api/index.dart'; // 保留API导入，因为需要LoginApi
 import 'package:bili_you/common/models/local/login/login_user_info.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
-import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/utils/cache_util.dart';
 import 'package:flutter/material.dart';
 
@@ -16,37 +15,22 @@ class HomeController extends GetxController {
   RxString faceUrl = ApiConstants.noface.obs;
   late LoginUserInfo userInfo;
 
-  RxString defaultSearchWord = "搜索".obs;
   final List<Map<String, String>> tabsList = [
+    {'text': '动态', 'id': '', 'controller': ''}, // 添加动态标签
     {'text': '直播', 'id': '', 'controller': 'LiveTabPageController'},
     {'text': '推荐', 'id': '', 'controller': 'RecommendController'},
     {'text': '热门', 'id': '', 'controller': 'PopularVideoController'},
     {'text': '番剧', 'id': '', 'controller': ''}
   ];
-  late TabController? tabController;
   final int tabInitIndex = 1;
   RxInt tabIndex = 1.obs;
   RxString selectedTab = "推荐".obs; // 添加选中的标签状态
 
   _initData() async {
-    refreshDefaultSearchWord();
+    // 移除了与搜索相关的初始化代码
   }
 
-  //刷新搜索框默认词
-  refreshDefaultSearchWord() async {
-    if (!SettingsUtil.getValue(SettingsStorageKeys.showSearchDefualtWord,
-        defaultValue: true)) {
-      //如果没有开启默认词的话，就直接跳出
-      defaultSearchWord.value = "搜索";
-      return;
-    }
-    try {
-      defaultSearchWord.value =
-          (await SearchApi.getDefaultSearchWords()).showName;
-    } catch (e) {
-      log("refreshDefaultSearchWord:$e");
-    }
-  }
+  // 移除了刷新搜索框默认词的方法
 
   // @override
   // void onInit() {

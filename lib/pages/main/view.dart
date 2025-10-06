@@ -8,6 +8,7 @@ import 'package:bili_you/pages/home/index.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
+import 'package:bili_you/pages/search_input/index.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -62,14 +63,7 @@ class _MainPageState extends State<MainPage> {
           }
         }
       }
-      if (currentPage is DynamicPage) {
-        var dynamicController = Get.find<DynamicController>();
-        if (dynamicController.scrollController.offset == 0) {
-          dynamicController.refreshController.callRefresh();
-        } else {
-          dynamicController.animateToTop();
-        }
-      }
+      // 移除了对 DynamicPage 的处理，因为现在已经被 SearchInputPage 替代
     }
     controller.selectedIndex.value = value;
   }
@@ -98,9 +92,9 @@ class _MainPageState extends State<MainPage> {
                   label: Text("首页"),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.star_border_outlined),
-                  label: Text("动态"),
-                  selectedIcon: Icon(Icons.star),
+                  icon: Icon(Icons.search_outlined),
+                  label: Text("搜索"),
+                  selectedIcon: Icon(Icons.search),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.person_outline),
@@ -139,9 +133,9 @@ class _MainPageState extends State<MainPage> {
                     label: "首页",
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.star_border_outlined),
-                    activeIcon: Icon(Icons.star),
-                    label: "动态",
+                    icon: Icon(Icons.search_outlined),
+                    activeIcon: Icon(Icons.search),
+                    label: "搜索",
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.person_outline),
