@@ -19,8 +19,9 @@ class SearchResultController extends GetxController
 
   @override
   void onInit() {
+    // SearchType有5个值，所以长度应该是5
     tabController = TabController(
-        length: 5, vsync: this, initialIndex: currentSelectedTabIndex);
+        length: SearchType.values.length, vsync: this, initialIndex: currentSelectedTabIndex);
     super.onInit();
   }
 }

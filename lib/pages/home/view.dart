@@ -115,22 +115,22 @@ class _HomePageState extends State<HomePage>
               }
             }),
           ),
-          // 标签栏移到底部
-          Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Obx(() => Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // 删除了动态标签按钮
-                _buildCardButton('直播', controller.selectedTab.value == '直播'),
-                _buildCardButton('推荐', controller.selectedTab.value == '推荐'),
-                _buildCardButton('热门', controller.selectedTab.value == '热门'),
-                _buildCardButton('番剧', controller.selectedTab.value == '番剧'),
-              ],
-            )),
-          ),
         ],
+      ),
+      // 将标签栏移到Scaffold的bottomNavigationBar属性中，确保始终可见
+      bottomNavigationBar: Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Obx(() => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // 删除了动态标签按钮
+            _buildCardButton('直播', controller.selectedTab.value == '直播'),
+            _buildCardButton('推荐', controller.selectedTab.value == '推荐'),
+            _buildCardButton('热门', controller.selectedTab.value == '热门'),
+            _buildCardButton('番剧', controller.selectedTab.value == '番剧'),
+          ],
+        )),
       ),
     );
   }
