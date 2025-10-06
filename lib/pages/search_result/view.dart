@@ -50,11 +50,8 @@ class _SearchResultPageState extends State<SearchResultPage>
                   border: InputBorder.none,
                 ),
                 onTap: () {
-                  Navigator.of(context).pushReplacement(GetPageRoute(
-                      page: () => SearchInputPage(
-                            defaultHintSearchWord: widget.keyWord,
-                            defaultInputSearchWord: widget.keyWord,
-                          )));
+                  // 修改为返回到搜索页面而不是替换
+                  Navigator.of(context).pop();
                 },
               ),
             ),

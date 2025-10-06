@@ -92,8 +92,8 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       appBar: AppBar(
         // 移除了搜索栏组件
-        centerTitle: true,
-        title: const Text("首页"), // 添加简单的标题
+        centerTitle: false, // 改为false，使标题左对齐
+        title: const Text("首页"), // 简单的标题，左对齐
       ),
       body: Column(
         children: [

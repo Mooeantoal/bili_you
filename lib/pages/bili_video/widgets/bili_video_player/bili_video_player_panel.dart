@@ -7,12 +7,14 @@ import 'package:bili_you/common/utils/index.dart';
 import 'package:bili_you/common/widget/slider_dialog.dart';
 import 'package:bili_you/common/widget/video_audio_player.dart';
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
+import 'package:bili_you/pages/main/controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 
 class BiliVideoPlayerPanel extends StatefulWidget {
   const BiliVideoPlayerPanel(this.controller, {super.key});
@@ -303,9 +305,26 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                         //主页面按钮
                         IconButton(
                             onPressed: () {
-                              //回到主页面
-                              Navigator.popUntil(
-                                  context, (route) => route.isFirst);
+                              // 修改为返回到首页
+                              // 首先检查是否在全屏模式下，如果是则退出全屏
+                              if (widget.controller._biliVideoPlayerController.isFullScreen) {
+                                Navigator.of(context).pop();
+                              }
+                              // 然后导航到首页
+                              Navigator.popUntil(context, (route) {
+                                // 如果路由是主页面，则选择首页标签
+                                if (route.settings.name == '/') {
+                                  // 获取主控制器并设置选中首页
+                                  try {
+                                    final mainController = Get.find<MainController>();
+                                    mainController.selectedIndex.value = 0;
+                                  } catch (e) {
+                                    // 如果找不到控制器，忽略错误
+                                    log("无法找到MainController: $e");
+                                  }
+                                }
+                                return route.isFirst;
+                              });
                             },
                             icon: const Icon(
                               Icons.home_outlined,
