@@ -443,17 +443,17 @@ class ThumUpButton extends StatelessWidget {
         onPressed: onPressed,
         style: ButtonStyle(
           visualDensity: VisualDensity.comfortable,
-          padding: WidgetStateProperty.all(
+          padding: WidgetStateProperty.resolveWith((states) =>
               const EdgeInsets.all(5)),
           foregroundColor: selected == true
-              ? WidgetStateProperty.all(
+              ? WidgetStateProperty.resolveWith((states) =>
                   Theme.of(context).colorScheme.onPrimary)
               : null,
           backgroundColor: selected == true
-              ? WidgetStateProperty.all(Theme.of(context).colorScheme.primary)
+              ? WidgetStateProperty.resolveWith((states) => Theme.of(context).colorScheme.primary)
               : null,
-          elevation: WidgetStateProperty.all(0),
-          minimumSize: WidgetStateProperty.all(const Size(10, 5)),
+          elevation: WidgetStateProperty.resolveWith((states) => 0),
+          minimumSize: WidgetStateProperty.resolveWith((states) => const Size(10, 5)),
         ),
         child: Row(
           children: [

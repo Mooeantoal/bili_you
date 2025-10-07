@@ -200,7 +200,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                   height: 34,
                   child: TextButton.icon(
                     style: ButtonStyle(
-                      padding: WidgetStateProperty.all(
+                      padding: WidgetStateProperty.resolveWith((states) =>
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
@@ -308,7 +308,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                       height: 34,
                       child: TextButton.icon(
                         style: ButtonStyle(
-                          padding: WidgetStateProperty.all(
+                          padding: WidgetStateProperty.resolveWith((states) =>
                             const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,
