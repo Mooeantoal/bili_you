@@ -1,4 +1,3 @@
-library search;
-
-export './controller.dart';
-export './view.dart';
+export 'view.dart';
+export 'controller.dart';
+export 'widgets/index.dart';

@@ -2,6 +2,8 @@ import 'package:bili_you/common/api/api_constants.dart';
 import 'package:bili_you/common/api/wbi.dart';
 import 'package:bili_you/common/models/local/user_space/user_video_search.dart';
 import 'package:bili_you/common/models/network/user_space/user_video_search.dart';
+import 'package:bili_you/common/models/network/user_space/user_space_info.dart';
+import 'package:bili_you/common/models/network/user_space/user_space_stat.dart';
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
@@ -18,6 +20,72 @@ class UserSpaceApi {
       // 如果出现异常，默认认为未登录
       return false;
     }
+  }
+
+  static Future<UserSpaceInfoResponse> _requestUserSpaceInfo({
+    required int mid,
+  }) async {
+    bool isLogin = await _isLogin();
+    
+    var response = await HttpUtils().get(ApiConstants.userSpaceInfo,
+        queryParameters: await WbiSign.encodeParams({
+          "mid": mid,
+          "platform": "web",
+          "web_location": 1550101,
+        }),
+        // 为未登录用户添加特殊请求头
+        options: !isLogin
+            ? Options(
+                headers: {
+                  'user-agent': ApiConstants.userAgent,
+                  'referer': ApiConstants.bilibiliBase,
+                },
+              )
+            : null);
+    return UserSpaceInfoResponse.fromJson(response.data);
+  }
+
+  static Future<UserSpaceInfoData> getUserSpaceInfo({
+    required int mid,
+  }) async {
+    var response = await _requestUserSpaceInfo(mid: mid);
+    if (response.code != 0) {
+      throw "getUserSpaceInfo: code:${response.code}, message:${response.message}";
+    }
+    return response.data!;
+  }
+
+  static Future<UserSpaceStatResponse> _requestUserSpaceStat({
+    required int mid,
+  }) async {
+    bool isLogin = await _isLogin();
+    
+    var response = await HttpUtils().get(ApiConstants.userSpaceStat,
+        queryParameters: await WbiSign.encodeParams({
+          "mid": mid,
+          "platform": "web",
+          "web_location": 1550101,
+        }),
+        // 为未登录用户添加特殊请求头
+        options: !isLogin
+            ? Options(
+                headers: {
+                  'user-agent': ApiConstants.userAgent,
+                  'referer': ApiConstants.bilibiliBase,
+                },
+              )
+            : null);
+    return UserSpaceStatResponse.fromJson(response.data);
+  }
+
+  static Future<UserSpaceStatData> getUserSpaceStat({
+    required int mid,
+  }) async {
+    var response = await _requestUserSpaceStat(mid: mid);
+    if (response.code != 0) {
+      throw "getUserSpaceStat: code:${response.code}, message:${response.message}";
+    }
+    return response.data!;
   }
 
   static Future<UserVideoSearchResponse> _requestUserVideoSearch({

@@ -4,6 +4,7 @@ import 'package:bili_you/common/api/search_api.dart';
 import 'package:bili_you/common/models/local/search/hot_word_item.dart';
 import 'package:bili_you/common/models/local/search/search_suggest_item.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:bili_you/pages/search_input/widgets/search_suggest_item.dart';
 import 'package:bili_you/pages/search_result/index.dart';
 import 'package:bili_you/pages/search_result/view.dart';
 import 'package:flutter/material.dart';
@@ -60,25 +61,17 @@ class SearchInputPageController extends GetxController {
       list = await SearchApi.getSearchSuggests(keyWord: keyWord);
     } catch (e) {
       log("requestSearchSuggestions:$e");
+      return; // 添加返回语句，避免在出错时继续执行
     }
     searchSuggestionItems.clear();
     for (var i in list) {
       searchSuggestionItems.add(
-        SizedBox(
-          width: double.infinity,
-          child: InkWell(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                i.showWord,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ),
-            onTap: () {
-              setTextFieldText(i.realWord);
-              search(i.realWord);
-            },
-          ),
+        SearchSuggestItemWidget(
+          text: i.showWord,
+          onTap: () {
+            setTextFieldText(i.realWord);
+            search(i.realWord);
+          },
         ),
       );
     }
@@ -203,11 +196,3 @@ class SearchInputPageController extends GetxController {
   //   super.onClose();
   // }
 }
-
-
-
-
-
-
-
-

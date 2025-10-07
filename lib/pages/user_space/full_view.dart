@@ -4,6 +4,7 @@ import 'package:bili_you/pages/user_home/view.dart';
 import 'package:bili_you/pages/user_space/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 
 class FullUserSpacePage extends StatefulWidget {
   const FullUserSpacePage({super.key, required this.mid});
@@ -42,7 +43,7 @@ class _FullUserSpacePageState extends State<FullUserSpacePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("用户空间"),
+        title: Obx(() => Text(controller.username.value)),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -62,6 +63,7 @@ class _FullUserSpacePageState extends State<FullUserSpacePage>
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry>[
               const PopupMenuItem(
+                value: 'share',
                 child: Row(
                   children: [
                     Icon(Icons.share_outlined, size: 19),
@@ -72,6 +74,7 @@ class _FullUserSpacePageState extends State<FullUserSpacePage>
               ),
               const PopupMenuDivider(),
               const PopupMenuItem(
+                value: 'report',
                 child: Row(
                   children: [
                     Icon(Icons.error_outline, size: 19),
@@ -81,6 +84,43 @@ class _FullUserSpacePageState extends State<FullUserSpacePage>
                 ),
               ),
             ],
+            onSelected: (value) async {
+              if (value == 'share') {
+                // 实现分享功能
+                String shareText = '快来关注${controller.username.value}的B站空间吧！\n'
+                    'https://space.bilibili.com/${widget.mid}';
+                await Share.share(shareText);
+              } else if (value == 'report') {
+                // 实现举报功能
+                Get.defaultDialog(
+                  title: "举报用户",
+                  content: const Text("请选择举报原因"),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Get.back();
+                        Get.snackbar('提示', '举报成功，我们会尽快处理');
+                      },
+                      child: const Text("违规内容"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Get.back();
+                        Get.snackbar('提示', '举报成功，我们会尽快处理');
+                      },
+                      child: const Text("骚扰他人"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Get.back();
+                        Get.snackbar('提示', '举报成功，我们会尽快处理');
+                      },
+                      child: const Text("其他"),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
         ],
       ),

@@ -7,6 +7,7 @@ import 'package:bili_you/common/widget/settings_slider_tile.dart';
 import 'package:bili_you/common/widget/settings_switch_tile.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/recommend/index.dart';
+import 'package:bili_you/pages/video_test/video_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,6 +24,62 @@ class CommonSettingsPage extends StatelessWidget {
               subTitle: '是否在启动app时检查更新',
               settingsKey: SettingsStorageKeys.autoCheckUpdate,
               defualtValue: true),
+          const SettingsLabel(text: '界面设置'),
+          ListTile(
+            title: const Text('应用0.75倍默认UI大小'),
+            subtitle: const Text('使用更紧凑的界面布局'),
+            trailing: OutlinedButton(
+              onPressed: () {
+                SettingsUtil.applyDefaultUISize();
+                Get.snackbar('提示', '已应用0.75倍默认UI大小设置');
+              },
+              child: const Text('应用'),
+            ),
+          ),
+          SettingsSliderTile(
+            title: '界面密度',
+            subTitle: '调整界面元素的密度（0.75倍更紧凑）',
+            settingsKey: SettingsStorageKeys.interfaceDensity,
+            defualtValue: 1.0,
+            min: 0.5,
+            max: 1.5,
+            divisions: 100,
+            buildLabel: (selectingValue) =>
+                "${selectingValue.toStringAsFixed(2)}X",
+          ),
+          SettingsSliderTile(
+            title: '卡片间距',
+            subTitle: '调整卡片之间的间距',
+            settingsKey: SettingsStorageKeys.cardPadding,
+            defualtValue: 12.0,
+            min: 4.0,
+            max: 24.0,
+            divisions: 100,
+            buildLabel: (selectingValue) =>
+                "${selectingValue.toStringAsFixed(1)}dp",
+          ),
+          SettingsSliderTile(
+            title: '列表项缩放',
+            subTitle: '调整列表项的高度缩放',
+            settingsKey: SettingsStorageKeys.listItemScale,
+            defualtValue: 1.0,
+            min: 0.5,
+            max: 1.5,
+            divisions: 100,
+            buildLabel: (selectingValue) =>
+                "${selectingValue.toStringAsFixed(2)}X",
+          ),
+          SettingsSliderTile(
+            title: '字体大小缩放',
+            subTitle: '调整应用内字体大小',
+            settingsKey: SettingsStorageKeys.textScaleFactor,
+            defualtValue: 1.0,
+            min: 0.5,
+            max: 2.0,
+            divisions: 150,
+            buildLabel: (selectingValue) =>
+                "${selectingValue.toStringAsFixed(2)}X",
+          ),
           const SettingsLabel(text: '首页推荐'),
           SettingsRadiosTile(
             title: '推荐列数',
@@ -113,6 +170,14 @@ class CommonSettingsPage extends StatelessWidget {
             buildLabel: (selectingValue) => "${selectingValue}X",
           ),
           const SettingsLabel(text: '视频'),
+          ListTile(
+            title: const Text('视频测试'),
+            subtitle: const Text('测试视频播放和评论功能'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Get.to(() => const VideoTestPage());
+            },
+          ),
           SettingsSwitchTile(
             title: '启用硬解',
             subTitle: '是否启用硬件解码否则使用软解',

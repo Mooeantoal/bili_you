@@ -202,4 +202,10 @@ class ApiConstants {
 
   ///粉丝列表
   static const String followers = "$apiBase/x/relation/followers";
+  
+  ///用户空间信息
+  static const String userSpaceInfo = "$apiBase/x/space/wbi/acc/info";
+  
+  ///用户空间统计数据
+  static const String userSpaceStat = "$apiBase/x/space/upstat";
 }

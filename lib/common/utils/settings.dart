@@ -170,6 +170,14 @@ class SettingsUtil {
     return getValue(SettingsStorageKeys.listItemScale, defaultValue: 1.0);
   }
   
+  /// 应用0.75倍默认UI大小设置
+  static Future<void> applyDefaultUISize() async {
+    await setValue(SettingsStorageKeys.textScaleFactor, 0.75);
+    await setValue(SettingsStorageKeys.interfaceDensity, 0.75);
+    await setValue(SettingsStorageKeys.cardPadding, 8.0);
+    await setValue(SettingsStorageKeys.listItemScale, 0.75);
+  }
+  
   /// 应用界面密度优化设置
   static Future<void> applyDensityOptimization() async {
     // 推荐设置：适合解决DPI过小的问题

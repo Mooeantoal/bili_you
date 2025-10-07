@@ -31,8 +31,24 @@ class _MainPageState extends State<MainPage> {
         defaultValue: true)) {
       SettingsUtil.checkUpdate(context, showSnackBar: false);
     }
+    
+    // 检查是否需要应用默认的0.75倍UI大小设置
+    _applyDefaultUISizeIfNecessary();
+    
     controller = Get.put(MainController());
     super.initState();
+  }
+
+  /// 检查并应用默认的0.75倍UI大小设置
+  void _applyDefaultUISizeIfNecessary() {
+    // 检查是否是第一次启动应用
+    bool isFirstLaunch = SettingsUtil.getValue('isFirstLaunch', defaultValue: true);
+    if (isFirstLaunch) {
+      // 应用0.75倍默认UI大小设置
+      SettingsUtil.applyDefaultUISize();
+      // 标记已启动过应用
+      SettingsUtil.setValue('isFirstLaunch', false);
+    }
   }
 
   void onDestinationSelected(int value) {
