@@ -1,4 +1,3 @@
-import 'package:bili_you/common/utils/index.dart';
 import 'package:bili_you/pages/search_test/controller.dart';
 import 'package:bili_you/pages/search_test/models.dart';
 import 'package:bili_you/pages/search_test/widgets/hot_keyword.dart';
