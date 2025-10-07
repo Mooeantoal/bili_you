@@ -11,23 +11,48 @@ import 'package:bili_you/common/models/network/reply/reply_reply.dart'
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:bili_you/common/utils/index.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cookie_jar/cookie_jar.dart';
 
 import '../models/local/reply/official_verify.dart';
 
 class ReplyApi {
+  static Future<bool> _isLogin() async {
+    try {
+      // 检查 Cookie 中是否有登录相关的 Cookie
+      var cookies = await HttpUtils.cookieManager.cookieJar
+          .loadForRequest(Uri.parse(ApiConstants.bilibiliBase));
+      // 查找 DedeUserID Cookie，这是 Bilibili 登录状态的标识
+      return cookies.any((cookie) => cookie.name == 'DedeUserID');
+    } catch (e) {
+      // 如果出现异常，默认认为未登录
+      return false;
+    }
+  }
+
   static Future<reply_raw.ReplyResponse> _requestReply(
       {required String oid,
       required int pageNum,
       required ReplyType type,
       ReplySort sort = ReplySort.like}) async {
+    bool isLogin = await _isLogin();
+    
     var response = await HttpUtils().get(
-      ApiConstants.reply,
-      queryParameters: {
-        'oid': oid,
-        'pn': pageNum,
-        'type': type.code,
-        'sort': sort.index
-      },
+      isLogin ? ApiConstants.reply : '${ApiConstants.reply}/main',
+      queryParameters: isLogin
+          ? {
+              'oid': oid,
+              'pn': pageNum,
+              'type': type.code,
+              'sort': sort.index
+            }
+          : {
+              'oid': oid,
+              'type': type.code,
+              'sort': sort.index + 2, // 2:按时间排序；3：按热度排序
+              'plat': 2,
+              'pn': pageNum,
+              'ps': 20,
+            },
     );
     return await compute(
         (response) => reply_raw.ReplyResponse.fromJson(response),

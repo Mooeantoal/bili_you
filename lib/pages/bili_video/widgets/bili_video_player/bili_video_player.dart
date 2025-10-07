@@ -366,6 +366,8 @@ class BiliVideoPlayerController {
   }
 
   Future<void> dispose() async {
+    // 在页面销毁时取消焦点，防止返回首页时自动弹出键盘
+    FocusManager.instance.primaryFocus?.unfocus();
     await _videoAudioController?.dispose();
   }
 

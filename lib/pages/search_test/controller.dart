@@ -208,6 +208,8 @@ class SearchTestController extends GetxController {
 
   @override
   void onClose() {
+    // 在页面销毁时取消焦点，防止返回首页时自动弹出键盘
+    searchFocusNode.unfocus();
     searchFocusNode.dispose();
     controller.dispose();
     _sub?.cancel();

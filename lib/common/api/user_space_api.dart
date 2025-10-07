@@ -3,24 +3,50 @@ import 'package:bili_you/common/api/wbi.dart';
 import 'package:bili_you/common/models/local/user_space/user_video_search.dart';
 import 'package:bili_you/common/models/network/user_space/user_video_search.dart';
 import 'package:bili_you/common/utils/http_utils.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio/dio.dart';
 
 class UserSpaceApi {
+  static Future<bool> _isLogin() async {
+    try {
+      // 检查 Cookie 中是否有登录相关的 Cookie
+      var cookies = await HttpUtils.cookieManager.cookieJar
+          .loadForRequest(Uri.parse(ApiConstants.bilibiliBase));
+      // 查找 DedeUserID Cookie，这是 Bilibili 登录状态的标识
+      return cookies.any((cookie) => cookie.name == 'DedeUserID');
+    } catch (e) {
+      // 如果出现异常，默认认为未登录
+      return false;
+    }
+  }
+
   static Future<UserVideoSearchResponse> _requestUserVideoSearch({
     required int mid,
     required int pageNum,
     String? keyword,
+    String order = "pubdate", // pubdate: 最新发布, click: 最多播放
   }) async {
-    //TODO order排序方式，tid分区筛选，keyword关键词筛选，ps每页项数，
+    bool isLogin = await _isLogin();
+    
     var response = await HttpUtils().get(ApiConstants.userVideoSearch,
         queryParameters: await WbiSign.encodeParams({
           "mid": mid,
           "pn": pageNum,
           "ps": 30,
           "keyword": keyword ?? "",
-          "order": "pubdate",
+          "order": order,
           "tid": 0,
           "platform": "web",
-        }));
+        }),
+        // 为未登录用户添加特殊请求头
+        options: !isLogin
+            ? Options(
+                headers: {
+                  'user-agent': ApiConstants.userAgent,
+                  'referer': ApiConstants.bilibiliBase,
+                },
+              )
+            : null);
     return UserVideoSearchResponse.fromJson(response.data);
   }
 
@@ -28,9 +54,10 @@ class UserSpaceApi {
     required int mid,
     required int pageNum,
     String? keyword,
+    String order = "pubdate", // pubdate: 最新发布, click: 最多播放
   }) async {
     var response = await _requestUserVideoSearch(
-        mid: mid, pageNum: pageNum, keyword: keyword);
+        mid: mid, pageNum: pageNum, keyword: keyword, order: order);
     if (response.code != 0) {
       throw "getUserVideoSearch: code:${response.code}, message:${response.message}";
     }

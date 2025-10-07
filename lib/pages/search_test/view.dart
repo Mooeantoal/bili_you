@@ -21,6 +21,13 @@ class _SearchTestPageState extends State<SearchTestPage> {
   );
 
   @override
+  void dispose() {
+    // 在页面销毁时取消焦点，防止返回首页时自动弹出键盘
+    _searchController.searchFocusNode.unfocus();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
@@ -103,7 +110,6 @@ class _SearchTestPageState extends State<SearchTestPage> {
   Widget _searchSuggest() {
     return Obx(
       () => _searchController.searchSuggestList.isNotEmpty &&
-              _searchController.searchSuggestList.first.term != null &&
               _searchController.controller.text != ''
           ? Column(
               mainAxisSize: MainAxisSize.min,

@@ -39,6 +39,9 @@ class _MainPageState extends State<MainPage> {
     if (value == controller.selectedIndex.value) {
       var currentPage = controller.pages[value];
       if (currentPage is HomePage) {
+        // 确保返回首页时不自动弹出键盘
+        FocusManager.instance.primaryFocus?.unfocus();
+        
         var homeController = Get.find<HomeController>();
         late dynamic pageController;
         switch (homeController.tabIndex.value) {

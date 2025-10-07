@@ -6,6 +6,7 @@ import 'package:bili_you/common/models/network/video_play/video_play.dart'
     hide SegmentBase;
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:dio/dio.dart';
+import 'package:cookie_jar/cookie_jar.dart';
 
 class VideoPlayApi {
   static Map<String, String> videoPlayerHttpHeaders = {
@@ -13,17 +14,35 @@ class VideoPlayApi {
     'referer': ApiConstants.bilibiliBase
   };
 
+  static Future<bool> _isLogin() async {
+    try {
+      // 检查 Cookie 中是否有登录相关的 Cookie
+      var cookies = await HttpUtils.cookieManager.cookieJar
+          .loadForRequest(Uri.parse(ApiConstants.bilibiliBase));
+      // 查找 DedeUserID Cookie，这是 Bilibili 登录状态的标识
+      return cookies.any((cookie) => cookie.name == 'DedeUserID');
+    } catch (e) {
+      // 如果出现异常，默认认为未登录
+      return false;
+    }
+  }
+
   static Future<VideoPlayResponse> _requestVideoPlay(
       {required String bvid,
       required int cid,
       int fnval = FnvalValue.all}) async {
+    bool isLogin = await _isLogin();
+    
     var response = await HttpUtils().get(ApiConstants.videoPlay,
         queryParameters: {
           'bvid': bvid,
           'cid': cid,
           'fnver': 0,
           'fnval': fnval,
-          'fourk': 1
+          'fourk': 1,
+          // 添加关键参数以支持未登录用户播放
+          'force_host': 2, // 强制返回HTTPS地址
+          if (!isLogin) 'try_look': 1, // 免登录查看
         },
         options: Options(headers: {
           'user_agent': ApiConstants.userAgent,
