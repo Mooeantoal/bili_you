@@ -5,6 +5,7 @@ import 'package:bili_you/pages/search_test/widgets/hot_keyword.dart';
 import 'package:bili_you/pages/search_test/widgets/search_text.dart';
 import 'package:bili_you/pages/search_test/full_trending_page.dart'; // 导入完整榜单页面
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class SearchTestPage extends StatefulWidget {
@@ -199,9 +200,9 @@ class _SearchTestPageState extends State<SearchTestPage> {
                 SizedBox(
                   height: 34,
                   child: TextButton.icon(
-                    style: const ButtonStyle(
-                      padding: WidgetStatePropertyAll(
-                        EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    style: ButtonStyle(
+                      padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
                     onPressed: isHot
