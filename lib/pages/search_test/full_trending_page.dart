@@ -53,7 +53,7 @@ class _FullTrendingPageState extends State<FullTrendingPage> {
       separatorBuilder: (context, index) => Divider(
         height: 1,
         indent: 56,
-        color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+        color: Theme.of(context).dividerColor.withOpacity(0.1),
       ),
       itemBuilder: (context, index) {
         final item = list[index];

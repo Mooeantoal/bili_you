@@ -27,7 +27,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
       appBar: AppBar(
         shape: Border(
           bottom: BorderSide(
-            color: theme.dividerColor.withValues(alpha: 0.08),
+            color: theme.dividerColor.withOpacity(0.08),
             width: 1,
           ),
         ),
@@ -199,7 +199,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                   height: 34,
                   child: TextButton.icon(
                     style: ButtonStyle(
-                      padding: WidgetStateProperty.all(
+                      padding: MaterialStateProperty.all(
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
@@ -307,7 +307,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                       height: 34,
                       child: TextButton.icon(
                         style: ButtonStyle(
-                          padding: WidgetStateProperty.all(
+                          padding: MaterialStateProperty.all(
                             const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,
