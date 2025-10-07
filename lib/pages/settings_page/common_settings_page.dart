@@ -7,7 +7,6 @@ import 'package:bili_you/common/widget/settings_slider_tile.dart';
 import 'package:bili_you/common/widget/settings_switch_tile.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/recommend/index.dart';
-import 'package:bili_you/pages/video_test/video_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -170,14 +169,6 @@ class CommonSettingsPage extends StatelessWidget {
             buildLabel: (selectingValue) => "${selectingValue}X",
           ),
           const SettingsLabel(text: '视频'),
-          ListTile(
-            title: const Text('视频测试'),
-            subtitle: const Text('测试视频播放和评论功能'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Get.to(() => const VideoTestPage());
-            },
-          ),
           SettingsSwitchTile(
             title: '启用硬解',
             subTitle: '是否启用硬件解码否则使用软解',
