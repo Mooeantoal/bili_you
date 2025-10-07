@@ -32,10 +32,10 @@ class FrostedGlassCard extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               color: backgroundColor ??
-                  Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 width: 1.0,
               ),
             ),

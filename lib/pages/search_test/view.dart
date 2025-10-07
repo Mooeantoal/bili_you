@@ -4,7 +4,6 @@ import 'package:bili_you/pages/search_test/widgets/hot_keyword.dart';
 import 'package:bili_you/pages/search_test/widgets/search_text.dart';
 import 'package:bili_you/pages/search_test/full_trending_page.dart'; // 导入完整榜单页面
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class SearchTestPage extends StatefulWidget {
@@ -28,7 +27,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
       appBar: AppBar(
         shape: Border(
           bottom: BorderSide(
-            color: theme.dividerColor.withOpacity(0.08),
+            color: theme.dividerColor.withValues(alpha: 0.08),
             width: 1,
           ),
         ),
@@ -200,7 +199,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                   height: 34,
                   child: TextButton.icon(
                     style: ButtonStyle(
-                      padding: WidgetStateProperty.resolveWith((states) =>
+                      padding: WidgetStateProperty.all(
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
@@ -308,7 +307,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                       height: 34,
                       child: TextButton.icon(
                         style: ButtonStyle(
-                          padding: WidgetStateProperty.resolveWith((states) =>
+                          padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,

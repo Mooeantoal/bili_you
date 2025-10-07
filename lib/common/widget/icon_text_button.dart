@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class IconTextButton extends StatelessWidget {
   const IconTextButton({
@@ -21,15 +20,15 @@ class IconTextButton extends StatelessWidget {
       style: ButtonStyle(
         visualDensity: VisualDensity.comfortable,
         foregroundColor: selected
-            ? WidgetStateProperty.resolveWith((states) => Theme.of(context).colorScheme.onPrimary)
+            ? WidgetStateProperty.all(Theme.of(context).colorScheme.onPrimary)
             : null,
         backgroundColor: selected
-            ? WidgetStateProperty.resolveWith((states) => Theme.of(context).colorScheme.primary)
+            ? WidgetStateProperty.all(Theme.of(context).colorScheme.primary)
             : null,
-        elevation: WidgetStateProperty.resolveWith((states) => 0),
-        padding: WidgetStateProperty.resolveWith((states) =>
+        elevation: WidgetStateProperty.all(0),
+        padding: WidgetStateProperty.all(
             const EdgeInsets.only(left: 10, right: 10, bottom: 0, top: 0)),
-        minimumSize: WidgetStateProperty.resolveWith((states) => const Size(10, 10)),
+        minimumSize: WidgetStateProperty.all(const Size(10, 10)),
       ),
       onPressed: onPressed ?? () {},
       child: FittedBox(

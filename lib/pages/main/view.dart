@@ -130,7 +130,7 @@ class _MainPageState extends State<MainPage> {
           ? FrostedGlassCard(
               borderRadius: 0.0,
               blurSigma: 10.0,
-              backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+              backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               margin: EdgeInsets.zero,
               padding: const EdgeInsets.all(0.0),
               child: BottomNavigationBar(

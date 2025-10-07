@@ -44,8 +44,8 @@ class LiquidGlassCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.1 * (opacity / 0.2)), // 根据 opacity 调整透明度
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.05 * (opacity / 0.2)),
+            (color ?? Theme.of(context).colorScheme.primary).withValues(alpha: 0.1 * (opacity / 0.2)), // 根据 opacity 调整透明度
+            (color ?? Theme.of(context).colorScheme.primary).withValues(alpha: 0.05 * (opacity / 0.2)),
           ],
           stops: const [0.1, 1],
         ),
@@ -53,8 +53,8 @@ class LiquidGlassCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.5 * (opacity / 0.2)),
-            (color ?? Theme.of(context).colorScheme.primary).withOpacity(0.5 * (opacity / 0.2)),
+            (color ?? Theme.of(context).colorScheme.primary).withValues(alpha: 0.5 * (opacity / 0.2)),
+            (color ?? Theme.of(context).colorScheme.primary).withValues(alpha: 0.5 * (opacity / 0.2)),
           ],
         ),
         child: Container(

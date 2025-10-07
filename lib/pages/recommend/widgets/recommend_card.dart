@@ -106,7 +106,7 @@ class RecommendCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: 40 * MediaQuery.of(context).textScaleFactor,
+                      height: 40 * (MediaQuery.of(context).textScaler?.scale(1.0) ?? 1.0),
                       child: Text(
                         title,
                         maxLines: 2,
@@ -121,7 +121,7 @@ class RecommendCard extends StatelessWidget {
                             child: Icon(
                               Icons.slideshow_rounded,
                               color: iconColor,
-                              size: 12 * MediaQuery.of(context).textScaleFactor,
+                              size: 12 * (MediaQuery.of(context).textScaler?.scale(1.0) ?? 1.0),
                             )),
                         TextSpan(
                           text: " $playNum  ",
@@ -131,7 +131,7 @@ class RecommendCard extends StatelessWidget {
                           child: Icon(
                             Icons.format_list_bulleted_rounded,
                             color: iconColor,
-                            size: 12 * MediaQuery.of(context).textScaleFactor,
+                            size: 12 * (MediaQuery.of(context).textScaler?.scale(1.0) ?? 1.0),
                           ),
                         ),
                         TextSpan(
@@ -142,7 +142,7 @@ class RecommendCard extends StatelessWidget {
                           child: Icon(
                             Icons.timer_outlined,
                             color: iconColor,
-                            size: 12 * MediaQuery.of(context).textScaleFactor,
+                            size: 12 * (MediaQuery.of(context).textScaler?.scale(1.0) ?? 1.0),
                           ),
                         ),
                         TextSpan(
