@@ -3,6 +3,7 @@ import 'package:bili_you/pages/search_test/controller.dart';
 import 'package:bili_you/pages/search_test/models.dart';
 import 'package:bili_you/pages/search_test/widgets/hot_keyword.dart';
 import 'package:bili_you/pages/search_test/widgets/search_text.dart';
+import 'package:bili_you/pages/search_test/full_trending_page.dart'; // 导入完整榜单页面
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -170,8 +171,8 @@ class _SearchTestPageState extends State<SearchTestPage> {
                             height: 34,
                             child: TextButton(
                               onPressed: () {
-                                // 这里需要根据您的项目实际情况调整
-                                // Get.toNamed('/searchTrending', parameters: {'tag': _tag});
+                                // 跳转到完整榜单页面
+                                Get.to(() => const FullTrendingPage());
                               },
                               child: Row(
                                 children: [
@@ -199,7 +200,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                   height: 34,
                   child: TextButton.icon(
                     style: const ButtonStyle(
-                      padding: MaterialStatePropertyAll(
+                      padding: WidgetStatePropertyAll(
                         EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
@@ -307,7 +308,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
                       height: 34,
                       child: TextButton.icon(
                         style: ButtonStyle(
-                          padding: MaterialStateProperty.all(
+                          padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,
@@ -363,7 +364,7 @@ class _SearchTestPageState extends State<SearchTestPage> {
         return LayoutBuilder(
           builder: (context, constraints) => HotKeyword(
             width: constraints.maxWidth,
-            hotSearchList: data as List<dynamic>, // 直接使用数据
+            hotSearchList: data, // 直接使用数据
             onClick: _searchController.onClickKeyword,
           ),
         );

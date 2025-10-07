@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 class SearchSuggestModel {
   final List<SearchSuggestItem>? tag;

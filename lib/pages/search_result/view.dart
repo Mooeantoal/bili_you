@@ -1,5 +1,4 @@
 import 'package:bili_you/common/api/search_api.dart';
-import 'package:bili_you/pages/search_input/view.dart';
 import 'package:bili_you/pages/search_tab_view/controller.dart';
 
 import 'package:bili_you/pages/search_tab_view/view.dart';

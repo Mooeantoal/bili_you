@@ -99,7 +99,7 @@ class _HomePageState extends State<HomePage>
             height: 40,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Obx(() => SegmentedButton<String>(
-              style: ButtonStyle(
+              style: const ButtonStyle(
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               segments: const [

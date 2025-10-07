@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:bili_you/common/api/search_api.dart'; // 导入SearchApi
 import 'package:bili_you/common/models/local/search/hot_word_item.dart'; // 导入HotWordItem
 import 'package:bili_you/common/utils/bili_you_storage.dart';
-import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/search_test/api.dart';
 import 'package:bili_you/pages/search_test/models.dart';
 import 'package:bili_you/pages/search_result/view.dart'; // 添加搜索结果页面导入
@@ -192,6 +191,19 @@ class SearchTestController extends GetxController {
         child: const Text('取消'),
       ),
     );
+  }
+
+  // 获取完整榜单数据
+  Future<SearchTrendingData?> getFullTrendingList() async {
+    try {
+      var res = await SearchTestApi.getHotSearchList(limit: 30); // 获取更多数据
+      if (res['code'] == 0) {
+        return SearchTrendingData.fromJson(res['data']);
+      }
+    } catch (e) {
+      print('获取完整榜单失败: $e');
+    }
+    return null;
   }
 
   @override

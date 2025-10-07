@@ -20,11 +20,8 @@ class MainController extends GetxController {
     super.onInit();
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
+  @override
   void dispose() {
     onClose();
   }
