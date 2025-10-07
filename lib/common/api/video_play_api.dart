@@ -4,6 +4,7 @@ import 'package:bili_you/common/models/local/video/video_play_info.dart';
 import 'package:bili_you/common/models/local/video/video_play_item.dart';
 import 'package:bili_you/common/models/network/video_play/video_play.dart'
     hide SegmentBase;
+import 'package:bili_you/common/utils/cookie_util.dart';
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
@@ -152,6 +153,54 @@ class VideoPlayApi {
         audios: audios,
         lastPlayCid: response.data!.lastPlayCid ?? 0,
         lastPlayTime: Duration(milliseconds: response.data!.lastPlayTime ?? 0));
+  }
+
+  ///获取弹幕列表
+  static Future<String> getDanmakuList({required int cid}) async {
+    var response = await HttpUtils().get(
+      "${ApiConstants.danmakuList}/$cid.xml",
+      options: Options(
+        headers: {
+          'user-agent': ApiConstants.userAgent,
+          'referer': ApiConstants.bilibiliBase,
+        },
+      ),
+    );
+    return response.data;
+  }
+
+  ///发送弹幕
+  static Future<Map<String, dynamic>> sendDanmaku({
+    required String message,
+    required String aid,
+    required String oid,
+    required int progress,
+    required int color,
+    required int fontsize,
+    required int mode,
+  }) async {
+    var response = await HttpUtils().post(
+      ApiConstants.sendDanmaku,
+      queryParameters: {
+        'msg': message,
+        'type': '1',
+        'aid': aid,
+        'oid': oid,
+        'progress': progress.toString(),
+        'color': color.toString(),
+        'fontsize': fontsize.toString(),
+        'mode': mode.toString(),
+        'rnd': DateTime.now().millisecondsSinceEpoch.toString(),
+        'csrf': await CookieUtils.getCsrf(),
+      },
+      options: Options(
+        headers: {
+          'user-agent': ApiConstants.userAgent,
+          'referer': ApiConstants.bilibiliBase,
+        },
+      ),
+    );
+    return response.data;
   }
 
   static Future<void> reportHistory(

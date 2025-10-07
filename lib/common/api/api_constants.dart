@@ -165,6 +165,15 @@ class ApiConstants {
   ///评论点赞
   static const String replyAddLike = "$apiBase/x/v2/reply/action";
 
+  ///删除评论
+  static const String delReply = "$apiBase/x/v2/reply/del";
+
+  ///弹幕列表
+  static const String danmakuList = "https://comment.bilibili.com";
+
+  ///发送弹幕
+  static const String sendDanmaku = "$apiBase/x/v2/dm/post";
+
   ///上报历史记录
   static const String heartBeat = "$apiBase/x/click-interface/web/heartbeat";
 

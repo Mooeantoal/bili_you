@@ -1,6 +1,7 @@
 import 'package:bili_you/common/api/index.dart';
 import 'package:bili_you/common/models/local/reply/add_reply_result.dart';
 import 'package:bili_you/common/models/local/reply/reply_add_like_result.dart';
+import 'package:bili_you/common/models/local/reply/reply_delete_result.dart';
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
 import 'package:bili_you/common/models/network/reply/reply.dart';
 import 'package:bili_you/common/utils/cookie_util.dart';
@@ -61,6 +62,30 @@ class ReplyOperationApi {
         error: response.data?['message'] ?? '',
         replyItem: ReplyApi.replyItemRawToReplyItem(
             ReplyItemRaw.fromJson(response.data?['data']?['reply'] ?? {})));
+  }
+
+  ///# 删除评论
+  ///
+  ///type 评论区类型
+  ///
+  ///oid 目标评论区id
+  ///
+  ///rpid 要删除的评论rpid
+  static Future<ReplyDeleteResult> deleteReply({
+    required ReplyType type,
+    required String oid,
+    required int rpid,
+  }) async {
+    var response =
+        await HttpUtils().post(ApiConstants.delReply, queryParameters: {
+      'type': type.code,
+      'oid': oid,
+      'rpid': rpid,
+      'csrf': await CookieUtils.getCsrf()
+    });
+    return ReplyDeleteResult(
+        isSuccess: response.data?['code'] == 0,
+        error: response.data?['message'] ?? '');
   }
 }
 
