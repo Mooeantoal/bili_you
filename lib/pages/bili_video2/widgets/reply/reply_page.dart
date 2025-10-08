@@ -16,8 +16,11 @@ class ReplyPage extends StatefulWidget {
 class _ReplyPageState extends State<ReplyPage> {
   ReplyInfo? _replyInfo;
   bool _isLoading = true;
+  bool _isLoadingMore = false;
   String _errorMessage = '';
   int _currentPage = 1;
+  final int _pageSize = 20;
+  bool _hasMore = true;
 
   @override
   void initState() {
@@ -33,15 +36,34 @@ class _ReplyPageState extends State<ReplyPage> {
         type: widget.replyType,
       );
       setState(() {
-        _replyInfo = replyInfo;
+        if (_currentPage == 1) {
+          _replyInfo = replyInfo;
+        } else {
+          // 添加更多评论
+          _replyInfo!.replies.addAll(replyInfo.replies);
+        }
+        _hasMore = replyInfo.replies.length == _pageSize;
         _isLoading = false;
+        _isLoadingMore = false;
       });
     } catch (e) {
       setState(() {
         _errorMessage = '加载评论失败: $e';
         _isLoading = false;
+        _isLoadingMore = false;
       });
     }
+  }
+
+  Future<void> _loadMoreReplies() async {
+    if (_isLoadingMore || !_hasMore) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+    
+    _currentPage++;
+    await _loadReplies();
   }
 
   @override
@@ -63,28 +85,71 @@ class _ReplyPageState extends State<ReplyPage> {
         _currentPage = 1;
         await _loadReplies();
       },
-      child: ListView.builder(
-        itemCount: _replyInfo!.replies.length + 1, // +1 for header
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            // 头部显示评论总数
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                '评论 (${_replyInfo!.replyCount})',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            );
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification notification) {
+          if (notification is ScrollEndNotification) {
+            if (notification.metrics.pixels >=
+                notification.metrics.maxScrollExtent - 100) {
+              _loadMoreReplies();
+              return true;
+            }
           }
-
-          final reply = _replyInfo!.replies[index - 1];
-          return _buildReplyItem(reply);
+          return false;
         },
+        child: ListView.builder(
+          itemCount: _replyInfo!.replies.length + (_hasMore ? 1 : 0) + 1, // +1 for header, +1 for loading indicator
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              // 头部显示评论总数
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  '评论 (${_replyInfo!.replyCount})',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            }
+            
+            final actualIndex = index - 1;
+            
+            if (actualIndex < _replyInfo!.replies.length) {
+              final reply = _replyInfo!.replies[actualIndex];
+              return _buildReplyItem(reply);
+            } else {
+              // 显示加载更多指示器
+              return _buildLoadMoreIndicator();
+            }
+          },
+        ),
       ),
     );
+  }
+
+  Widget _buildLoadMoreIndicator() {
+    if (_isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    } else if (_hasMore) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: ElevatedButton(
+            onPressed: _loadMoreReplies,
+            child: const Text('加载更多'),
+          ),
+        ),
+      );
+    } else {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('没有更多评论了')),
+      );
+    }
   }
 
   Widget _buildReplyItem(ReplyItem reply) {

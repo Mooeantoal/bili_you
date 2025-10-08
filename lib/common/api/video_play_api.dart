@@ -56,8 +56,14 @@ class VideoPlayApi {
     required String bvid,
     required int cid,
   }) async {
-    var response =
-        await _requestVideoPlay(bvid: bvid, cid: cid, fnval: FnvalValue.all);
+    // 尝试使用不同的fnval值获取播放信息
+    var response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: FnvalValue.all);
+    
+    // 如果第一次请求失败，尝试使用更简单的格式
+    if (response.code != 0 || response.data == null) {
+      response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: 16); // 只请求DASH格式
+    }
+    
     if (response.code != 0) {
       throw "getVideoPlay: code:${response.code}, message:${response.message}";
     }

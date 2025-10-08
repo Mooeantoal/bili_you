@@ -54,7 +54,7 @@ android {
 
     defaultConfig {
         applicationId "com.met.bili_me"
-        minSdkVersion 21
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
