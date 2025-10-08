@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bili_you/common/api/index.dart';
+import 'package:bili_you/common/api/video_play_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:media_kit/media_kit.dart';
@@ -183,55 +184,102 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
 
 //播放器界面
 class BiliVideoPlayer extends StatefulWidget {
-  const BiliVideoPlayer({super.key});
+  final String bvid;
+  final int cid;
+
+  const BiliVideoPlayer({
+    super.key,
+    required this.bvid,
+    required this.cid,
+  });
 
   @override
   State<BiliVideoPlayer> createState() => _BiliVideoPlayerState();
 }
 
 class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
+  late final BiliVideoPlayerCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = BiliVideoPlayerCubit();
+    // 加载并播放视频
+    _loadAndPlayVideo();
+  }
+
+  Future<void> _loadAndPlayVideo() async {
+    try {
+      // 获取视频播放URL
+      final videoPlayInfo = await VideoPlayApi.getVideoPlay(
+        bvid: widget.bvid,
+        cid: widget.cid,
+      );
+      
+      if (videoPlayInfo.videos.isNotEmpty) {
+        // 选择最高质量的视频和音频URL
+        final videoUrl = videoPlayInfo.videos.first.urls.first;
+        final audioUrl = videoPlayInfo.audios.isNotEmpty ? videoPlayInfo.audios.first.urls.first : '';
+        
+        // 播放媒体
+        _cubit.playMedia(videoUrl, audioUrl);
+      }
+    } catch (e) {
+      print('加载视频失败: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<BiliVideoPlayerCubit, BiliVideoPlayerState>(
-      listener: (context, state) {
-        // 监听状态变化
-      },
-      builder: (context, state) {
-        return Video(
-          controller: state.videoController,
-          controls: (videoState) {
-            return Stack(
-              children: [
-                // 确保视频画面显示
-                Positioned.fill(
-                  child: ColoredBox(
-                    color: Colors.black,
-                  ),
-                ),
-                // 播放控制按钮
-                Center(
-                  child: IconButton(
-                    icon: Icon(
-                      state.player.state.playing
-                          ? Icons.pause
-                          : Icons.play_arrow,
-                      color: Colors.white,
-                      size: 50,
+    return BlocProvider.value(
+      value: _cubit,
+      child: BlocConsumer<BiliVideoPlayerCubit, BiliVideoPlayerState>(
+        listener: (context, state) {
+          // 监听状态变化
+        },
+        builder: (context, state) {
+          return Video(
+            controller: state.videoController,
+            controls: (videoState) {
+              return Stack(
+                children: [
+                  // 确保视频画面显示
+                  Positioned.fill(
+                    child: ColoredBox(
+                      color: Colors.black,
                     ),
-                    onPressed: () {
-                      if (state.player.state.playing) {
-                        state.player.pause();
-                      } else {
-                        state.player.play();
-                      }
-                    },
                   ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+                  // 播放控制按钮
+                  Center(
+                    child: IconButton(
+                      icon: Icon(
+                        state.player.state.playing
+                            ? Icons.pause
+                            : Icons.play_arrow,
+                        color: Colors.white,
+                        size: 50,
+                      ),
+                      onPressed: () {
+                        if (state.player.state.playing) {
+                          state.player.pause();
+                        } else {
+                          state.player.play();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

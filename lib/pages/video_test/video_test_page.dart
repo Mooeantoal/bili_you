@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:bili_you/pages/bili_video2/bili_video_page.dart';
-import 'package:bili_you/pages/bili_video2/bili_media.dart';
+import 'package:bili_you/pages/bili_video2/bili_video_page_new.dart';
 import 'package:bili_you/common/api/video_info_api.dart';
 import 'package:bili_you/common/utils/bvid_avid_util.dart';
 
@@ -39,12 +38,10 @@ class _VideoTestPageState extends State<VideoTestPage> {
           // 获取视频信息以获取cid
           var videoInfo = await VideoInfoApi.getVideoInfo(bvid: videoId);
           if (videoInfo.cid != 0) {
-            // 跳转到视频播放页面
-            Get.to(() => BiliVideoPage2(
-              media: BiliMedia(
-                bvid: videoId,
-                cid: videoInfo.cid,
-              ),
+            // 跳转到新的视频播放页面
+            Get.to(() => BiliVideoPageNew(
+              bvid: videoId,
+              cid: videoInfo.cid,
             ));
           } else {
             Get.snackbar('错误', '无法获取视频信息');

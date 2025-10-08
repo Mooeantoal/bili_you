@@ -103,6 +103,9 @@ dependencies:
   # Fluent UI
   fluent_ui: ^4.7.2
 
+  # Expandable panel
+  expandable: ^5.0.1
+
 # ----------------------------
 # 强制覆盖依赖版本 (关键修复)
 # ----------------------------
