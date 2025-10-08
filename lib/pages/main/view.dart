@@ -1,5 +1,6 @@
 import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/cache_util.dart';
+import 'package:bili_you/common/utils/device_ui_adapter.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/widget/bili_url_scheme.dart';
 import 'package:bili_you/common/widget/frosted_glass_card.dart';
@@ -90,6 +91,8 @@ class _MainPageState extends State<MainPage> {
         }
       }
     }
+    // 在切换页面时取消焦点，避免键盘意外弹出
+    FocusManager.instance.primaryFocus?.unfocus();
     controller.selectedIndex.value = value;
   }
 
@@ -146,38 +149,42 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       bottomNavigationBar: MediaQuery.of(context).size.width < 640
-          ? FrostedGlassCard(
-              borderRadius: 0.0,
-              blurSigma: 10.0,
-              backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
-              margin: EdgeInsets.zero,
-              padding: const EdgeInsets.all(0.0),
-              child: BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: controller.selectedIndex.value,
-                onTap: (value) => onDestinationSelected(value),
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home_outlined),
-                    activeIcon: Icon(Icons.home),
-                    label: "首页",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.star_border_outlined),
-                    activeIcon: Icon(Icons.star),
-                    label: "动态",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.search_outlined),
-                    activeIcon: Icon(Icons.search),
-                    label: "搜索",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    activeIcon: Icon(Icons.person),
-                    label: "我的",
-                  ),
-                ],
+          ? Container(
+              // 使用设备适配器获取底部安全区域填充
+              padding: DeviceUIAdapter.getBottomSafeAreaPadding(context),
+              child: FrostedGlassCard(
+                borderRadius: 0.0,
+                blurSigma: 10.0,
+                backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                margin: EdgeInsets.zero,
+                padding: const EdgeInsets.all(0.0),
+                child: BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  currentIndex: controller.selectedIndex.value,
+                  onTap: (value) => onDestinationSelected(value),
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home_outlined),
+                      activeIcon: Icon(Icons.home),
+                      label: "首页",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.star_border_outlined),
+                      activeIcon: Icon(Icons.star),
+                      label: "动态",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.search_outlined),
+                      activeIcon: Icon(Icons.search),
+                      label: "搜索",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.person_outline),
+                      activeIcon: Icon(Icons.person),
+                      label: "我的",
+                    ),
+                  ],
+                ),
               ),
             )
           : null,

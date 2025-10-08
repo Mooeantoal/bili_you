@@ -1,4 +1,5 @@
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
+import 'package:bili_you/common/utils/device_ui_adapter.dart';
 import 'package:bili_you/pages/bili_video/widgets/introduction/view.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/view.dart';
 import 'package:bili_you/pages/bili_video1/bili_media_content_cubit.dart';
@@ -77,9 +78,11 @@ class BiliVideoPage1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-            statusBarIconBrightness: Brightness.light),
+        // 使用设备适配器获取导航栏样式
+        value: DeviceUIAdapter.getOppoNavigationBarStyle(),
         child: Scaffold(
+          // 添加extendBody属性以确保内容可以延伸到导航栏区域
+          extendBody: true,
           body: BlocBuilder<BiliMediaCubit, BiliMedia>(
               builder: (context, state) => Column(
                     children: [

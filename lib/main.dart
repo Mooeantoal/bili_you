@@ -1,4 +1,5 @@
 import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:bili_you/common/utils/device_ui_adapter.dart'; // 添加这个导入
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/pages/bili_video/index.dart';
@@ -17,6 +18,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BiliYouStorage.ensureInitialized();
   MediaKit.ensureInitialized();
+  // 初始化设备UI适配器
+  await DeviceUIAdapter.init();
   runApp(const MyApp());
   //状态栏、导航栏沉浸
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

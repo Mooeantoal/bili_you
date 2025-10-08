@@ -6,7 +6,6 @@ import 'package:bili_you/common/models/local/video/audio_play_item.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
 
 class DebugVideoPage extends StatefulWidget {
   const DebugVideoPage({super.key});

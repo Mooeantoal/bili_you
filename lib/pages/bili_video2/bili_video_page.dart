@@ -1,5 +1,5 @@
-import 'package:bili_you/common/api/index.dart';
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
+import 'package:bili_you/common/utils/device_ui_adapter.dart';
 import 'package:bili_you/pages/bili_video2/widgets/introduction/introduction_page.dart';
 import 'package:bili_you/pages/bili_video2/widgets/reply/reply_page.dart';
 import 'package:bili_you/pages/bili_video2/bili_media.dart';
@@ -55,9 +55,11 @@ class BiliVideoPage2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-            statusBarIconBrightness: Brightness.light),
+        // 使用设备适配器获取导航栏样式
+        value: DeviceUIAdapter.getOppoNavigationBarStyle(),
         child: Scaffold(
+          // 添加extendBody属性以确保内容可以延伸到导航栏区域
+          extendBody: true,
           body: Column(
             children: [
               Container(
@@ -77,43 +79,46 @@ class BiliVideoPage2 extends StatelessWidget {
                             ConnectionState.done) {
                           if (snapshot.hasData && snapshot.data != null) {
                             final mediaContent = snapshot.data!;
-                            // 选择默认的视频和音频
-                            String? videoUrl;
-                            String? audioUrl;
-
-                            // 选择视频
-                            if (mediaContent.videos.isNotEmpty) {
-                              videoUrl = mediaContent.videos.first.urls.first;
-                            }
-
-                            // 选择音频
-                            if (mediaContent.audios.isNotEmpty) {
-                              audioUrl = mediaContent.audios.first.urls.first;
-                            }
-
-                            return MultiBlocProvider(
-                              providers: [
-                                BlocProvider(
-                                    create: (_) =>
-                                        BiliMediaContentCubit(mediaContent)),
-                                BlocProvider(
-                                    create: (_) => BiliVideoPlayerCubit())
-                              ],
-                              child: BlocBuilder<BiliVideoPlayerCubit,
-                                  BiliVideoPlayerState>(
-                                builder: (context, playerState) {
-                                  // 如果有视频和音频URL，则开始播放
-                                  if (videoUrl != null && audioUrl != null) {
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      context
-                                          .read<BiliVideoPlayerCubit>()
-                                          .playMedia(videoUrl!, audioUrl!);
-                                    });
-                                  }
-                                  return const BiliVideoPlayer();
-                                },
-                              ),
+                            return FutureBuilder(
+                              future: _selectValidUrls(mediaContent),
+                              builder: (context, urlSnapshot) {
+                                if (urlSnapshot.connectionState == ConnectionState.done) {
+                                  final urls = urlSnapshot.data ?? {'video': null, 'audio': null};
+                                  final videoUrl = urls['video'];
+                                  final audioUrl = urls['audio'];
+                                  
+                                  return MultiBlocProvider(
+                                    providers: [
+                                      BlocProvider(
+                                          create: (_) =>
+                                              BiliMediaContentCubit(mediaContent)),
+                                      BlocProvider(
+                                          create: (_) => BiliVideoPlayerCubit())
+                                    ],
+                                    child: BlocBuilder<BiliVideoPlayerCubit,
+                                        BiliVideoPlayerState>(
+                                      builder: (context, playerState) {
+                                        // 如果有视频和音频URL，则开始播放
+                                        if (videoUrl != null && audioUrl != null) {
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                            context
+                                                .read<BiliVideoPlayerCubit>()
+                                                .playMedia(videoUrl, audioUrl);
+                                          });
+                                        }
+                                        return const BiliVideoPlayer();
+                                      },
+                                    ),
+                                  );
+                                } else {
+                                  return const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                }
+                              },
                             );
                           } else {
                             return const Center(
@@ -134,5 +139,31 @@ class BiliVideoPage2 extends StatelessWidget {
             ],
           ),
         ));
+  }
+
+  // 添加URL选择方法
+  Future<Map<String, String?>> _selectValidUrls(BiliMediaContent mediaContent) async {
+    String? videoUrl;
+    String? audioUrl;
+    
+    final cubit = BiliMediaCubit(bvid: '', cid: 0); // 临时创建用于URL测试
+    
+    // 选择视频URL
+    if (mediaContent.videos.isNotEmpty) {
+      final bestVideo = mediaContent.videos.first;
+      if (bestVideo.urls.isNotEmpty) {
+        videoUrl = await cubit.selectValidUrl(bestVideo.urls);
+      }
+    }
+
+    // 选择音频URL
+    if (mediaContent.audios.isNotEmpty) {
+      final bestAudio = mediaContent.audios.first;
+      if (bestAudio.urls.isNotEmpty) {
+        audioUrl = await cubit.selectValidUrl(bestAudio.urls);
+      }
+    }
+    
+    return {'video': videoUrl, 'audio': audioUrl};
   }
 }
