@@ -1,3 +1,68 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:bili_you/pages/bili_video2/bili_video_player.dart';
+import 'package:bili_you/pages/bili_video2/widgets/introduction/introduction_panel.dart';
+import 'package:bili_you/pages/bili_video2/widgets/reply/reply_panel.dart';
+import 'package:bili_you/common/api/video_info_api.dart';
+import 'package:bili_you/common/models/local/video/video_info.dart';
+import 'package:bili_you/common/models/local/reply/reply_item.dart';
+
+class BiliVideoPageNew extends StatefulWidget {
+  final String bvid;
+  final int cid;
+
+  const BiliVideoPageNew({
+    Key? key,
+    required this.bvid,
+    required this.cid,
+  }) : super(key: key);
+
+  @override
+  State<BiliVideoPageNew> createState() => _BiliVideoPageNewState();
+}
+
+class _BiliVideoPageNewState extends State<BiliVideoPageNew>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  late VideoInfo _videoDetail;
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _loadVideoData();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadVideoData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
+
+      // 获取视频详细信息
+      _videoDetail = await VideoInfoApi.getVideoInfo(bvid: widget.bvid);
+      
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+      Get.snackbar('错误', '加载视频信息失败: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,3 +179,4 @@
                 ),
     );
   }
+}
