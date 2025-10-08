@@ -100,11 +100,13 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
           controls: (videoState) {
             return Stack(
               children: [
+                // 确保视频画面显示
                 Positioned.fill(
                   child: ColoredBox(
                     color: Colors.black,
                   ),
                 ),
+                // 播放控制按钮
                 Center(
                   child: IconButton(
                     icon: Icon(

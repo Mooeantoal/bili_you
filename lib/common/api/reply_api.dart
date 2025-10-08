@@ -190,15 +190,26 @@ class ReplyApi {
     required int pageNum,
     int pageSize = 20,
   }) async {
+    bool isLogin = await _isLogin();
+    
     var response = await HttpUtils().get(
-      ApiConstants.replyReply,
-      queryParameters: {
-        'type': type.code,
-        'oid': oid,
-        'root': rootId,
-        'pn': pageNum,
-        'ps': pageSize
-      },
+      isLogin ? ApiConstants.replyReply : '${ApiConstants.replyReply}/main',
+      queryParameters: isLogin
+          ? {
+              'type': type.code,
+              'oid': oid,
+              'root': rootId,
+              'pn': pageNum,
+              'ps': pageSize
+            }
+          : {
+              'type': type.code,
+              'oid': oid,
+              'root': rootId,
+              'pn': pageNum,
+              'ps': pageSize,
+              'plat': 2,
+            },
     );
 
     return reply_reply_raw.ReplyReplyResponse.fromJson(response.data);
