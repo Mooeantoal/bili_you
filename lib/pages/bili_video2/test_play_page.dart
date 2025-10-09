@@ -120,7 +120,11 @@ class _TestPlayPageState extends State<TestPlayPage> {
       });
       
       // 开始播放
-      context.read<BiliVideoPlayerCubit>().playMedia(selectedVideoUrl, selectedAudioUrl ?? '');
+      context.read<BiliVideoPlayerCubit>().playMedia(
+        [selectedVideoUrl!], 
+        selectedAudioUrl != null ? [selectedAudioUrl!] : [],
+        refererBvid: bvid,
+      );
       
       setState(() {
         _status = '播放已开始\n视频URL: ${selectedVideoUrl!.substring(0, 50)}...\n音频URL: ${selectedAudioUrl?.substring(0, 50) ?? "无"}...';
@@ -177,7 +181,10 @@ class _TestPlayPageState extends State<TestPlayPage> {
             Text(_status),
             const SizedBox(height: 16),
             const Expanded(
-              child: BiliVideoPlayer(),
+              child: BiliVideoPlayer(
+                bvid: 'BV1joHwzBEJK', // 默认BV号
+                cid: 0, // 默认CID
+              ),
             ),
           ],
         ),

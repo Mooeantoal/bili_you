@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bili_you/common/api/index.dart';
 import 'package:bili_you/common/api/video_play_api.dart';
@@ -8,171 +9,215 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:dio/dio.dart';
 
-class PlayerSingleton {
-  static final PlayerSingleton _instance = PlayerSingleton._internal();
-  factory PlayerSingleton() => _instance;
-  PlayerSingleton._internal() {
+// 播放器状态
+class BiliVideoPlayerState {
+  BiliVideoPlayerState() {
     player = Player();
     videoController = VideoController(player);
   }
-
+  
   late final Player player;
   late final VideoController videoController;
-}
-
-//播放器状态
-class BiliVideoPlayerState {
-  BiliVideoPlayerState() {
-    player = PlayerSingleton().player;
-    videoController = PlayerSingleton().videoController;
-  }
-  late final Player player;
-  late final VideoController videoController;
-  StreamSubscription<bool>? _completedSubsciption;
+  StreamSubscription<bool>? _completedSubscription;
   bool isLoop = false;
+  bool isPlaying = false;
+  bool isBuffering = false;
+  Duration position = Duration.zero;
+  Duration duration = Duration.zero;
 }
 
-//播放器逻辑
+// 播放器逻辑
 class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
-  BiliVideoPlayerCubit() : super(BiliVideoPlayerState());
+  BiliVideoPlayerCubit() : super(BiliVideoPlayerState()) {
+    // 初始化播放器事件监听
+    _initPlayerListeners();
+  }
 
-  void playMedia(String videoUrl, String audioUrl) async {
+  void _initPlayerListeners() {
+    // 监听播放状态变化
+    state.player.stream.playing.listen((playing) {
+      state.isPlaying = playing;
+      emit(state);
+    });
+    
+    // 监听缓冲状态
+    state.player.stream.buffering.listen((buffering) {
+      state.isBuffering = buffering;
+      emit(state);
+    });
+    
+    // 监听位置变化
+    state.player.stream.position.listen((position) {
+      state.position = position;
+      emit(state);
+    });
+    
+    // 监听时长变化
+    state.player.stream.duration.listen((duration) {
+      state.duration = duration;
+      emit(state);
+    });
+    
+    // 监听播放完成
+    state._completedSubscription = state.player.stream.completed.listen((completed) {
+      if (completed) {
+        // 播放完成后的处理
+        if (state.isLoop) {
+          state.player.seek(Duration.zero);
+          state.player.play();
+        }
+      }
+    });
+  }
+
+  // 测试URL是否有效
+  Future<bool> _testUrl(String url) async {
     try {
-      await state.player.stop();
-      await Future.delayed(const Duration(milliseconds: 10));
-      
-      // 使用单个媒体源，同时包含视频和音频轨道
-      await state.player.open(
-        Media(
-          videoUrl,
-          httpHeaders: VideoPlayApi.videoPlayerHttpHeaders,
+      print('测试URL: $url');
+      final response = await Dio().get(
+        url,
+        options: Options(
+          headers: VideoPlayApi.videoPlayerHttpHeaders,
+          receiveTimeout: const Duration(seconds: 10),
+          responseType: ResponseType.bytes, // 只获取头部信息
+          followRedirects: false, // 不跟随重定向
         ),
-        play: true,
       );
-      
-      await state.player.setPlaylistMode(PlaylistMode.none);
-      
-      // 延迟设置音频轨道，确保视频已加载
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (audioUrl.isNotEmpty) {
-        try {
-          await state.player.setAudioTrack(AudioTrack.uri(audioUrl));
-        } catch (audioError) {
-          print('设置音频轨道失败: $audioError');
-        }
-      }
-      
-      //防止上一个subsciption还没有释放掉
-      if (state._completedSubsciption != null) {
-        state._completedSubsciption!.cancel();
-        state._completedSubsciption = null;
-      }
-      state._completedSubsciption =
-          state.player.stream.completed.listen((event) async {
-        if (event) {
-          await state.player.seek(Duration.zero); //结束后回到起点
-          await Future.delayed(const Duration(milliseconds: 20));
-          if (state.isLoop) {
-            await state.player.play();
-          } else {
-            await state.player.pause();
-          }
-        }
-      });
+      print('URL测试结果: ${response.statusCode}');
+      return response.statusCode == 200 || response.statusCode == 206; // 206是部分内容，也表示成功
     } catch (e) {
-      print('播放媒体时出错: $e');
+      print('测试URL失败: $e');
+      return false;
     }
   }
 
-  // 添加一个方法来测试和选择可用的URL
+  // 选择有效的URL
   Future<String?> selectValidUrl(List<String> urls) async {
     if (urls.isEmpty) return null;
     
     // 首先尝试第一个URL
-    try {
-      final response = await Dio().head(urls.first, options: Options(
-        headers: VideoPlayApi.videoPlayerHttpHeaders,
-        receiveTimeout: const Duration(seconds: 10),
-      ));
-      if (response.statusCode == 200) {
-        return urls.first;
-      }
-    } catch (e) {
-      print('测试URL失败: $e');
+    if (await _testUrl(urls.first)) {
+      return urls.first;
     }
     
     // 如果第一个URL失败，尝试备用URL
     for (int i = 1; i < urls.length; i++) {
-      try {
-        final response = await Dio().head(urls[i], options: Options(
-          headers: VideoPlayApi.videoPlayerHttpHeaders,
-          receiveTimeout: const Duration(seconds: 10),
-        ));
-        if (response.statusCode == 200) {
-          return urls[i];
-        }
-      } catch (e) {
-        print('测试备用URL失败: $e');
+      if (await _testUrl(urls[i])) {
+        return urls[i];
       }
     }
     
-    // 如果所有URL都失败，返回第一个URL（让播放器尝试处理）
+    // 如果所有URL都失败，返回第一个URL作为备选
     return urls.first;
   }
 
-  Future<void> playMediaWithUrlTesting(String videoUrl, String audioUrl) async {
+  // 播放媒体
+  Future<void> playMedia(List<String> videoUrls, List<String> audioUrls, {String? refererBvid}) async {
     try {
-      await state.player.stop();
-      await Future.delayed(const Duration(milliseconds: 10));
+      print('视频URL列表: $videoUrls');
+      print('音频URL列表: $audioUrls');
       
-      // 使用单个媒体源，同时包含视频和音频轨道
-      await state.player.open(
-        Media(
-          videoUrl,
-          httpHeaders: VideoPlayApi.videoPlayerHttpHeaders,
-        ),
-        play: true,
+      // 停止当前播放
+      await state.player.stop();
+      
+      // 选择有效的视频URL
+      String? videoUrl = await selectValidUrl(videoUrls);
+      if (videoUrl == null) {
+        print('没有找到有效的视频URL');
+        return;
+      }
+      
+      // 选择有效的音频URL
+      String? audioUrl;
+      if (audioUrls.isNotEmpty) {
+        audioUrl = await selectValidUrl(audioUrls);
+      }
+      
+      print('使用视频URL: $videoUrl');
+      if (audioUrl != null) {
+        print('使用音频URL: $audioUrl');
+      }
+      
+      // 创建媒体对象，添加更多HTTP头部信息以符合Bilibili的要求
+      final headers = Map<String, String>.from(VideoPlayApi.videoPlayerHttpHeaders);
+      // 确保Referer正确设置
+      if (refererBvid != null) {
+        headers['Referer'] = 'https://www.bilibili.com/video/$refererBvid/';
+      }
+      headers['Range'] = 'bytes=0-'; // 添加Range头部
+      
+      print('HTTP头部信息: $headers');
+      
+      final media = Media(
+        videoUrl,
+        httpHeaders: headers,
       );
       
+      // 打开媒体
+      print('正在打开媒体...');
+      await state.player.open(
+        media,
+        play: true,
+      );
+      print('媒体打开成功');
+      
+      // 设置播放列表模式
       await state.player.setPlaylistMode(PlaylistMode.none);
       
-      // 延迟设置音频轨道，确保视频已加载
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (audioUrl.isNotEmpty) {
+      // 如果有音频URL，设置音频轨道
+      if (audioUrl != null && audioUrl.isNotEmpty) {
         try {
+          print('正在设置音频轨道...');
+          // 延迟设置音频轨道，确保视频已加载
+          await Future.delayed(const Duration(milliseconds: 500));
           await state.player.setAudioTrack(AudioTrack.uri(audioUrl));
+          print('音频轨道设置成功');
         } catch (audioError) {
           print('设置音频轨道失败: $audioError');
         }
       }
       
-      //防止上一个subsciption还没有释放掉
-      if (state._completedSubsciption != null) {
-        state._completedSubsciption!.cancel();
-        state._completedSubsciption = null;
-      }
-      state._completedSubsciption =
-          state.player.stream.completed.listen((event) async {
-        if (event) {
-          await state.player.seek(Duration.zero); //结束后回到起点
-          await Future.delayed(const Duration(milliseconds: 20));
-          if (state.isLoop) {
-            await state.player.play();
-          } else {
-            await state.player.pause();
-          }
-        }
-      });
     } catch (e) {
       print('播放媒体时出错: $e');
     }
   }
 
+  // 暂停播放
+  Future<void> pause() async {
+    await state.player.pause();
+  }
+
+  // 继续播放
+  Future<void> play() async {
+    await state.player.play();
+  }
+
+  // 跳转到指定位置
+  Future<void> seek(Duration position) async {
+    await state.player.seek(position);
+  }
+
+  // 设置音量
+  Future<void> setVolume(double volume) async {
+    await state.player.setVolume(volume);
+  }
+
+  // 设置静音
+  Future<void> setMute(bool mute) async {
+    await state.player.setVolume(mute ? 0.0 : 1.0);
+  }
+
+  // 设置播放速度
+  Future<void> setSpeed(double speed) async {
+    await state.player.setRate(speed);
+  }
+
+  // 释放资源
   Future<void> dispose() async {
     await state.player.stop();
-    await state._completedSubsciption?.cancel();
-    state._completedSubsciption = null;
-    await Future.delayed(const Duration(milliseconds: 10));
+    await state._completedSubscription?.cancel();
+    state._completedSubscription = null;
+    await state.player.dispose();
   }
 
   @override
@@ -182,7 +227,7 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
   }
 }
 
-//播放器界面
+// 播放器界面
 class BiliVideoPlayer extends StatefulWidget {
   final String bvid;
   final int cid;
@@ -217,12 +262,17 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
       );
       
       if (videoPlayInfo.videos.isNotEmpty) {
-        // 选择最高质量的视频和音频URL
-        final videoUrl = videoPlayInfo.videos.first.urls.first;
-        final audioUrl = videoPlayInfo.audios.isNotEmpty ? videoPlayInfo.audios.first.urls.first : '';
+        // 获取所有视频URL
+        final videoUrls = videoPlayInfo.videos.first.urls;
+        // 获取所有音频URL
+        final audioUrls = videoPlayInfo.audios.isNotEmpty 
+            ? videoPlayInfo.audios.first.urls 
+            : <String>[];
         
         // 播放媒体
-        _cubit.playMedia(videoUrl, audioUrl);
+        await _cubit.playMedia(videoUrls, audioUrls, refererBvid: widget.bvid);
+      } else {
+        print('没有找到可用的视频流');
       }
     } catch (e) {
       print('加载视频失败: $e');
@@ -244,39 +294,78 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
           // 监听状态变化
         },
         builder: (context, state) {
-          return Video(
-            controller: state.videoController,
-            controls: (videoState) {
-              return Stack(
-                children: [
-                  // 确保视频画面显示
-                  Positioned.fill(
-                    child: ColoredBox(
-                      color: Colors.black,
-                    ),
-                  ),
-                  // 播放控制按钮
-                  Center(
-                    child: IconButton(
-                      icon: Icon(
-                        state.player.state.playing
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 50,
-                      ),
-                      onPressed: () {
-                        if (state.player.state.playing) {
-                          state.player.pause();
-                        } else {
-                          state.player.play();
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              );
-            },
+          return Stack(
+            children: [
+              // 视频播放器
+              Video(
+                controller: state.videoController,
+                controls: (videoState) {
+                  return Container(); // 不使用默认控件
+                },
+              ),
+              
+              // 自定义播放控制层
+              Positioned.fill(
+                child: BlocBuilder<BiliVideoPlayerCubit, BiliVideoPlayerState>(
+                  builder: (context, state) {
+                    return Stack(
+                      children: [
+                        // 黑色背景确保视频显示
+                        const ColoredBox(color: Colors.black),
+                        
+                        // 缓冲指示器
+                        if (state.isBuffering)
+                          const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                        
+                        // 播放控制按钮
+                        Center(
+                          child: IconButton(
+                            icon: Icon(
+                              state.isPlaying ? Icons.pause : Icons.play_arrow,
+                              color: Colors.white,
+                              size: 50,
+                            ),
+                            onPressed: () {
+                              if (state.isPlaying) {
+                                context.read<BiliVideoPlayerCubit>().pause();
+                              } else {
+                                context.read<BiliVideoPlayerCubit>().play();
+                              }
+                            },
+                          ),
+                        ),
+                        
+                        // 状态显示
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          child: Text(
+                            '播放状态: ${state.isPlaying ? "播放中" : "已暂停"}\n'
+                            '缓冲状态: ${state.isBuffering ? "缓冲中" : "就绪"}\n'
+                            '位置: ${state.position.inSeconds}秒\n'
+                            '时长: ${state.duration.inSeconds}秒',
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        ),
+                        
+                        // 错误提示
+                        if (state.duration == Duration.zero && !state.isBuffering)
+                          const Center(
+                            child: Text(
+                              '无法加载视频',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),

@@ -44,9 +44,18 @@ class VideoPlayApi {
           // 添加关键参数以支持未登录用户播放
           'force_host': 2, // 强制返回HTTPS地址
           if (!isLogin) 'try_look': 1, // 免登录查看
+          'voice_balance': 1,
+          'gaia_source': 'pre-load',
+          'isGaiaAvoided': true,
+          'web_location': 1315873,
+          // 添加更多符合Bilibili要求的参数
+          'qn': 120, // 默认请求最高画质
+          'otype': 'json',
+          'platform': 'html5',
         },
         options: Options(headers: {
-          'user_agent': ApiConstants.userAgent,
+          'user-agent': ApiConstants.userAgent,
+          'referer': '${ApiConstants.bilibiliBase}/video/$bvid',
         }));
 
     return VideoPlayResponse.fromJson(response.data);
