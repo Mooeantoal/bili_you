@@ -143,7 +143,7 @@ class _BiliVideoPageFullState extends State<BiliVideoPageFull>
                 )
               : PopScope(
                   canPop: !_isFullScreen,
-                  onPopInvokedWithResult: (bool didPop, Object? result) {
+                  onPopInvoked: (bool didPop) {
                     if (_isFullScreen) {
                       _toggleFullScreen();
                     }
