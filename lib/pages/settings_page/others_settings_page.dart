@@ -29,17 +29,40 @@ class OthersSettingsPage extends StatelessWidget {
           },
         ),
         const SettingsLabel(
-          text: '视频',
+          text: '视频测试',
         ),
         ListTile(
-          title: const Text('视频测试'),
-          subtitle: const Text('测试视频播放和评论功能'),
+          title: const Text('基础视频测试'),
+          subtitle: const Text('测试基本视频播放功能'),
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () {
             VideoTestRoute.openVideoTestPage();
           },
         ),
-        // 移除了新搜索页面测试入口
+        ListTile(
+          title: const Text('高级视频调试'),
+          subtitle: const Text('测试多种视频流格式和参数'),
+          trailing: const Icon(Icons.arrow_forward_ios),
+          onTap: () {
+            VideoTestRoute.openAdvancedVideoDebugPage();
+          },
+        ),
+        ListTile(
+          title: const Text('详细API诊断'),
+          subtitle: const Text('详细分析API响应结构'),
+          trailing: const Icon(Icons.arrow_forward_ios),
+          onTap: () {
+            VideoTestRoute.openDetailedApiDebugPage();
+          },
+        ),
+        ListTile(
+          title: const Text('DASH流诊断'),
+          subtitle: const Text('专门诊断DASH流信息缺失问题'),
+          trailing: const Icon(Icons.arrow_forward_ios),
+          onTap: () {
+            VideoTestRoute.openDashStreamDebugPage();
+          },
+        ),
       ]),
     );
   }
