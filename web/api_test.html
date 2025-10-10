@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BiliYou API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            margin: 20px 0;
+        }
+        input, button, select {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .debug-info {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            font-weight: bold;
+            color: #333;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>BiliYou API测试</h1>
+    
+    <div class="container">
+        <label for="bvid">BV号:</label>
+        <input type="text" id="bvid" value="BV1joHwzBEJK" placeholder="输入BV号">
+    </div>
+    
+    <div class="container">
+        <label for="proxyUrl">代理服务器:</label>
+        <input type="text" id="proxyUrl" value="http://localhost:8081/bilibili/" placeholder="代理服务器地址" style="width: 300px;">
+    </div>
+    
+    <div class="container">
+        <button onclick="testVideoInfo()">测试视频信息API</button>
+        <button onclick="testPlayUrl()">测试播放信息API</button>
+        <button onclick="testAll()">完整测试</button>
+        <button onclick="clearDebug()">清空日志</button>
+    </div>
+    
+    <div class="container">
+        <div class="status" id="status">准备就绪</div>
+    </div>
+    
+    <div class="container">
+        <h3>调试信息:</h3>
+        <div class="debug-info" id="debugInfo"></div>
+    </div>
+
+    <script>
+        function updateDebugInfo(info, type = 'info') {
+            const debugInfo = document.getElementById('debugInfo');
+            const line = document.createElement('div');
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${info}`;
+            if (type === 'error') {
+                line.className = 'error';
+            } else if (type === 'success') {
+                line.className = 'success';
+            }
+            debugInfo.appendChild(line);
+            // 滚动到底部
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+        }
+
+        function clearDebug() {
+            document.getElementById('debugInfo').innerHTML = '';
+            updateStatus('日志已清空');
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+        }
+
+        async function testVideoInfo() {
+            const bvid = document.getElementById('bvid').value.trim();
+            const proxyUrl = document.getElementById('proxyUrl').value.trim();
+            
+            if (!bvid) {
+                updateStatus('错误: BV号不能为空', 'error');
+                return;
+            }
+            
+            if (!proxyUrl) {
+                updateStatus('错误: 代理服务器地址不能为空', 'error');
+                return;
+            }
+            
+            updateStatus('正在测试视频信息API...');
+            updateDebugInfo('开始测试视频信息API...');
+            updateDebugInfo('测试BV号: ' + bvid);
+            
+            try {
+                const targetUrl = `${proxyUrl}x/web-interface/view?bvid=${bvid}`;
+                updateDebugInfo('请求URL: ' + targetUrl);
+                
+                const response = await fetch(targetUrl);
+                updateDebugInfo('响应状态: ' + response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                updateDebugInfo('响应数据: ' + JSON.stringify(data, null, 2));
+                
+                if (data.code === 0) {
+                    const cid = data.data.cid;
+                    const title = data.data.title;
+                    updateDebugInfo('视频标题: ' + title);
+                    updateDebugInfo('CID: ' + cid);
+                    updateStatus('视频信息API测试成功', 'success');
+                } else {
+                    updateDebugInfo('API返回错误: ' + JSON.stringify(data), 'error');
+                    updateStatus('视频信息API测试失败', 'error');
+                }
+            } catch (error) {
+                updateDebugInfo('测试过程中发生错误: ' + error.message, 'error');
+                updateStatus('错误: ' + error.message, 'error');
+            }
+        }
+
+        async function testPlayUrl() {
+            const bvid = document.getElementById('bvid').value.trim();
+            const proxyUrl = document.getElementById('proxyUrl').value.trim();
+            
+            if (!bvid) {
+                updateStatus('错误: BV号不能为空', 'error');
+                return;
+            }
+            
+            if (!proxyUrl) {
+                updateStatus('错误: 代理服务器地址不能为空', 'error');
+                return;
+            }
+            
+            // 首先获取CID
+            updateStatus('正在获取CID...');
+            updateDebugInfo('开始获取CID...');
+            
+            try {
+                const infoResponse = await fetch(`${proxyUrl}x/web-interface/view?bvid=${bvid}`);
+                if (!infoResponse.ok) {
+                    throw new Error(`HTTP ${infoResponse.status}: ${infoResponse.statusText}`);
+                }
+                
+                const infoData = await infoResponse.json();
+                if (infoData.code !== 0) {
+                    throw new Error('无法获取视频信息: ' + JSON.stringify(infoData));
+                }
+                
+                const cid = infoData.data.cid;
+                updateDebugInfo('获取到CID: ' + cid);
+                
+                // 测试播放信息API
+                updateStatus('正在测试播放信息API...');
+                updateDebugInfo('正在测试播放信息API...');
+                
+                const playUrl = `${proxyUrl}x/player/playurl?bvid=${bvid}&cid=${cid}&fnval=4048&fnver=0&fourk=1`;
+                updateDebugInfo('请求URL: ' + playUrl);
+                
+                const playResponse = await fetch(playUrl);
+                updateDebugInfo('响应状态: ' + playResponse.status);
+                
+                if (!playResponse.ok) {
+                    throw new Error(`HTTP ${playResponse.status}: ${playResponse.statusText}`);
+                }
+                
+                const playData = await playResponse.json();
+                updateDebugInfo('响应数据: ' + JSON.stringify(playData, null, 2));
+                
+                if (playData.code === 0) {
+                    updateDebugInfo('播放信息获取成功');
+                    
+                    // 检查DASH流
+                    if (playData.data.dash) {
+                        const dash = playData.data.dash;
+                        updateDebugInfo('DASH流信息:');
+                        
+                        // 视频流
+                        if (dash.video && dash.video.length > 0) {
+                            updateDebugInfo('  视频流数量: ' + dash.video.length);
+                            const firstVideo = dash.video[0];
+                            updateDebugInfo('  最佳视频质量: ' + firstVideo.id);
+                            updateDebugInfo('  视频编码: ' + firstVideo.codecs);
+                            updateDebugInfo('  视频URL: ' + firstVideo.baseUrl);
+                        }
+                        
+                        // 音频流
+                        if (dash.audio && dash.audio.length > 0) {
+                            updateDebugInfo('  音频流数量: ' + dash.audio.length);
+                            const firstAudio = dash.audio[0];
+                            updateDebugInfo('  最佳音频质量: ' + firstAudio.id);
+                            updateDebugInfo('  音频编码: ' + firstAudio.codecs);
+                            updateDebugInfo('  音频URL: ' + firstAudio.baseUrl);
+                        }
+                    } else {
+                        updateDebugInfo('没有DASH流信息');
+                    }
+                    
+                    updateStatus('播放信息API测试成功', 'success');
+                } else {
+                    updateDebugInfo('获取播放信息失败: ' + JSON.stringify(playData), 'error');
+                    updateStatus('播放信息API测试失败', 'error');
+                }
+            } catch (error) {
+                updateDebugInfo('测试过程中发生错误: ' + error.message, 'error');
+                updateStatus('错误: ' + error.message, 'error');
+            }
+        }
+
+        async function testAll() {
+            await testVideoInfo();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+            await testPlayUrl();
+        }
+    </script>
+</body>
+</html>

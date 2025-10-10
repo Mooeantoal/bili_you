@@ -11,8 +11,11 @@ import 'package:cookie_jar/cookie_jar.dart';
 
 class VideoPlayApi {
   static Map<String, String> videoPlayerHttpHeaders = {
-    'user-agent': ApiConstants.userAgent,
-    'referer': ApiConstants.bilibiliBase
+    'User-Agent': ApiConstants.userAgent,
+    'Referer': '${ApiConstants.bilibiliBase}/',
+    'Accept': '*/*',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-US,en;q=0.9',
   };
 
   static Future<bool> _isLogin() async {
@@ -54,8 +57,8 @@ class VideoPlayApi {
           'platform': 'html5',
         },
         options: Options(headers: {
-          'user-agent': ApiConstants.userAgent,
-          'referer': '${ApiConstants.bilibiliBase}/video/$bvid',
+          'User-Agent': ApiConstants.userAgent,
+          'Referer': '${ApiConstants.bilibiliBase}/video/$bvid',
         }));
 
     return VideoPlayResponse.fromJson(response.data);

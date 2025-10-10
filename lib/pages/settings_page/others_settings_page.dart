@@ -1,5 +1,5 @@
 import 'package:bili_you/common/widget/settings_label.dart';
-import 'package:bili_you/pages/video_test/video_test_page.dart';
+import 'package:bili_you/pages/bili_video2/video_test_route.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -36,7 +36,7 @@ class OthersSettingsPage extends StatelessWidget {
           subtitle: const Text('测试视频播放和评论功能'),
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () {
-            Get.to(() => const VideoTestPage());
+            VideoTestRoute.openVideoTestPage();
           },
         ),
         // 移除了新搜索页面测试入口

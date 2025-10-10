@@ -74,17 +74,16 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
   Future<bool> _testUrl(String url) async {
     try {
       print('测试URL: $url');
-      final response = await Dio().get(
+      final response = await Dio().head(
         url,
         options: Options(
           headers: VideoPlayApi.videoPlayerHttpHeaders,
           receiveTimeout: const Duration(seconds: 10),
-          responseType: ResponseType.bytes, // 只获取头部信息
-          followRedirects: false, // 不跟随重定向
+          followRedirects: true,
         ),
       );
       print('URL测试结果: ${response.statusCode}');
-      return response.statusCode == 200 || response.statusCode == 206; // 206是部分内容，也表示成功
+      return response.statusCode == 200; // HEAD请求成功即表示URL有效
     } catch (e) {
       print('测试URL失败: $e');
       return false;
@@ -92,17 +91,48 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
   }
 
   // 选择有效的URL
-  Future<String?> selectValidUrl(List<String> urls) async {
+  Future<String?> selectValidUrl(List<String> urls, {Map<String, String>? headers}) async {
     if (urls.isEmpty) return null;
     
+    // 创建带有自定义头部的测试函数
+    Future<bool> testUrlWithHeaders(String url) async {
+      if (headers != null) {
+        try {
+          print('测试URL: $url');
+          final dio = Dio();
+          // 添加日志拦截器以便调试
+          dio.interceptors.add(LogInterceptor(responseBody: false, requestBody: true));
+          
+          final response = await dio.get(
+            url,
+            options: Options(
+              headers: headers,
+              receiveTimeout: const Duration(seconds: 15),
+              responseType: ResponseType.bytes,
+              followRedirects: false,
+            ),
+          );
+          
+          final isValid = response.statusCode == 200 || response.statusCode == 206;
+          print('URL测试结果: ${response.statusCode}, 有效: $isValid');
+          return isValid;
+        } catch (e) {
+          print('测试URL失败: $e');
+          return false;
+        }
+      } else {
+        return await _testUrl(url);
+      }
+    }
+    
     // 首先尝试第一个URL
-    if (await _testUrl(urls.first)) {
+    if (await testUrlWithHeaders(urls.first)) {
       return urls.first;
     }
     
     // 如果第一个URL失败，尝试备用URL
     for (int i = 1; i < urls.length; i++) {
-      if (await _testUrl(urls[i])) {
+      if (await testUrlWithHeaders(urls[i])) {
         return urls[i];
       }
     }
@@ -117,27 +147,6 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
       print('视频URL列表: $videoUrls');
       print('音频URL列表: $audioUrls');
       
-      // 停止当前播放
-      await state.player.stop();
-      
-      // 选择有效的视频URL
-      String? videoUrl = await selectValidUrl(videoUrls);
-      if (videoUrl == null) {
-        print('没有找到有效的视频URL');
-        return;
-      }
-      
-      // 选择有效的音频URL
-      String? audioUrl;
-      if (audioUrls.isNotEmpty) {
-        audioUrl = await selectValidUrl(audioUrls);
-      }
-      
-      print('使用视频URL: $videoUrl');
-      if (audioUrl != null) {
-        print('使用音频URL: $audioUrl');
-      }
-      
       // 创建媒体对象，添加更多HTTP头部信息以符合Bilibili的要求
       final headers = Map<String, String>.from(VideoPlayApi.videoPlayerHttpHeaders);
       // 确保Referer正确设置
@@ -147,6 +156,29 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
       headers['Range'] = 'bytes=0-'; // 添加Range头部
       
       print('HTTP头部信息: $headers');
+      
+      // 停止当前播放
+      await state.player.stop();
+      
+      // 选择有效的视频URL
+      String? videoUrl = await selectValidUrl(videoUrls, headers: headers);
+      if (videoUrl == null) {
+        print('没有找到有效的视频URL');
+        // 显示错误信息
+        emit(state); // 触发状态更新以显示错误
+        return;
+      }
+      
+      // 选择有效的音频URL
+      String? audioUrl;
+      if (audioUrls.isNotEmpty) {
+        audioUrl = await selectValidUrl(audioUrls, headers: headers);
+      }
+      
+      print('使用视频URL: $videoUrl');
+      if (audioUrl != null) {
+        print('使用音频URL: $audioUrl');
+      }
       
       final media = Media(
         videoUrl,
@@ -177,8 +209,9 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
         }
       }
       
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('播放媒体时出错: $e');
+      print('堆栈跟踪: $stackTrace');
     }
   }
 
@@ -353,11 +386,12 @@ class _BiliVideoPlayerState extends State<BiliVideoPlayer> {
                         ),
                         
                         // 错误提示
-                        if (state.duration == Duration.zero && !state.isBuffering)
+                        if (state.duration == Duration.zero && !state.isBuffering && !state.isPlaying)
                           const Center(
                             child: Text(
-                              '无法加载视频',
+                              '无法加载视频\n请检查网络连接或视频URL',
                               style: TextStyle(color: Colors.white),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                       ],
