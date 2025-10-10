@@ -106,6 +106,11 @@ class VideoPlayApi {
       response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: 8); // 只请求DURL格式
     }
     
+    // 再次尝试使用FLV格式
+    if (response.code != 0 || response.data == null) {
+      response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: 4); // 只请求FLV格式
+    }
+    
     if (response.code != 0) {
       throw "getVideoPlay: code:${response.code}, message:${response.message}";
     }
@@ -127,77 +132,15 @@ class VideoPlayApi {
     
     // 检查是否有DASH流
     if (response.data!.dash != null) {
-      // 获取视频
-      for (var i in response.data!.dash?.video ?? <VideoOrAudioRaw>[]) {
-        List<String> urls = [];
-        if (i.baseUrl != null) {
-          urls.add(i.baseUrl!);
-        }
-        if (i.backupUrl != null) {
-          urls.addAll(i.backupUrl!);
-        }
-        videos.add(VideoPlayItem(
-          urls: urls,
-          quality: VideoQualityCode.fromCode(i.id ?? -1),
-          bandWidth: i.bandwidth ?? 0,
-          codecs: i.codecs ?? "",
-          width: i.width ?? 0,
-          height: i.height ?? 0,
-          frameRate: double.tryParse(i.frameRate ?? "0") ?? 0,
-          sar: double.parse(i.sar?.split(':').first ?? '1') /
-              double.parse(i.sar?.split(':').last ?? '1'),
-        ));
-      }
-      
-      // 如果有dolby的话
-      for (var i in response.data!.dash?.dolby?.audio ?? <VideoOrAudioRaw>[]) {
-        response.data!.dash?.audio?.add(i);
-      }
-      
-      // 如果有flac的话
-      if (response.data!.dash?.flac?.audio != null) {
-        response.data!.dash?.audio?.add(response.data!.dash!.flac!.audio!);
-      }
-      
-      // 获取音频
-      for (var i in response.data!.dash?.audio ?? <VideoOrAudioRaw>[]) {
-        List<String> urls = [];
-        if (i.baseUrl != null) {
-          urls.add(i.baseUrl!);
-        }
-        if (i.backupUrl != null) {
-          urls.addAll(i.backupUrl!);
-        }
-        audios.add(AudioPlayItem(
-          urls: urls,
-          quality: AudioQualityCode.fromCode(i.id ?? -1),
-          bandWidth: i.bandwidth ?? 0,
-          codecs: i.codecs ?? "",
-        ));
-      }
+      _parseDashStream(response, videos, audios);
     } 
     // 如果没有DASH流，检查是否有DURL流
     else if (response.data!.durl != null && response.data!.durl!.isNotEmpty) {
-      // 对于DURL流，我们创建一个简单的视频项
-      final firstDurl = response.data!.durl!.first;
-      if (firstDurl.url != null) {
-        List<String> urls = [firstDurl.url!];
-        if (firstDurl.backupUrl != null) {
-          urls.addAll(firstDurl.backupUrl!);
-        }
-        
-        // 创建一个基本的视频项
-        videos.add(VideoPlayItem(
-          urls: urls,
-          quality: VideoQuality.clear480p, // 使用默认质量
-          bandWidth: 0,
-          codecs: "avc1.64001F",
-          width: 852,
-          height: 480,
-          frameRate: 29.97,
-          sar: 1.0,
-        ));
-      }
+      _parseDurlStream(response, videos);
+    }
+    // 如果没有DURL流，检查是否有其他格式
+    else {
+      _parseOtherStreamFormats(response, videos);
     }
     
     List<AudioQuality> supportAudioQualities = [];
@@ -214,6 +157,97 @@ class VideoPlayApi {
         audios: audios,
         lastPlayCid: response.data!.lastPlayCid ?? 0,
         lastPlayTime: Duration(milliseconds: response.data!.lastPlayTime ?? 0));
+  }
+
+  // 解析DASH流
+  static void _parseDashStream(VideoPlayResponse response, List<VideoPlayItem> videos, List<AudioPlayItem> audios) {
+    // 获取视频
+    for (var i in response.data!.dash?.video ?? <VideoOrAudioRaw>[]) {
+      List<String> urls = [];
+      if (i.baseUrl != null) {
+        urls.add(i.baseUrl!);
+      }
+      if (i.backupUrl != null) {
+        urls.addAll(i.backupUrl!);
+      }
+      videos.add(VideoPlayItem(
+        urls: urls,
+        quality: VideoQualityCode.fromCode(i.id ?? -1),
+        bandWidth: i.bandwidth ?? 0,
+        codecs: i.codecs ?? "",
+        width: i.width ?? 0,
+        height: i.height ?? 0,
+        frameRate: double.tryParse(i.frameRate ?? "0") ?? 0,
+        sar: double.parse(i.sar?.split(':').first ?? '1') /
+            double.parse(i.sar?.split(':').last ?? '1'),
+      ));
+    }
+    
+    // 如果有dolby的话
+    for (var i in response.data!.dash?.dolby?.audio ?? <VideoOrAudioRaw>[]) {
+      response.data!.dash?.audio?.add(i);
+    }
+    
+    // 如果有flac的话
+    if (response.data!.dash?.flac?.audio != null) {
+      response.data!.dash?.audio?.add(response.data!.dash!.flac!.audio!);
+    }
+    
+    // 获取音频
+    for (var i in response.data!.dash?.audio ?? <VideoOrAudioRaw>[]) {
+      List<String> urls = [];
+      if (i.baseUrl != null) {
+        urls.add(i.baseUrl!);
+      }
+      if (i.backupUrl != null) {
+        urls.addAll(i.backupUrl!);
+      }
+      audios.add(AudioPlayItem(
+        urls: urls,
+        quality: AudioQualityCode.fromCode(i.id ?? -1),
+        bandWidth: i.bandwidth ?? 0,
+        codecs: i.codecs ?? "",
+      ));
+    }
+  }
+
+  // 解析DURL流
+  static void _parseDurlStream(VideoPlayResponse response, List<VideoPlayItem> videos) {
+    // 对于DURL流，我们创建一个简单的视频项
+    final firstDurl = response.data!.durl!.first;
+    if (firstDurl.url != null) {
+      List<String> urls = [firstDurl.url!];
+      if (firstDurl.backupUrl != null) {
+        urls.addAll(firstDurl.backupUrl!);
+      }
+      
+      // 创建一个基本的视频项
+      videos.add(VideoPlayItem(
+        urls: urls,
+        quality: VideoQuality.clear480p, // 使用默认质量
+        bandWidth: firstDurl.size ?? 0,
+        codecs: "avc1.64001F",
+        width: 852,
+        height: 480,
+        frameRate: 29.97,
+        sar: 1.0,
+      ));
+    }
+  }
+
+  // 解析其他流格式
+  static void _parseOtherStreamFormats(VideoPlayResponse response, List<VideoPlayItem> videos) {
+    // 如果没有任何流格式，创建一个占位符
+    videos.add(VideoPlayItem(
+      urls: [],
+      quality: VideoQuality.unknown,
+      bandWidth: 0,
+      codecs: "",
+      width: 0,
+      height: 0,
+      frameRate: 0,
+      sar: 1.0,
+    ));
   }
 
   ///获取弹幕列表
@@ -276,12 +310,12 @@ class VideoPlayApi {
 
 ///视频流格式标识
 // ignore: unused_field
-enum _Fnval { dash, hdr, fourK, dolby, dolbyVision, eightK, av1, durl }
+enum _Fnval { dash, hdr, fourK, dolby, dolbyVision, eightK, av1, durl, flv }
 
 ///视频流格式标识代码
 // ignore: library_private_types_in_public_api
 extension FnvalValue on _Fnval {
-  static final List<int> _codeList = [16, 64, 128, 256, 512, 1024, 2048, 8];
+  static final List<int> _codeList = [16, 64, 128, 256, 512, 1024, 2048, 8, 4];
   int get code => _codeList[index];
-  static const int all = 4056; //_codeList所有值之或
+  static const int all = 4060; //_codeList所有值之或
 }
