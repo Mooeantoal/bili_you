@@ -101,6 +101,11 @@ class VideoPlayApi {
       response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: 1); // 只请求MP4格式
     }
     
+    // 再次尝试使用DURL格式
+    if (response.code != 0 || response.data == null) {
+      response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: 8); // 只请求DURL格式
+    }
+    
     if (response.code != 0) {
       throw "getVideoPlay: code:${response.code}, message:${response.message}";
     }
@@ -109,89 +114,102 @@ class VideoPlayApi {
         response.data!.acceptDescription == null) {
       return VideoPlayInfo.zero;
     }
-    //获取支持的视频质量
+    
+    // 获取支持的视频质量
     List<VideoQuality> supportVideoQualities = [];
     for (var i in response.data!.acceptQuality ?? <int>[]) {
       supportVideoQualities.add(VideoQualityCode.fromCode(i));
     }
-    //获取视频
+    
+    // 初始化视频和音频列表
     List<VideoPlayItem> videos = [];
-    for (var i in response.data!.dash?.video ?? <VideoOrAudioRaw>[]) {
-      List<String> urls = [];
-      if (i.baseUrl != null) {
-        urls.add(i.baseUrl!);
-      }
-      if (i.backupUrl != null) {
-        urls.addAll(i.backupUrl!);
-      }
-      videos.add(VideoPlayItem(
-        urls: urls,
-        quality: VideoQualityCode.fromCode(i.id ?? -1),
-        bandWidth: i.bandwidth ?? 0,
-        codecs: i.codecs ?? "",
-        width: i.width ?? 0,
-        height: i.height ?? 0,
-        frameRate: double.tryParse(i.frameRate ?? "0") ?? 0,
-        // mimeType: i.mimeType ?? '',
-        // segmentBase: SegmentBase(
-        //     initialization: i.segmentBase?.initialization ?? '',
-        //     indexRange: i.segmentBase?.indexRange ?? ''),
-        sar: double.parse(i.sar?.split(':').first ?? '1') /
-            double.parse(i.sar?.split(':').last ?? '1'),
-        // timeLength: response.data?.timelength ?? 0
-      ));
-    }
-    // //如果是空的话,就放入一个空的VideoPlayItem用来占位
-    // if (videos.isEmpty) {
-    //   videos.add(VideoPlayItem.zero);
-    // }
-    //如果有dolby的话
-    for (var i in response.data!.dash?.dolby?.audio ?? <VideoOrAudioRaw>[]) {
-      response.data!.dash?.audio?.add(i);
-    }
-    //如果有flac的话
-    if (response.data!.dash?.flac?.audio != null) {
-      response.data!.dash?.audio?.add(response.data!.dash!.flac!.audio!);
-    }
-    //获取音频
     List<AudioPlayItem> audios = [];
-    for (var i in response.data!.dash?.audio ?? <VideoOrAudioRaw>[]) {
-      List<String> urls = [];
-      if (i.baseUrl != null) {
-        urls.add(i.baseUrl!);
+    
+    // 检查是否有DASH流
+    if (response.data!.dash != null) {
+      // 获取视频
+      for (var i in response.data!.dash?.video ?? <VideoOrAudioRaw>[]) {
+        List<String> urls = [];
+        if (i.baseUrl != null) {
+          urls.add(i.baseUrl!);
+        }
+        if (i.backupUrl != null) {
+          urls.addAll(i.backupUrl!);
+        }
+        videos.add(VideoPlayItem(
+          urls: urls,
+          quality: VideoQualityCode.fromCode(i.id ?? -1),
+          bandWidth: i.bandwidth ?? 0,
+          codecs: i.codecs ?? "",
+          width: i.width ?? 0,
+          height: i.height ?? 0,
+          frameRate: double.tryParse(i.frameRate ?? "0") ?? 0,
+          sar: double.parse(i.sar?.split(':').first ?? '1') /
+              double.parse(i.sar?.split(':').last ?? '1'),
+        ));
       }
-      if (i.backupUrl != null) {
-        urls.addAll(i.backupUrl!);
+      
+      // 如果有dolby的话
+      for (var i in response.data!.dash?.dolby?.audio ?? <VideoOrAudioRaw>[]) {
+        response.data!.dash?.audio?.add(i);
       }
-      audios.add(AudioPlayItem(
-        urls: urls,
-        quality: AudioQualityCode.fromCode(i.id ?? -1),
-        bandWidth: i.bandwidth ?? 0,
-        codecs: i.codecs ?? "",
-        // mimeType: i.mimeType ?? '',
-        // segmentBase: SegmentBase(
-        //   initialization: i.segmentBase?.initialization ?? '',
-        //   indexRange: i.segmentBase?.indexRange ?? '',
-        // ),
-        // timeLength: response.data?.timelength ?? 0
-      ));
+      
+      // 如果有flac的话
+      if (response.data!.dash?.flac?.audio != null) {
+        response.data!.dash?.audio?.add(response.data!.dash!.flac!.audio!);
+      }
+      
+      // 获取音频
+      for (var i in response.data!.dash?.audio ?? <VideoOrAudioRaw>[]) {
+        List<String> urls = [];
+        if (i.baseUrl != null) {
+          urls.add(i.baseUrl!);
+        }
+        if (i.backupUrl != null) {
+          urls.addAll(i.backupUrl!);
+        }
+        audios.add(AudioPlayItem(
+          urls: urls,
+          quality: AudioQualityCode.fromCode(i.id ?? -1),
+          bandWidth: i.bandwidth ?? 0,
+          codecs: i.codecs ?? "",
+        ));
+      }
+    } 
+    // 如果没有DASH流，检查是否有DURL流
+    else if (response.data!.durl != null && response.data!.durl!.isNotEmpty) {
+      // 对于DURL流，我们创建一个简单的视频项
+      final firstDurl = response.data!.durl!.first;
+      if (firstDurl.url != null) {
+        List<String> urls = [firstDurl.url!];
+        if (firstDurl.backupUrl != null) {
+          urls.addAll(firstDurl.backupUrl!);
+        }
+        
+        // 创建一个基本的视频项
+        videos.add(VideoPlayItem(
+          urls: urls,
+          quality: VideoQuality.clear480p, // 使用默认质量
+          bandWidth: 0,
+          codecs: "avc1.64001F",
+          width: 852,
+          height: 480,
+          frameRate: 29.97,
+          sar: 1.0,
+        ));
+      }
     }
-
+    
     List<AudioQuality> supportAudioQualities = [];
-    //获取支持的音质
+    // 获取支持的音质
     for (var i in audios) {
       supportAudioQualities.add(i.quality);
     }
-    // //如果是空的话,就放入一个空的AudioPlayItem用来占位
-    // if (audios.isEmpty) {
-    //   audios.add(AudioPlayItem.zero);
-    // }
+    
     return VideoPlayInfo(
-        // defualtVideoQuality:
-        //     VideoQualityCode.fromCode(response.data!.quality ?? -1),
         supportVideoQualities: supportVideoQualities,
         supportAudioQualities: supportAudioQualities,
-        timeLength: response.data!.dash?.duration ?? 0,
+        timeLength: response.data!.dash?.duration ?? response.data!.timelength ?? 0,
         videos: videos,
         audios: audios,
         lastPlayCid: response.data!.lastPlayCid ?? 0,
@@ -258,12 +276,12 @@ class VideoPlayApi {
 
 ///视频流格式标识
 // ignore: unused_field
-enum _Fnval { dash, hdr, fourK, dolby, dolbyVision, eightK, av1 }
+enum _Fnval { dash, hdr, fourK, dolby, dolbyVision, eightK, av1, durl }
 
 ///视频流格式标识代码
 // ignore: library_private_types_in_public_api
 extension FnvalValue on _Fnval {
-  static final List<int> _codeList = [16, 64, 128, 256, 512, 1024, 2048];
+  static final List<int> _codeList = [16, 64, 128, 256, 512, 1024, 2048, 8];
   int get code => _codeList[index];
-  static const int all = 4048; //_codeList所有值之或
+  static const int all = 4056; //_codeList所有值之或
 }

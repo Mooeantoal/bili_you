@@ -51,6 +51,7 @@ class VideoPlayResponseData {
     this.seekParam,
     this.seekType,
     this.dash,
+    this.durl, // 添加DURL支持
     this.supportFormats,
     this.highFormat,
     this.lastPlayTime,
@@ -70,6 +71,7 @@ class VideoPlayResponseData {
   String? seekParam;
   String? seekType;
   Dash? dash;
+  List<Durl>? durl; // 添加DURL支持
   List<SupportFormat>? supportFormats;
   dynamic highFormat;
   int? lastPlayTime;
@@ -99,6 +101,7 @@ class VideoPlayResponseData {
         seekParam: json["seek_param"],
         seekType: json["seek_type"],
         dash: json["dash"] == null ? null : Dash.fromJson(json["dash"]),
+        durl: json["durl"] == null ? null : List<Durl>.from(json["durl"]!.map((x) => Durl.fromJson(x))), // 添加DURL支持
         supportFormats: json["support_formats"] == null
             ? []
             : List<SupportFormat>.from(
@@ -126,6 +129,7 @@ class VideoPlayResponseData {
         "seek_param": seekParam,
         "seek_type": seekType,
         "dash": dash?.toJson(),
+        "durl": durl == null ? null : List<dynamic>.from(durl!.map((x) => x.toJson())), // 添加DURL支持
         "support_formats": supportFormats == null
             ? []
             : List<dynamic>.from(supportFormats!.map((x) => x.toJson())),
@@ -185,6 +189,50 @@ class Dash {
             : List<dynamic>.from(audio!.map((x) => x.toJson())),
         "dolby": dolby?.toJson(),
         "flac": flac?.toJson(),
+      };
+}
+
+class Durl {
+  Durl({
+    this.order,
+    this.length,
+    this.size,
+    this.ahead,
+    this.vhead,
+    this.url,
+    this.backupUrl,
+  });
+
+  int? order;
+  int? length;
+  int? size;
+  String? ahead;
+  String? vhead;
+  String? url;
+  List<String>? backupUrl;
+
+  factory Durl.fromJson(Map<String, dynamic> json) => Durl(
+        order: json["order"],
+        length: json["length"],
+        size: json["size"],
+        ahead: json["ahead"],
+        vhead: json["vhead"],
+        url: json["url"],
+        backupUrl: json["backup_url"] == null
+            ? []
+            : List<String>.from(json["backup_url"]!.map((x) => x)),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "order": order,
+        "length": length,
+        "size": size,
+        "ahead": ahead,
+        "vhead": vhead,
+        "url": url,
+        "backup_url": backupUrl == null
+            ? []
+            : List<dynamic>.from(backupUrl!.map((x) => x)),
       };
 }
 
