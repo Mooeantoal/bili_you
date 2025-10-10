@@ -103,17 +103,16 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
           // 添加日志拦截器以便调试
           dio.interceptors.add(LogInterceptor(responseBody: false, requestBody: true));
           
-          final response = await dio.get(
+          final response = await dio.head(
             url,
             options: Options(
               headers: headers,
               receiveTimeout: const Duration(seconds: 15),
-              responseType: ResponseType.bytes,
-              followRedirects: false,
+              followRedirects: true,
             ),
           );
           
-          final isValid = response.statusCode == 200 || response.statusCode == 206;
+          final isValid = response.statusCode == 200;
           print('URL测试结果: ${response.statusCode}, 有效: $isValid');
           return isValid;
         } catch (e) {
@@ -125,20 +124,18 @@ class BiliVideoPlayerCubit extends Cubit<BiliVideoPlayerState> {
       }
     }
     
-    // 首先尝试第一个URL
-    if (await testUrlWithHeaders(urls.first)) {
-      return urls.first;
-    }
-    
-    // 如果第一个URL失败，尝试备用URL
-    for (int i = 1; i < urls.length; i++) {
+    // 按顺序测试所有URL，直到找到有效的
+    for (int i = 0; i < urls.length; i++) {
+      print('尝试URL $i: ${urls[i]}');
       if (await testUrlWithHeaders(urls[i])) {
+        print('选择URL $i: ${urls[i]}');
         return urls[i];
       }
     }
     
-    // 如果所有URL都失败，返回第一个URL作为备选
-    return urls.first;
+    // 如果所有URL都失败，返回null
+    print('所有URL测试失败');
+    return null;
   }
 
   // 播放媒体

@@ -8,6 +8,7 @@ import 'package:bili_you/common/utils/cookie_util.dart';
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
+import 'dart:math';
 
 class VideoPlayApi {
   static Map<String, String> videoPlayerHttpHeaders = {
@@ -37,6 +38,10 @@ class VideoPlayApi {
       int fnval = FnvalValue.all}) async {
     bool isLogin = await _isLogin();
     
+    // 生成随机数和时间戳
+    final random = Random();
+    final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).floor();
+    
     var response = await HttpUtils().get(ApiConstants.videoPlay,
         queryParameters: {
           'bvid': bvid,
@@ -55,6 +60,21 @@ class VideoPlayApi {
           'qn': 120, // 默认请求最高画质
           'otype': 'json',
           'platform': 'html5',
+          // 新增参数
+          'buvid': 'XY118B45D008F4831277844288FC1F2061F4C',
+          'device_type': 1,
+          'device_id': 'D3A356A5-CD69-4075-9DA0-584614347DB0',
+          'build': 66666,
+          'device_name': 'iPhone 14',
+          'device_model': 'iPhone 14',
+          'device_os': '16.5',
+          'device_platform': 'iPhone',
+          'device_brand': 'Apple',
+          'device_version': '16.5',
+          'device_screen': '390x844',
+          'abtest': '819588',
+          'ts': timestamp,
+          'random': random.nextInt(1000000),
         },
         options: Options(headers: {
           'User-Agent': ApiConstants.userAgent,
@@ -74,6 +94,11 @@ class VideoPlayApi {
     // 如果第一次请求失败，尝试使用更简单的格式
     if (response.code != 0 || response.data == null) {
       response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: 16); // 只请求DASH格式
+    }
+    
+    // 再次尝试使用更简单的参数
+    if (response.code != 0 || response.data == null) {
+      response = await _requestVideoPlay(bvid: bvid, cid: cid, fnval: 1); // 只请求MP4格式
     }
     
     if (response.code != 0) {
