@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'dart:convert';
+import 'package:flutter/services.dart';
 
 class DashStreamDebugPage extends StatefulWidget {
   const DashStreamDebugPage({super.key});
@@ -264,6 +265,20 @@ class _DashStreamDebugPageState extends State<DashStreamDebugPage> {
     );
   }
 
+  // 添加复制日志到剪贴板的方法
+  void _copyLogToClipboard() {
+    Clipboard.setData(ClipboardData(text: _debugInfo));
+    Get.snackbar('提示', '日志已复制到剪贴板');
+  }
+
+  // 添加清空日志的方法
+  void _clearLog() {
+    setState(() {
+      _debugInfo = '';
+    });
+    Get.snackbar('提示', '日志已清空');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -321,6 +336,21 @@ class _DashStreamDebugPageState extends State<DashStreamDebugPage> {
               ],
             ),
             const SizedBox(height: 16),
+            // 添加复制日志按钮
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: _debugInfo.isEmpty ? null : _copyLogToClipboard,
+                  child: const Text('复制日志'),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: _clearLog,
+                  child: const Text('清空日志'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -329,7 +359,7 @@ class _DashStreamDebugPageState extends State<DashStreamDebugPage> {
                 ),
                 padding: const EdgeInsets.all(8),
                 child: SingleChildScrollView(
-                  child: Text(
+                  child: SelectableText(
                     _debugInfo,
                     style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
                   ),
