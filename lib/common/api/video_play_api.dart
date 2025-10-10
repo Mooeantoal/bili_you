@@ -161,6 +161,9 @@ class VideoPlayApi {
 
   // 解析DASH流
   static void _parseDashStream(VideoPlayResponse response, List<VideoPlayItem> videos, List<AudioPlayItem> audios) {
+    print('解析DASH流');
+    print('DASH数据: ${response.data!.dash}');
+    
     // 获取视频
     for (var i in response.data!.dash?.video ?? <VideoOrAudioRaw>[]) {
       List<String> urls = [];
@@ -170,17 +173,40 @@ class VideoPlayApi {
       if (i.backupUrl != null) {
         urls.addAll(i.backupUrl!);
       }
+      
+      // 确保必要的字段有默认值
+      final id = i.id ?? -1;
+      final bandwidth = i.bandwidth ?? 0;
+      final codecs = i.codecs ?? "";
+      final width = i.width ?? 0;
+      final height = i.height ?? 0;
+      final frameRate = double.tryParse(i.frameRate ?? "0") ?? 0;
+      
+      // 解析SAR
+      double sar = 1.0;
+      if (i.sar != null) {
+        try {
+          final parts = i.sar!.split(':');
+          if (parts.length == 2) {
+            sar = double.parse(parts[0]) / double.parse(parts[1]);
+          }
+        } catch (e) {
+          print('解析SAR失败: $e');
+        }
+      }
+      
       videos.add(VideoPlayItem(
         urls: urls,
-        quality: VideoQualityCode.fromCode(i.id ?? -1),
-        bandWidth: i.bandwidth ?? 0,
-        codecs: i.codecs ?? "",
-        width: i.width ?? 0,
-        height: i.height ?? 0,
-        frameRate: double.tryParse(i.frameRate ?? "0") ?? 0,
-        sar: double.parse(i.sar?.split(':').first ?? '1') /
-            double.parse(i.sar?.split(':').last ?? '1'),
+        quality: VideoQualityCode.fromCode(id),
+        bandWidth: bandwidth,
+        codecs: codecs,
+        width: width,
+        height: height,
+        frameRate: frameRate,
+        sar: sar,
       ));
+      
+      print('添加视频流: ID=$id, URLs=${urls.length}, 编码=$codecs');
     }
     
     // 如果有dolby的话
@@ -202,17 +228,29 @@ class VideoPlayApi {
       if (i.backupUrl != null) {
         urls.addAll(i.backupUrl!);
       }
+      
+      // 确保必要的字段有默认值
+      final id = i.id ?? -1;
+      final bandwidth = i.bandwidth ?? 0;
+      final codecs = i.codecs ?? "";
+      
       audios.add(AudioPlayItem(
         urls: urls,
-        quality: AudioQualityCode.fromCode(i.id ?? -1),
-        bandWidth: i.bandwidth ?? 0,
-        codecs: i.codecs ?? "",
+        quality: AudioQualityCode.fromCode(id),
+        bandWidth: bandwidth,
+        codecs: codecs,
       ));
+      
+      print('添加音频流: ID=$id, URLs=${urls.length}, 编码=$codecs');
     }
+    
+    print('DASH流解析完成: 视频流数量=${videos.length}, 音频流数量=${audios.length}');
   }
 
   // 解析DURL流
   static void _parseDurlStream(VideoPlayResponse response, List<VideoPlayItem> videos) {
+    print('解析DURL流');
+    
     // 对于DURL流，我们创建一个简单的视频项
     final firstDurl = response.data!.durl!.first;
     if (firstDurl.url != null) {
@@ -232,11 +270,17 @@ class VideoPlayApi {
         frameRate: 29.97,
         sar: 1.0,
       ));
+      
+      print('添加DURL流: URL=${firstDurl.url}, 大小=${firstDurl.size}');
     }
+    
+    print('DURL流解析完成: 视频流数量=${videos.length}');
   }
 
   // 解析其他流格式
   static void _parseOtherStreamFormats(VideoPlayResponse response, List<VideoPlayItem> videos) {
+    print('解析其他流格式');
+    
     // 如果没有任何流格式，创建一个占位符
     videos.add(VideoPlayItem(
       urls: [],
@@ -248,6 +292,8 @@ class VideoPlayApi {
       frameRate: 0,
       sar: 1.0,
     ));
+    
+    print('其他流格式解析完成');
   }
 
   ///获取弹幕列表
