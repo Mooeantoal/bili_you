@@ -75,6 +75,14 @@ class DebugHomePage extends StatelessWidget {
               },
               child: const Text('打开DASH流诊断页面'),
             ),
+            const SizedBox(height: 10),
+            // 添加改进调试页面的按钮
+            ElevatedButton(
+              onPressed: () {
+                VideoTestRoute.openImprovedDebugPage();
+              },
+              child: const Text('打开改进的视频调试页面'),
+            ),
             const SizedBox(height: 20),
             const Text(
               '说明：\n'
@@ -83,9 +91,10 @@ class DebugHomePage extends StatelessWidget {
               '3. 第三个按钮打开高级视频调试页面\n'
               '4. 第四个按钮打开详细API诊断页面\n'
               '5. 第五个按钮打开DASH流诊断页面\n'
-              '6. 在测试页面中输入BV号或使用默认BV号\n'
-              '7. 点击相应按钮进行测试\n'
-              '8. 查看调试信息区域以了解测试过程',
+              '6. 第六个按钮打开改进的视频调试页面\n'
+              '7. 在测试页面中输入BV号或使用默认BV号\n'
+              '8. 点击相应按钮进行测试\n'
+              '9. 查看调试信息区域以了解测试过程',
               style: TextStyle(fontSize: 14, color: Colors.grey),
               textAlign: TextAlign.center,
             ),

@@ -63,6 +63,15 @@ class OthersSettingsPage extends StatelessWidget {
             VideoTestRoute.openDashStreamDebugPage();
           },
         ),
+        // 添加改进调试页面的入口
+        ListTile(
+          title: const Text('改进的视频调试'),
+          subtitle: const Text('改进的诊断方法和参数'),
+          trailing: const Icon(Icons.arrow_forward_ios),
+          onTap: () {
+            VideoTestRoute.openImprovedDebugPage();
+          },
+        ),
       ]),
     );
   }
