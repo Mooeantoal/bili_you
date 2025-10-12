@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:get/get.dart';
 import 'bili_comments_page.dart';
+import 'bili_video_info_page.dart';
 
 class BiliPlayerAdvancedPage extends StatefulWidget {
   const BiliPlayerAdvancedPage({Key? key}) : super(key: key);
@@ -71,6 +72,13 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
   // 查看评论
   void _viewComments() {
     Get.to(() => BiliCommentsPage(videoId: videoId, aid: aid));
+  }
+
+  // 查看视频详细信息
+  void _viewVideoInfo() {
+    // 判断是BV号还是av号
+    bool isBvid = videoId.startsWith('BV');
+    Get.to(() => BiliVideoInfoPage(videoId: isBvid ? videoId : aid, isBvid: isBvid));
   }
 
   void _showSettingsDialog() {
@@ -187,6 +195,11 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
       appBar: AppBar(
         title: const Text('B站播放器(高级版)'),
         actions: [
+          // 查看视频详细信息按钮
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: _viewVideoInfo,
+          ),
           // 查看评论按钮
           IconButton(
             icon: const Icon(Icons.comment),

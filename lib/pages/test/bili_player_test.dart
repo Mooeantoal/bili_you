@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:get/get.dart';
 import 'bili_comments_page.dart';
+import 'bili_video_info_page.dart';
 
 class BiliPlayerTestPage extends StatefulWidget {
   const BiliPlayerTestPage({Key? key}) : super(key: key);
@@ -62,12 +63,24 @@ class _BiliPlayerTestPageState extends State<BiliPlayerTestPage> {
     Get.to(() => BiliCommentsPage(videoId: videoId, aid: aid));
   }
 
+  // 查看视频详细信息
+  void _viewVideoInfo() {
+    // 判断是BV号还是av号
+    bool isBvid = videoId.startsWith('BV');
+    Get.to(() => BiliVideoInfoPage(videoId: isBvid ? videoId : aid, isBvid: isBvid));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('B站播放器测试'),
         actions: [
+          // 查看视频详细信息按钮
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: _viewVideoInfo,
+          ),
           // 查看评论按钮
           IconButton(
             icon: const Icon(Icons.comment),

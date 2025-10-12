@@ -14,7 +14,8 @@
 4. 支持自定义视频ID、CID等参数
 5. 提供播放控制选项（自动播放、弹幕开关、静音等）
 6. 支持切换播放器样式（移动端/PC端）
-7. **支持查看视频评论功能**
+7. 支持查看视频评论功能
+8. **支持查看视频详细信息功能**
 
 ## 改进代码0.2版本方案说明
 
@@ -59,15 +60,35 @@
 4. 显示评论的点赞数和回复数
 5. 显示用户头像和评论时间
 
+## 视频详细信息查看功能
+
+根据 [UAPI提供的API](https://uapis.cn/docs/api-reference/get-social-bilibili-videoinfo)，我们实现了查看视频详细信息的功能：
+
+### API接口说明
+- **接口地址**：`https://uapis.cn/api/v1/social/bilibili/videoinfo`
+- **请求方法**：GET
+- **必需参数**：
+  - `aid`：视频的AV号（纯数字格式）
+  - `bvid`：视频的BV号（例如 BV117411r7R1）
+  - aid和bvid任选其一即可
+
+### 功能特点
+1. 显示视频标题、封面、时长等基本信息
+2. 显示播放量、弹幕数、评论数等统计数据
+3. 显示UP主信息（头像、昵称、UID）
+4. 显示视频描述和分P列表
+5. 支持原创/转载标识
+
 ## 使用方法
 
 1. 在应用底部导航栏点击"测试"选项卡
 2. 进入B站播放器页面
 3. 页面会自动加载默认视频
 4. 点击左上角图标（💻/📱）可在PC端和移动端播放器样式间切换
-5. 点击右上角评论图标（💬）可查看视频评论
-6. 点击右上角设置按钮可修改视频参数（仅高级版）
-7. 点击右上角刷新按钮可重新加载播放器
+5. 点击右上角信息图标（ℹ️）可查看视频详细信息
+6. 点击右上角评论图标（💬）可查看视频评论
+7. 点击右上角设置按钮可修改视频参数（仅高级版）
+8. 点击右上角刷新按钮可重新加载播放器
 
 ## 技术细节
 
@@ -88,12 +109,19 @@ https://player.bilibili.com/player.html?bvid={视频ID}&cid={CID}&page=1&autopla
 - `ps`: 每页获取的评论数量，范围是1到20
 - `pn`: 要获取的页码，从1开始
 
+### 视频信息API参数说明
+
+- `aid`: 视频的AV号（纯数字格式）
+- `bvid`: 视频的BV号（例如 BV117411r7R1）
+- aid和bvid任选其一即可
+
 ### 文件结构
 
-- `lib/pages/test/navigation_test.dart`: 主要的播放器页面（已添加播放器样式切换和评论查看功能）
-- `lib/pages/test/bili_player_advanced.dart`: 高级功能播放器页面（已添加播放器样式切换和评论查看功能）
-- `lib/pages/test/bili_player_test.dart`: 简单播放器测试页面（已添加播放器样式切换和评论查看功能）
+- `lib/pages/test/navigation_test.dart`: 主要的播放器页面（已添加播放器样式切换、评论查看和视频信息查看功能）
+- `lib/pages/test/bili_player_advanced.dart`: 高级功能播放器页面（已添加播放器样式切换、评论查看和视频信息查看功能）
+- `lib/pages/test/bili_player_test.dart`: 简单播放器测试页面（已添加播放器样式切换、评论查看和视频信息查看功能）
 - `lib/pages/test/bili_comments_page.dart`: 视频评论页面
+- `lib/pages/test/bili_video_info_page.dart`: 视频详细信息页面
 
 ## 自定义视频
 
@@ -147,17 +175,38 @@ bool usePCPlayer = false; // 是否使用PC端播放器样式
 - 当前页码显示
 - 总页数显示
 
+## 视频详细信息功能特点
+
+### 基本信息
+- 视频标题、封面、时长
+- 发布时间、版权类型
+- 视频描述
+
+### 数据统计
+- 播放量、弹幕数、评论数
+- 点赞数、投币数、收藏数
+- 分享数
+
+### UP主信息
+- UP主头像、昵称
+- UP主UID
+
+### 分P列表
+- 显示所有分P标题和时长
+- 支持点击跳转到指定分P（待实现）
+
 ## 注意事项
 
-1. 需要网络连接才能播放视频和获取评论
+1. 需要网络连接才能播放视频和获取数据
 2. 部分视频可能因版权限制无法播放
 3. 某些功能可能需要登录B站账号
 4. 移动端体验更佳
 5. PC端播放器在移动设备上可能显示不够优化
-6. 评论功能依赖第三方API服务
+6. 评论功能和视频信息功能依赖第三方API服务
 
 ## 参考资料
 
 - [B站iframe播放器使用教程](https://www.ymhave.com/archives/bilibiliiframe.html)
 - [B站官方播放器文档](https://player.bilibili.com/)
 - [UAPI获取Bilibili视频评论接口](https://uapis.cn/docs/api-reference/get-social-bilibili-replies)
+- [UAPI获取Bilibili视频详细信息接口](https://uapis.cn/docs/api-reference/get-social-bilibili-videoinfo)
