@@ -85,37 +85,7 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        // 去除系统导航条所在部分的半透明阴影
-        color: Colors.transparent,
-        child: BottomNavigationBar(
-          // 实现Android官方的edge-to-edge沉浸式方案
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent, // 透明背景
-          elevation: 0, // 去除阴影
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: "首页",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.star_border_outlined),
-              activeIcon: Icon(Icons.star),
-              label: "动态",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: "我的",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.comment), // 将测试图标改为评论图标
-              label: "评论",
-            ),
-          ],
-        ),
-      ),
+      // 移除重复的底部导航栏，使用应用级别的导航栏
     );
   }
 
@@ -166,16 +136,34 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
     );
   }
 
-  // 构建内容区域（完全去掉内部导航栏，直接显示视频信息和评论）
+  // 构建内容区域（添加Tab组件来并列显示视频信息和评论）
   Widget _buildContentSection() {
-    return SingleChildScrollView(
+    return DefaultTabController(
+      length: 2,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 视频详细信息（去除标题）
-          _buildVideoInfoTab(),
-          // 评论（去除标题）
-          _buildCommentsTab(),
+          // Tab导航栏
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: const TabBar(
+              tabs: [
+                Tab(text: '视频详情'),
+                Tab(text: '评论'),
+              ],
+            ),
+          ),
+          // Tab内容区域
+          Expanded(
+            child: TabBarView(
+              children: [
+                // 视频详细信息
+                _buildVideoInfoTab(),
+                // 评论
+                _buildCommentsTab(),
+              ],
+            ),
+          ),
         ],
       ),
     );
