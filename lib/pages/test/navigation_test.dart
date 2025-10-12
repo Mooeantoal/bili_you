@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:get/get.dart';
+import 'bili_comments_page.dart';
 
 class NavigationTestPage extends StatefulWidget {
   const NavigationTestPage({Key? key}) : super(key: key);
@@ -33,6 +35,8 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
   // B站视频ID，可以是aid或bvid
   final String videoId = 'BV1GJ411x7h7'; // 示例视频ID
   final String cid = '190597915'; // 示例cid
+  final String aid = '928861104'; // 示例aid (需要根据实际视频获取)
+  bool usePCPlayer = false; // 是否使用PC端播放器样式
 
   @override
   void initState() {
@@ -42,11 +46,20 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
   }
 
   void _loadBiliPlayer() {
-    // 使用移动端播放器URL，更清爽
+    // 根据选择使用PC端或移动端播放器
+    final String playerBaseUrl = usePCPlayer 
+        ? 'https://player.bilibili.com/player.html'  // PC端播放器
+        : 'https://www.bilibili.com/blackboard/html5mobileplayer.html';  // 移动端播放器
+    
     final String playerUrl = 
-        'https://www.bilibili.com/blackboard/html5mobileplayer.html?bvid=$videoId&cid=$cid&page=1&autoplay=0';
+        '$playerBaseUrl?bvid=$videoId&cid=$cid&page=1&autoplay=0';
     
     _controller.loadRequest(Uri.parse(playerUrl));
+  }
+
+  // 查看评论
+  void _viewComments() {
+    Get.to(() => BiliCommentsPage(videoId: videoId, aid: aid));
   }
 
   @override
@@ -55,6 +68,21 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
       appBar: AppBar(
         title: const Text('B站播放器'),
         actions: [
+          // 查看评论按钮
+          IconButton(
+            icon: const Icon(Icons.comment),
+            onPressed: _viewComments,
+          ),
+          // 切换播放器样式按钮
+          IconButton(
+            icon: Icon(usePCPlayer ? Icons.phone_android : Icons.computer),
+            onPressed: () {
+              setState(() {
+                usePCPlayer = !usePCPlayer;
+              });
+              _loadBiliPlayer();
+            },
+          ),
           // 刷新按钮
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -77,9 +105,15 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
                 const SizedBox(height: 8),
                 Text('视频ID: $videoId'),
                 Text('CID: $cid'),
+                Text('AID: $aid'),
+                const SizedBox(height: 8),
+                Text(
+                  '播放器样式: ${usePCPlayer ? "PC端" : "移动端"}',
+                  style: const TextStyle(color: Colors.grey),
+                ),
                 const SizedBox(height: 8),
                 const Text(
-                  '说明：此页面使用改进代码0.2版本方案嵌入B站官方播放器',
+                  '说明：点击左上角图标可在PC端和移动端播放器样式间切换',
                   style: TextStyle(color: Colors.grey),
                 ),
               ],

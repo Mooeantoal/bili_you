@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:get/get.dart';
+import 'bili_comments_page.dart';
 
 class BiliPlayerAdvancedPage extends StatefulWidget {
   const BiliPlayerAdvancedPage({Key? key}) : super(key: key);
@@ -33,9 +35,11 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
   // B站视频参数
   String videoId = 'BV1GJ411x7h7'; // 视频ID
   String cid = '190597915'; // 视频CID
+  String aid = '928861104'; // 视频AID
   bool autoPlay = false; // 自动播放
   bool danmaku = true; // 弹幕开关
   bool muted = false; // 静音
+  bool usePCPlayer = false; // 是否使用PC端播放器样式
 
   @override
   void initState() {
@@ -54,11 +58,19 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
     params.write('&danmaku=${danmaku ? 1 : 0}');
     params.write('&muted=${muted ? 1 : 0}');
     
-    // 使用移动端播放器URL，更清爽
-    final String playerUrl = 
-        'https://www.bilibili.com/blackboard/html5mobileplayer.html$params';
+    // 根据选择使用PC端或移动端播放器
+    final String playerBaseUrl = usePCPlayer 
+        ? 'https://player.bilibili.com/player.html'  // PC端播放器
+        : 'https://www.bilibili.com/blackboard/html5mobileplayer.html';  // 移动端播放器
+    
+    final String playerUrl = '$playerBaseUrl$params';
     
     _controller.loadRequest(Uri.parse(playerUrl));
+  }
+
+  // 查看评论
+  void _viewComments() {
+    Get.to(() => BiliCommentsPage(videoId: videoId, aid: aid));
   }
 
   void _showSettingsDialog() {
@@ -94,6 +106,17 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  // AID输入
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'AID',
+                    ),
+                    controller: TextEditingController(text: aid),
+                    onChanged: (value) {
+                      aid = value;
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   // 自动播放开关
                   SwitchListTile(
                     title: const Text('自动播放'),
@@ -121,6 +144,16 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
                     onChanged: (value) {
                       setState(() {
                         muted = value;
+                      });
+                    },
+                  ),
+                  // 播放器样式选择
+                  SwitchListTile(
+                    title: const Text('使用PC端播放器'),
+                    value: usePCPlayer,
+                    onChanged: (value) {
+                      setState(() {
+                        usePCPlayer = value;
                       });
                     },
                   ),
@@ -154,6 +187,11 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
       appBar: AppBar(
         title: const Text('B站播放器(高级版)'),
         actions: [
+          // 查看评论按钮
+          IconButton(
+            icon: const Icon(Icons.comment),
+            onPressed: _viewComments,
+          ),
           // 设置按钮
           IconButton(
             icon: const Icon(Icons.settings),
@@ -181,9 +219,15 @@ class _BiliPlayerAdvancedPageState extends State<BiliPlayerAdvancedPage> {
                 const SizedBox(height: 8),
                 Text('视频ID: $videoId'),
                 Text('CID: $cid'),
+                Text('AID: $aid'),
+                const SizedBox(height: 8),
+                Text(
+                  '播放器样式: ${usePCPlayer ? "PC端" : "移动端"}',
+                  style: const TextStyle(color: Colors.grey),
+                ),
                 const SizedBox(height: 8),
                 const Text(
-                  '说明：此页面使用改进代码0.2版本方案嵌入B站官方播放器',
+                  '说明：在设置中可切换PC端和移动端播放器样式',
                   style: TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 16),
