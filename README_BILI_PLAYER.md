@@ -15,7 +15,8 @@
 5. 提供播放控制选项（自动播放、弹幕开关、静音等）
 6. 支持切换播放器样式（移动端/PC端）
 7. 支持查看视频评论功能
-8. **支持查看视频详细信息功能**
+8. 支持查看视频详细信息功能
+9. **整合播放器、视频详细信息和评论到统一界面**
 
 ## 改进代码0.2版本方案说明
 
@@ -79,16 +80,32 @@
 4. 显示视频描述和分P列表
 5. 支持原创/转载标识
 
+## 整合界面功能
+
+参考普通播放界面布局，我们将播放器、视频详细信息和评论功能整合到一个统一的界面中：
+
+### 界面布局
+1. **顶部播放器区域**：嵌入B站官方播放器
+2. **Tab导航栏**：包含简介、评论、更多三个Tab
+3. **Tab内容区域**：
+   - 简介Tab：显示视频详细信息
+   - 评论Tab：显示视频评论
+   - 更多Tab：显示视频参数和操作说明
+
+### 交互特点
+1. 通过Tab导航切换不同内容模块
+2. 支持播放器样式切换（移动端/PC端）
+3. 支持刷新播放器和页面内容
+4. 响应式设计适配不同屏幕尺寸
+
 ## 使用方法
 
 1. 在应用底部导航栏点击"测试"选项卡
-2. 进入B站播放器页面
+2. 进入整合的B站播放器测试页面
 3. 页面会自动加载默认视频
-4. 点击左上角图标（💻/📱）可在PC端和移动端播放器样式间切换
-5. 点击右上角信息图标（ℹ️）可查看视频详细信息
-6. 点击右上角评论图标（💬）可查看视频评论
-7. 点击右上角设置按钮可修改视频参数（仅高级版）
-8. 点击右上角刷新按钮可重新加载播放器
+4. 通过顶部的Tab导航切换简介、评论和更多内容
+5. 点击左上角图标（💻/📱）可在PC端和移动端播放器样式间切换
+6. 点击右上角刷新按钮可重新加载播放器
 
 ## 技术细节
 
@@ -117,11 +134,10 @@ https://player.bilibili.com/player.html?bvid={视频ID}&cid={CID}&page=1&autopla
 
 ### 文件结构
 
-- `lib/pages/test/navigation_test.dart`: 主要的播放器页面（已添加播放器样式切换、评论查看和视频信息查看功能）
-- `lib/pages/test/bili_player_advanced.dart`: 高级功能播放器页面（已添加播放器样式切换、评论查看和视频信息查看功能）
-- `lib/pages/test/bili_player_test.dart`: 简单播放器测试页面（已添加播放器样式切换、评论查看和视频信息查看功能）
+- `lib/pages/test/bili_integrated_test_page.dart`: 整合的播放器测试页面
 - `lib/pages/test/bili_comments_page.dart`: 视频评论页面
 - `lib/pages/test/bili_video_info_page.dart`: 视频详细信息页面
+- `lib/pages/main/controller.dart`: 主页面控制器
 
 ## 自定义视频
 
@@ -129,10 +145,9 @@ https://player.bilibili.com/player.html?bvid={视频ID}&cid={CID}&page=1&autopla
 
 ```dart
 // B站视频参数
-String videoId = 'BV1GJ411x7h7'; // 视频ID
-String cid = '190597915'; // 视频CID
-String aid = '928861104'; // 视频AID（用于获取评论）
-bool usePCPlayer = false; // 是否使用PC端播放器样式
+final String videoId = 'BV1GJ411x7h7'; // 视频ID
+final String cid = '190597915'; // 视频CID
+final String aid = '928861104'; // 视频AID
 ```
 
 ## 响应式设计特点
