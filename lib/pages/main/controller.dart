@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../home/index.dart'; // 导入home/index.dart而非view.dart
 import '../dynamic/view.dart';
 import '../mine/view.dart';
-import '../test/bili_integrated_test_page.dart'; // 导入整合的B站播放器测试页面
+import '../test/floating_navbar_test.dart'; // 导入悬浮导航栏测试页面
 
 class MainController extends GetxController {
   MainController();
@@ -13,7 +13,7 @@ class MainController extends GetxController {
     const HomePage(), // 确保HomePage在home/index.dart中导出
     const DynamicPage(),
     const MinePage(),
-    const BiliIntegratedTestPage(), // 使用整合的B站播放器测试页面
+    const FloatingNavbarTestPage(), // 使用悬浮导航栏测试页面
   ];
 
   _initData() {

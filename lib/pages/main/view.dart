@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:get/get.dart';
+import 'package:bili_you/common/widget/floating_bottom_nav_bar.dart';
 
 import '../dynamic/controller.dart';
 import 'index.dart';
@@ -252,39 +253,9 @@ class _MainPageState extends State<MainPage> {
             ? Container(
                 // 抬高导航栏，避免与系统导航条冲突
                 padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-                child: FrostedGlassCard(
-                  borderRadius: 0.0,
-                  blurSigma: 10.0,
-                  backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
-                  margin: EdgeInsets.zero,
-                  padding: const EdgeInsets.all(0.0),
-                  child: BottomNavigationBar(
-                    type: BottomNavigationBarType.fixed,
-                    currentIndex: controller.selectedIndex.value,
-                    onTap: (value) => onDestinationSelected(value),
-                    items: const [
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home_outlined),
-                        activeIcon: Icon(Icons.home),
-                        label: "首页",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.star_border_outlined),
-                        activeIcon: Icon(Icons.star),
-                        label: "动态",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.person_outline),
-                        activeIcon: Icon(Icons.person),
-                        label: "我的",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.bug_report),
-                        activeIcon: Icon(Icons.bug_report),
-                        label: "测试",
-                      ),
-                    ],
-                  ),
+                child: BiliYouFloatingBottomNavBar(
+                  currentIndex: controller.selectedIndex.value,
+                  onTap: onDestinationSelected,
                 ),
               )
             : null,

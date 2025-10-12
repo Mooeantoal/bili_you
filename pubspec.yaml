@@ -99,6 +99,9 @@ dependencies:
 
   # Fluent UI
   fluent_ui: ^4.7.2
+  
+  # 悬浮底部导航栏
+  floating_bottom_navigation_bar: ^1.5.0
 
 # ----------------------------
 # 强制覆盖依赖版本 (关键修复)
