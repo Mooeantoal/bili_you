@@ -84,8 +84,9 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true, // 实现沉浸式效果
-      extendBodyBehindAppBar: true, // 确保AppBar也实现沉浸式效果
+      // Android官方edge-to-edge沉浸式方案
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent, // 使AppBar背景透明
         elevation: 0, // 去除AppBar阴影
@@ -115,19 +116,32 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        // 完全解决底部导航栏浅蓝色遮罩问题
-        decoration: const BoxDecoration(
-          color: Colors.transparent, // 使用透明背景
-        ),
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        height: 60 + MediaQuery.of(context).padding.bottom,
-        child: const Center(
-          child: Text(
-            '底部导航栏',
-            style: TextStyle(color: Colors.grey, fontSize: 18),
+      bottomNavigationBar: BottomNavigationBar(
+        // 实现Android官方的edge-to-edge沉浸式方案
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.transparent, // 透明背景
+        elevation: 0, // 去除阴影
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: "首页",
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.star_border_outlined),
+            activeIcon: Icon(Icons.star),
+            label: "动态",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: "我的",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bug_report),
+            label: "测试",
+          ),
+        ],
       ),
     );
   }

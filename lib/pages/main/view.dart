@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:get/get.dart';
-import 'package:bili_you/common/widget/floating_bottom_nav_bar.dart';
 
 import '../dynamic/controller.dart';
 import 'index.dart';
@@ -206,64 +205,88 @@ class _MainPageState extends State<MainPage> {
         ),
       );
     } else {
-      // 使用 Material 风格的页面
+      // 使用 Material 风格的页面，实现Android官方的edge-to-edge沉浸式方案
       return Scaffold(
-        extendBody: true, // 实现沉浸式效果
+        // Android官方edge-to-edge沉浸式方案
+        extendBody: true,
         extendBodyBehindAppBar: true,
-        primary: true,
-        body: Row(
+        body: Column(
           children: [
-            if (MediaQuery.of(context).size.width >= 640)
-              NavigationRail(
-                extended: false,
-                destinations: const [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: Text("首页"),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.star_border_outlined),
-                    label: Text("动态"),
-                    selectedIcon: Icon(Icons.star),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.person_outline),
-                    label: Text("我的"),
-                    selectedIcon: Icon(Icons.person),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.bug_report),
-                    label: Text("测试"),
-                    selectedIcon: Icon(Icons.bug_report),
+            // 主内容区域
+            Expanded(
+              child: Row(
+                children: [
+                  if (MediaQuery.of(context).size.width >= 640)
+                    NavigationRail(
+                      extended: false,
+                      destinations: const [
+                        NavigationRailDestination(
+                          icon: Icon(Icons.home_outlined),
+                          selectedIcon: Icon(Icons.home),
+                          label: Text("首页"),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.star_border_outlined),
+                          label: Text("动态"),
+                          selectedIcon: Icon(Icons.star),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.person_outline),
+                          label: Text("我的"),
+                          selectedIcon: Icon(Icons.person),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.bug_report),
+                          label: Text("测试"),
+                          selectedIcon: Icon(Icons.bug_report),
+                        ),
+                      ],
+                      selectedIndex: controller.selectedIndex.value,
+                      onDestinationSelected: (value) => onDestinationSelected(value),
+                    ),
+                  Expanded(
+                    child: Obx(
+                      () => IndexedStack(
+                        index: controller.selectedIndex.value,
+                        children: controller.pages,
+                      ),
+                    ),
                   ),
                 ],
-                selectedIndex: controller.selectedIndex.value,
-                onDestinationSelected: (value) => onDestinationSelected(value),
-              ),
-            Expanded(
-              child: Obx(
-                () => IndexedStack(
-                  index: controller.selectedIndex.value,
-                  children: controller.pages,
-                ),
               ),
             ),
+            // 移动端底部导航栏，使用原生BottomNavigationBar实现edge-to-edge效果
+            if (MediaQuery.of(context).size.width < 640)
+              BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: Colors.transparent, // 透明背景
+                elevation: 0, // 去除阴影
+                currentIndex: controller.selectedIndex.value,
+                onTap: onDestinationSelected,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    activeIcon: Icon(Icons.home),
+                    label: "首页",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.star_border_outlined),
+                    activeIcon: Icon(Icons.star),
+                    label: "动态",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    activeIcon: Icon(Icons.person),
+                    label: "我的",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.bug_report),
+                    label: "测试",
+                  ),
+                ],
+              ),
           ],
         ),
-        bottomNavigationBar: MediaQuery.of(context).size.width < 640
-            ? Container(
-                // 完全去除导航栏遮罩，实现真正透明
-                padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-                color: Colors.transparent, // 去除浅蓝色遮罩
-                child: BiliYouFloatingBottomNavBar(
-                  currentIndex: controller.selectedIndex.value,
-                  onTap: (value) {
-                    onDestinationSelected(value); // 确保选中项正确切换
-                  },
-                ),
-              )
-            : null,
       );
     }
   }
