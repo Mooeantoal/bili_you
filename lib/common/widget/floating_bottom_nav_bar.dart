@@ -22,7 +22,8 @@ class BiliYouFloatingBottomNavBar extends StatelessWidget {
       ],
       currentIndex: currentIndex,
       onTap: onTap,
-      backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+      // 进一步优化透明效果
+      backgroundColor: Colors.transparent, // 完全透明背景
       selectedBackgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
       selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),

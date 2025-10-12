@@ -84,7 +84,11 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true, // 实现沉浸式效果
+      extendBodyBehindAppBar: true, // 确保AppBar也实现沉浸式效果
       appBar: AppBar(
+        backgroundColor: Colors.transparent, // 使AppBar背景透明
+        elevation: 0, // 去除AppBar阴影
         title: const Text('B站播放器测试'),
         actions: [
           // 切换播放器样式按钮
@@ -110,6 +114,20 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
             child: _buildTabBarView(),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        // 完全解决底部导航栏浅蓝色遮罩问题
+        decoration: const BoxDecoration(
+          color: Colors.transparent, // 使用透明背景
+        ),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+        height: 60 + MediaQuery.of(context).padding.bottom,
+        child: const Center(
+          child: Text(
+            '底部导航栏',
+            style: TextStyle(color: Colors.grey, fontSize: 18),
+          ),
+        ),
       ),
     );
   }

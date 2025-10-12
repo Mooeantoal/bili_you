@@ -77,6 +77,8 @@ class _MainPageState extends State<MainPage> {
         }
       }
     }
+    // 确保选中项正确切换
+    controller.updateSelectedIndex(value);
     controller.selectedIndex.value = value;
     print('Selected index updated to: $value');
   }
@@ -206,7 +208,7 @@ class _MainPageState extends State<MainPage> {
     } else {
       // 使用 Material 风格的页面
       return Scaffold(
-        extendBody: true, // 解决导航栏不沉浸的问题
+        extendBody: true, // 实现沉浸式效果
         extendBodyBehindAppBar: true,
         primary: true,
         body: Row(
@@ -251,12 +253,13 @@ class _MainPageState extends State<MainPage> {
         ),
         bottomNavigationBar: MediaQuery.of(context).size.width < 640
             ? Container(
-                // 抬高导航栏，避免与系统导航条冲突
+                // 完全去除导航栏遮罩，实现真正透明
                 padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+                color: Colors.transparent, // 去除浅蓝色遮罩
                 child: BiliYouFloatingBottomNavBar(
                   currentIndex: controller.selectedIndex.value,
                   onTap: (value) {
-                    onDestinationSelected(value); // 解决选中项没有切换的问题
+                    onDestinationSelected(value); // 确保选中项正确切换
                   },
                 ),
               )
