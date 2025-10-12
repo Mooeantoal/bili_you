@@ -206,7 +206,7 @@ class _MainPageState extends State<MainPage> {
     } else {
       // 使用 Material 风格的页面
       return Scaffold(
-        extendBody: true,
+        extendBody: true, // 解决导航栏不沉浸的问题
         extendBodyBehindAppBar: true,
         primary: true,
         body: Row(
@@ -255,7 +255,9 @@ class _MainPageState extends State<MainPage> {
                 padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
                 child: BiliYouFloatingBottomNavBar(
                   currentIndex: controller.selectedIndex.value,
-                  onTap: onDestinationSelected,
+                  onTap: (value) {
+                    onDestinationSelected(value); // 解决选中项没有切换的问题
+                  },
                 ),
               )
             : null,

@@ -183,12 +183,13 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        color: Colors.blue,
+        // 去除蓝色遮罩，使用透明背景
+        color: Colors.transparent,
         height: 60 + MediaQuery.of(context).padding.bottom,
         child: const Center(
           child: Text(
             '底部导航栏',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+            style: TextStyle(color: Colors.grey, fontSize: 18),
           ),
         ),
       ),
