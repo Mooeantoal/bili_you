@@ -257,33 +257,37 @@ class _MainPageState extends State<MainPage> {
             ),
             // 移动端底部导航栏，使用原生BottomNavigationBar实现edge-to-edge效果
             if (MediaQuery.of(context).size.width < 640)
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                backgroundColor: Colors.transparent, // 透明背景
-                elevation: 0, // 去除阴影
-                currentIndex: controller.selectedIndex.value,
-                onTap: onDestinationSelected,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home_outlined),
-                    activeIcon: Icon(Icons.home),
-                    label: "首页",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.star_border_outlined),
-                    activeIcon: Icon(Icons.star),
-                    label: "动态",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    activeIcon: Icon(Icons.person),
-                    label: "我的",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.bug_report),
-                    label: "测试",
-                  ),
-                ],
+              Container(
+                // 去除系统导航条所在部分的半透明阴影
+                color: Colors.transparent,
+                child: BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  backgroundColor: Colors.transparent, // 透明背景
+                  elevation: 0, // 去除阴影
+                  currentIndex: controller.selectedIndex.value,
+                  onTap: onDestinationSelected,
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home_outlined),
+                      activeIcon: Icon(Icons.home),
+                      label: "首页",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.star_border_outlined),
+                      activeIcon: Icon(Icons.star),
+                      label: "动态",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.person_outline),
+                      activeIcon: Icon(Icons.person),
+                      label: "我的",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.comment), // 将测试图标改为评论图标
+                      label: "评论",
+                    ),
+                  ],
+                ),
               ),
           ],
         ),

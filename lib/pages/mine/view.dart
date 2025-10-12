@@ -182,24 +182,35 @@ class MinePage extends GetView<MineController> {
                   ),
                 ),
                 
-                // 登录按钮（仅在未登录时显示）
-                Obx(() => Offstage(
-                      offstage: controller.islogin_.value,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          // 根据平台选择登录方式
+                // 登录/退出登录按钮
+                Obx(() => ElevatedButton.icon(
+                      onPressed: () {
+                        if (controller.islogin_.value) {
+                          // 已登录，显示退出登录对话框
+                          _showLogoutDialog(context);
+                        } else {
+                          // 未登录，跳转到登录页面
                           if (Theme.of(context).platform == TargetPlatform.android ||
                               Theme.of(context).platform == TargetPlatform.iOS) {
                             Get.to(() => const WebLoginPage());
                           } else {
                             Get.to(() => const QrcodeLogin());
                           }
-                        },
-                        icon: const Icon(Icons.login, size: 18),
-                        label: const Text("登录"),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        ),
+                        }
+                      },
+                      icon: Icon(
+                        controller.islogin_.value 
+                          ? Icons.logout_rounded 
+                          : Icons.login, 
+                        size: 18
+                      ),
+                      label: Text(
+                        controller.islogin_.value 
+                          ? "退出登录" 
+                          : "登录"
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                     )),
               ],
@@ -364,22 +375,6 @@ class MinePage extends GetView<MineController> {
             ));
           },
         ),
-        
-        // 退出登录
-        Obx(() => Offstage(
-              offstage: !controller.islogin_.value,
-              child: MineListTile(
-                icon: const Icon(Icons.logout_rounded),
-                title: "退出登录",
-                onTap: () async {
-                  if (await controller.hasLogin()) {
-                    _showLogoutDialog(context);
-                  } else {
-                    Get.rawSnackbar(message: '退出失败: 用户未登录');
-                  }
-                },
-              ),
-            )),
       ],
     );
   }

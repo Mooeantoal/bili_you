@@ -49,83 +49,89 @@ class SettingsUtil {
   ///检查更新，并弹窗提示
   static void checkUpdate(BuildContext context,
       {bool showSnackBar = true}) async {
-    var packageInfo = await PackageInfo.fromPlatform();
-    var data = await GithubApi.requestLatestRelease();
-    var latestVersionData = data.name?.replaceFirst('v', '').split('+');
-    var latestVersionName = latestVersionData?.first ?? '';
-    log('latestVersionName:$latestVersionName');
-    var latestVersionCode = latestVersionData?[1] ?? 1;
-    log('versionCode:$latestVersionCode');
-    var currentVersion = packageInfo.version;
-    // log(data.toRawJson());
-    if (latestVersionName == currentVersion) {
-      if (showSnackBar) {
+    try {
+      var packageInfo = await PackageInfo.fromPlatform();
+      var data = await GithubApi.requestLatestRelease();
+      var latestVersionData = data.name?.replaceFirst('v', '').split('+');
+      var latestVersionName = latestVersionData?.first ?? '';
+      log('latestVersionName:$latestVersionName');
+      var latestVersionCode = latestVersionData?[1] ?? 1;
+      log('versionCode:$latestVersionCode');
+      var currentVersion = packageInfo.version;
+      // log(data.toRawJson());
+      if (latestVersionName == currentVersion) {
+        if (showSnackBar) {
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context);
+          Get.rawSnackbar(message:'已是最新版');
+        }
+      } else {
         // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context);
-        Get.rawSnackbar(message:'已是最新版');
-      }
-    } else {
-      // ignore: use_build_context_synchronously
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              scrollable: true,
-              title: Text("有新版本:$latestVersionName"),
-              content: SelectableText(data.body!),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("取消")),
-                TextButton(
-                  child: const Text("跳转下载"),
-                  onPressed: () async {
-                    //自动选择合适系统/abi的版本下载
-                    if (Platform.isAndroid) {
-                      //安卓
-                      var supportedAbis =
-                          (await DeviceInfoPlugin().androidInfo).supportedAbis;
-                      // for (var i in supportedAbis) {
-                      //   log(i);
-                      // }
-                      String abi = "";
-                      if (supportedAbis.contains("x86_64")) {
-                        abi = "x86_64";
-                      } else if (supportedAbis.contains("arm64-v8a")) {
-                        abi = "arm64-v8a";
-                      } else if (supportedAbis.contains("armeabi-v7a")) {
-                        abi = "armeabi-v7a";
-                      }
-                      for (Asset? i in data.assets ?? []) {
-                        if (i!.name!.contains(abi) && i.name!.contains("apk")) {
-                          //跳转下载
-                          launchUrlString(i.browserDownloadUrl!,
-                              mode: LaunchMode.externalApplication);
-                          return;
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                scrollable: true,
+                title: Text("有新版本:$latestVersionName"),
+                content: SelectableText(data.body!),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("取消")),
+                  TextButton(
+                    child: const Text("跳转下载"),
+                    onPressed: () async {
+                      //自动选择合适系统/abi的版本下载
+                      if (Platform.isAndroid) {
+                        //安卓
+                        var supportedAbis =
+                            (await DeviceInfoPlugin().androidInfo).supportedAbis;
+                        // for (var i in supportedAbis) {
+                        //   log(i);
+                        // }
+                        String abi = "";
+                        if (supportedAbis.contains("x86_64")) {
+                          abi = "x86_64";
+                        } else if (supportedAbis.contains("arm64-v8a")) {
+                          abi = "arm64-v8a";
+                        } else if (supportedAbis.contains("armeabi-v7a")) {
+                          abi = "armeabi-v7a";
                         }
+                        for (Asset? i in data.assets ?? []) {
+                          if (i!.name!.contains(abi) && i.name!.contains("apk")) {
+                            //跳转下载
+                            launchUrlString(i.browserDownloadUrl!,
+                                mode: LaunchMode.externalApplication);
+                            return;
+                          }
+                        }
+                        // ignore: use_build_context_synchronously
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content:
+                                Text("没有匹配到支持的abi!\n现跳转至下载页面,请自行选择合适的安装包.")));
+                        launchUrlString(
+                            "https://github.com/lucinhu/bili_you/releases",
+                            mode: LaunchMode.externalApplication);
+                      } else if (Platform.isLinux) {
+                        //linux
+                        launchUrlString(
+                            "https://github.com/lucinhu/bili_you/releases",
+                            mode: LaunchMode.externalApplication);
+                      } else if (Platform.isIOS) {
+                        //TODO ios
                       }
-                      // ignore: use_build_context_synchronously
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content:
-                              Text("没有匹配到支持的abi!\n现跳转至下载页面,请自行选择合适的安装包.")));
-                      launchUrlString(
-                          "https://github.com/lucinhu/bili_you/releases",
-                          mode: LaunchMode.externalApplication);
-                    } else if (Platform.isLinux) {
-                      //linux
-                      launchUrlString(
-                          "https://github.com/lucinhu/bili_you/releases",
-                          mode: LaunchMode.externalApplication);
-                    } else if (Platform.isIOS) {
-                      //TODO ios
-                    }
-                  },
-                )
-              ],
-            );
-          });
+                    },
+                  )
+                ],
+              );
+            });
+      }
+    } catch (e) {
+      // 移除服务器错误消息通知
+      print('检查更新时发生错误: $e');
+      // 不显示错误提示给用户
     }
   }
 

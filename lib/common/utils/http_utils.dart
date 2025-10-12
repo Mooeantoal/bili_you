@@ -145,6 +145,8 @@ class ErrorInterceptor extends Interceptor {
       DioException err, ErrorInterceptorHandler handler) async {
     print('Dio error: ${err.type}, message: ${err.message}');
     
+    // 注释掉所有错误提示，避免弹出服务器错误消息通知
+    /*
     switch (err.type) {
       case DioExceptionType.connectionTimeout:
         Get.rawSnackbar(title: '连接超时', message: '请检查网络连接');
@@ -172,6 +174,7 @@ class ErrorInterceptor extends Interceptor {
       default:
         Get.rawSnackbar(title: '请求失败', message: '网络请求失败');
     }
+    */
 
     return super.onError(err, handler);
   }

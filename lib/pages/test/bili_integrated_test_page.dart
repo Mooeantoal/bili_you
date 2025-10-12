@@ -39,26 +39,12 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
   final String cid = '190597915'; // 示例cid
   final String aid = '928861104'; // 示例aid
   bool usePCPlayer = false; // 是否使用PC端播放器样式
-  late TabController _tabController;
-  int currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        currentTabIndex = _tabController.index;
-      });
-    });
     // 加载B站播放器
     _loadBiliPlayer();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   void _loadBiliPlayer() {
@@ -87,61 +73,48 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
       // Android官方edge-to-edge沉浸式方案
       extendBody: true,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, // 使AppBar背景透明
-        elevation: 0, // 去除AppBar阴影
-        title: const Text('B站播放器测试'),
-        actions: [
-          // 切换播放器样式按钮
-          IconButton(
-            icon: Icon(usePCPlayer ? Icons.phone_android : Icons.computer),
-            onPressed: _togglePlayerStyle,
-          ),
-          // 刷新按钮
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadBiliPlayer,
-          ),
-        ],
-      ),
+      // 去除标题栏（AppBar）
+      appBar: null,
       body: Column(
         children: [
           // B站播放器区域
           _buildPlayerSection(),
-          // Tab导航栏
-          _buildTabBar(),
-          // Tab内容区域
+          // 直接显示视频信息和评论，完全去掉内部导航栏
           Expanded(
-            child: _buildTabBarView(),
+            child: _buildContentSection(),
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        // 实现Android官方的edge-to-edge沉浸式方案
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent, // 透明背景
-        elevation: 0, // 去除阴影
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: "首页",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star_border_outlined),
-            activeIcon: Icon(Icons.star),
-            label: "动态",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: "我的",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bug_report),
-            label: "测试",
-          ),
-        ],
+      bottomNavigationBar: Container(
+        // 去除系统导航条所在部分的半透明阴影
+        color: Colors.transparent,
+        child: BottomNavigationBar(
+          // 实现Android官方的edge-to-edge沉浸式方案
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent, // 透明背景
+          elevation: 0, // 去除阴影
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: "首页",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.star_border_outlined),
+              activeIcon: Icon(Icons.star),
+              label: "动态",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: "我的",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.comment), // 将测试图标改为评论图标
+              label: "评论",
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -149,7 +122,8 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
   // 构建播放器区域
   Widget _buildPlayerSection() {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      // 向下移动一点点，避免与状态栏重叠
+      padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 计算容器的宽高比，使用16:9比例
@@ -192,141 +166,43 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
     );
   }
 
-  // 构建Tab导航栏
-  Widget _buildTabBar() {
-    return TabBar(
-      controller: _tabController,
-      tabs: const [
-        Tab(
-          icon: Icon(Icons.info_outline),
-          text: "简介",
-        ),
-        Tab(
-          icon: Icon(Icons.comment),
-          text: "评论",
-        ),
-        Tab(
-          icon: Icon(Icons.video_library),
-          text: "更多",
-        ),
-      ],
-    );
-  }
-
-  // 构建Tab内容区域
-  Widget _buildTabBarView() {
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        // 视频详细信息页面
-        _buildVideoInfoTab(),
-        // 评论页面
-        _buildCommentsTab(),
-        // 更多内容页面
-        _buildMoreTab(),
-      ],
-    );
-  }
-
-  // 构建视频详细信息Tab
-  Widget _buildVideoInfoTab() {
-    // 判断是BV号还是av号
-    bool isBvid = videoId.startsWith('BV');
-    return BiliVideoInfoPage(
-      videoId: isBvid ? videoId : aid,
-      isBvid: isBvid,
-    );
-  }
-
-  // 构建评论Tab
-  Widget _buildCommentsTab() {
-    return BiliCommentsPage(
-      videoId: videoId,
-      aid: aid,
-    );
-  }
-
-  // 构建更多Tab
-  Widget _buildMoreTab() {
+  // 构建内容区域（完全去掉内部导航栏，直接显示视频信息和评论）
+  Widget _buildContentSection() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '视频信息',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '视频ID:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(videoId),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'CID:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(cid),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'AID:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(aid),
-                  const SizedBox(height: 16),
-                  const Text(
-                    '播放器样式:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(usePCPlayer ? 'PC端播放器' : '移动端播放器'),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            '操作说明',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text('• 点击顶部的电脑/手机图标可切换播放器样式'),
-                  SizedBox(height: 8),
-                  Text('• 点击刷新按钮可重新加载播放器'),
-                  SizedBox(height: 8),
-                  Text('• 在简介Tab中可查看视频详细信息'),
-                  SizedBox(height: 8),
-                  Text('• 在评论Tab中可查看视频评论'),
-                  SizedBox(height: 8),
-                  Text('• 在更多Tab中可查看视频参数信息'),
-                ],
-              ),
-            ),
-          ),
+          // 视频详细信息（去除标题）
+          _buildVideoInfoTab(),
+          // 评论（去除标题）
+          _buildCommentsTab(),
         ],
+      ),
+    );
+  }
+
+  // 构建视频详细信息（去除大片空白和标题）
+  Widget _buildVideoInfoTab() {
+    // 判断是BV号还是av号
+    bool isBvid = videoId.startsWith('BV');
+    return Container(
+      // 减少padding，去除大片空白
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: BiliVideoInfoPage(
+        videoId: isBvid ? videoId : aid,
+        isBvid: isBvid,
+      ),
+    );
+  }
+
+  // 构建评论（去除大片空白和标题）
+  Widget _buildCommentsTab() {
+    return Container(
+      // 减少padding，去除大片空白
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: BiliCommentsPage(
+        videoId: videoId,
+        aid: aid,
       ),
     );
   }

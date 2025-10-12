@@ -186,54 +186,10 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('视频评论'),
-        actions: [
-          // 刷新按钮
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshComments,
-          ),
-          // 排序按钮
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
-            onSelected: _changeSortType,
-            itemBuilder: (BuildContext context) => const [
-              PopupMenuItem(
-                value: '0',
-                child: Text('按时间排序'),
-              ),
-              PopupMenuItem(
-                value: '1',
-                child: Text('按点赞排序'),
-              ),
-              PopupMenuItem(
-                value: '2',
-                child: Text('按回复排序'),
-              ),
-            ],
-          ),
-        ],
       ),
       body: Column(
         children: [
-          // 视频信息
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '视频: ${widget.videoId}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text('AID: ${widget.aid}'),
-                const SizedBox(height: 8),
-                Text('排序方式: ${sortType == '0' ? '按时间' : sortType == '1' ? '按点赞' : '按回复'}'),
-              ],
-            ),
-          ),
-          // 分割线
-          const Divider(),
+          // 移除视频信息部分
           // 评论内容
           Expanded(
             child: isLoading
@@ -256,12 +212,12 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                         onRefresh: () async => _refreshComments(),
                         child: ListView(
                           children: [
-                            // 热门评论
+                            // 热门评论（移除图标）
                             if (hotComments.isNotEmpty) ...[
                               const Padding(
                                 padding: EdgeInsets.all(16.0),
                                 child: Text(
-                                  '🔥 热门评论',
+                                  '热门评论',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -273,16 +229,49 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                 _buildCommentItem(comment),
                               const Divider(),
                             ],
-                            // 普通评论
+                            // 普通评论（移除图标，添加刷新和排序按钮）
                             if (comments.isNotEmpty) ...[
-                              const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Text(
-                                  '💬 全部评论',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      '全部评论',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        // 刷新按钮
+                                        IconButton(
+                                          icon: const Icon(Icons.refresh, size: 20),
+                                          onPressed: _refreshComments,
+                                        ),
+                                        // 排序按钮
+                                        PopupMenuButton<String>(
+                                          icon: const Icon(Icons.sort, size: 20),
+                                          onSelected: _changeSortType,
+                                          itemBuilder: (BuildContext context) => const [
+                                            PopupMenuItem(
+                                              value: '0',
+                                              child: Text('按时间排序'),
+                                            ),
+                                            PopupMenuItem(
+                                              value: '1',
+                                              child: Text('按点赞排序'),
+                                            ),
+                                            PopupMenuItem(
+                                              value: '2',
+                                              child: Text('按回复排序'),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                               for (var comment in comments)
@@ -346,15 +335,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                               fontSize: 14,
                             ),
                           ),
-                          if (comment.isHot)
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Icon(
-                                Icons.local_fire_department,
-                                color: Colors.orange,
-                                size: 16,
-                              ),
-                            ),
+                          // 移除热门评论的火焰图标
                         ],
                       ),
                       Text(
@@ -376,26 +357,16 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 8),
-            // 点赞和回复信息
+            // 点赞和回复信息（移除图标）
             Row(
               children: [
-                const Icon(
-                  Icons.thumb_up_outlined,
-                  size: 16,
-                  color: Colors.grey,
-                ),
-                const SizedBox(width: 4),
+                // 移除点赞图标
                 Text(
                   comment.likeCount.toString(),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 const SizedBox(width: 16),
-                const Icon(
-                  Icons.comment_outlined,
-                  size: 16,
-                  color: Colors.grey,
-                ),
-                const SizedBox(width: 4),
+                // 移除回复图标
                 Text(
                   comment.replyCount.toString(),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),

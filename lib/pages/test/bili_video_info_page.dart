@@ -137,6 +137,7 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
   VideoInfo? videoInfo;
   bool isLoading = false;
   String errorMessage = '';
+  bool isDescExpanded = false; // 控制视频简介是否展开
 
   @override
   void initState() {
@@ -257,14 +258,14 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // 视频封面和基本信息
-                            _buildVideoHeader(),
+                            // UP主信息（移到标题上方）
+                            _buildOwnerInfo(),
+                            // 视频标题
+                            _buildVideoTitle(),
+                            // 视频简介（放在标题和数据统计之间，可折叠）
+                            _buildVideoDesc(),
                             // 视频统计信息
                             _buildVideoStats(),
-                            // UP主信息
-                            _buildOwnerInfo(),
-                            // 视频描述
-                            _buildVideoDesc(),
                             // 分P列表
                             _buildVideoPages(),
                           ],
@@ -280,36 +281,77 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
     );
   }
 
-  // 构建视频头部信息
-  Widget _buildVideoHeader() {
+  // 构建UP主信息（移到标题上方）
+  Widget _buildOwnerInfo() {
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 视频封面
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              videoInfo!.coverUrl,
-              width: double.infinity,
-              height: 200,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: double.infinity,
-                  height: 200,
-                  color: Colors.grey[300],
-                  child: const Icon(
-                    Icons.image,
-                    size: 50,
-                    color: Colors.grey,
-                  ),
-                );
-              },
+          const Text(
+            'UP主信息',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 12),
+          // UP主卡片
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  // UP主头像
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundImage: videoInfo!.owner.face.isNotEmpty
+                        ? NetworkImage(videoInfo!.owner.face)
+                        : null,
+                    child: videoInfo!.owner.face.isEmpty
+                        ? const Icon(Icons.account_circle, size: 48)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  // UP主名称
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          videoInfo!.owner.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'UID: ${videoInfo!.owner.mid}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建视频标题
+  Widget _buildVideoTitle() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           // 视频标题
           Text(
             videoInfo!.title,
@@ -422,12 +464,6 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          icon,
-          size: 24,
-          color: Colors.grey,
-        ),
-        const SizedBox(height: 4),
         Text(
           _formatNumber(count),
           style: const TextStyle(
@@ -446,88 +482,58 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
     );
   }
 
-  // 构建UP主信息
-  Widget _buildOwnerInfo() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'UP主信息',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          // UP主卡片
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                children: [
-                  // UP主头像
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundImage: videoInfo!.owner.face.isNotEmpty
-                        ? NetworkImage(videoInfo!.owner.face)
-                        : null,
-                    child: videoInfo!.owner.face.isEmpty
-                        ? const Icon(Icons.account_circle, size: 48)
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  // UP主名称
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          videoInfo!.owner.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'UID: ${videoInfo!.owner.mid}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 构建视频描述
+  // 构建视频描述（可折叠）
   Widget _buildVideoDesc() {
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '视频简介',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+          // 视频简介标题和展开/收起按钮
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '视频简介',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  isDescExpanded ? Icons.expand_less : Icons.expand_more,
+                ),
+                onPressed: () {
+                  setState(() {
+                    isDescExpanded = !isDescExpanded;
+                  });
+                },
+              ),
+            ],
           ),
           const SizedBox(height: 8),
-          Text(
-            videoInfo!.desc.isNotEmpty ? videoInfo!.desc : '无简介',
-            style: const TextStyle(fontSize: 14),
+          // 可折叠的视频描述内容
+          AnimatedCrossFade(
+            firstChild: Text(
+              videoInfo!.desc.isNotEmpty ? videoInfo!.desc : '无简介',
+              style: const TextStyle(fontSize: 14),
+            ),
+            secondChild: Text(
+              videoInfo!.desc.isNotEmpty
+                  ? videoInfo!.desc.substring(
+                      0,
+                      videoInfo!.desc.length > 100
+                          ? 100
+                          : videoInfo!.desc.length) +
+                      (videoInfo!.desc.length > 100 ? '...' : '')
+                  : '无简介',
+              style: const TextStyle(fontSize: 14),
+            ),
+            crossFadeState: isDescExpanded
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            duration: const Duration(milliseconds: 300),
           ),
         ],
       ),

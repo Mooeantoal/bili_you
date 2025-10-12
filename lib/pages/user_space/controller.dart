@@ -6,6 +6,8 @@ import 'package:bili_you/common/utils/cache_util.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import 'package:bili_you/common/api/user_info_api.dart';
+import 'package:bili_you/common/models/local/user/user_info.dart';
 
 class UserSpacePageController extends GetxController {
   UserSpacePageController({required this.mid});
@@ -15,6 +17,30 @@ class UserSpacePageController extends GetxController {
   final int mid;
   int currentPage = 1;
   List<UserVideoItem> searchItems = [];
+  UserInfo? userInfo; // 添加用户信息字段
+  bool isLoadingUserInfo = false; // 添加加载状态字段
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadUserInfo(); // 初始化时加载用户信息
+  }
+
+  // 加载用户信息
+  Future<void> _loadUserInfo() async {
+    isLoadingUserInfo = true;
+    update(); // 通知UI更新
+
+    try {
+      final userData = await UserInfoApi.getUserInfo(mid);
+      userInfo = UserInfo.fromJson(userData);
+    } catch (e) {
+      log("Failed to load user info: $e");
+    } finally {
+      isLoadingUserInfo = false;
+      update(); // 通知UI更新
+    }
+  }
 
   Future<bool> loadVideoItemWidgtLists() async {
     late UserVideoSearch userVideoSearch;
