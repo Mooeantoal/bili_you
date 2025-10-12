@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class NavigationTestPage extends StatefulWidget {
-  const NavigationTestPage({Key? key}) : super(key: key);
+class BiliPlayerTestPage extends StatefulWidget {
+  const BiliPlayerTestPage({Key? key}) : super(key: key);
 
   @override
-  State<NavigationTestPage> createState() => _NavigationTestPageState();
+  State<BiliPlayerTestPage> createState() => _BiliPlayerTestPageState();
 }
 
-class _NavigationTestPageState extends State<NavigationTestPage> {
+class _BiliPlayerTestPageState extends State<BiliPlayerTestPage> {
   final WebViewController _controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent(
@@ -31,8 +31,8 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
     );
 
   // B站视频ID，可以是aid或bvid
-  final String videoId = 'BV1GJ411x7h7'; // 示例视频ID
-  final String cid = '190597915'; // 示例cid
+  final String videoId = 'BV1uT4y1P7CX'; // 示例视频ID
+  final String cid = '287639008'; // 示例cid
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('B站播放器'),
+        title: const Text('B站播放器测试'),
         actions: [
           // 刷新按钮
           IconButton(
@@ -71,7 +71,7 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'B站官方播放器',
+                  'B站官方播放器测试',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -133,17 +133,6 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        color: Colors.blue,
-        height: 60 + MediaQuery.of(context).padding.bottom,
-        child: const Center(
-          child: Text(
-            '底部导航栏',
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
-        ),
       ),
     );
   }
