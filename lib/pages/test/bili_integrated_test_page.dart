@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
 import 'bili_comments_page.dart';
 import 'bili_video_info_page.dart';
 
@@ -81,7 +82,7 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
   }
 
   // 跳转到指定视频
-  void _jumpToVideo() {
+  void _jumpToVideo() async {
     final input = _urlController.text.trim();
     if (input.isEmpty) return;
 
@@ -103,24 +104,53 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
     }
     
     if (bvId.isNotEmpty) {
-      // 更新视频ID并重新加载
-      setState(() {
-        videoId = bvId;
-        // 重置CID和AID，实际应用中应该通过API获取对应的CID和AID
-        cid = '';
-        aid = '';
-      });
-      
-      // 显示提示信息
+      // 显示加载提示
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('正在跳转到视频: $bvId')),
+        SnackBar(content: Text('正在获取视频信息: $bvId')),
       );
       
-      // 重新加载播放器
-      _loadBiliPlayer();
-      
-      // 重新加载视频信息和评论
-      // 这里需要更新子页面的状态，可以通过回调或其他方式实现
+      try {
+        // 通过UAPI获取视频信息
+        final videoInfoUrl = 'https://uapis.cn/api/v1/social/bilibili/videoinfo?bvid=$bvId';
+        final dio = Dio();
+        final response = await dio.get(videoInfoUrl);
+        
+        if (response.statusCode == 200) {
+          final data = response.data;
+          final aid = data['aid'].toString();
+          final cid = data['cid'].toString();
+          
+          // 更新视频ID和相关信息并重新加载
+          setState(() {
+            videoId = bvId;
+            this.aid = aid;
+            this.cid = cid;
+          });
+          
+          // 显示成功提示信息
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('已切换到视频: $bvId')),
+          );
+          
+          // 重新加载播放器
+          _loadBiliPlayer();
+        } else {
+          throw Exception('获取视频信息失败: ${response.statusMessage}');
+        }
+      } catch (e) {
+        // 显示错误提示
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('获取视频信息时出错: $e')),
+        );
+        
+        // 回滚状态
+        setState(() {
+          videoId = 'BV1GJ411x7h7'; // 恢复默认视频
+          aid = '928861104';
+          cid = '190597915';
+        });
+        _loadBiliPlayer();
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请输入有效的BV号或B站视频链接')),
