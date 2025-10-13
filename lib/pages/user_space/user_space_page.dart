@@ -1,6 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:bili_you/common/models/network/user/user_info.dart';
 import 'package:bili_you/common/api/user_info_api.dart';
+import 'package:bili_you/common/api/user_videos_api.dart';
+
+// 视频数据模型
+class VideoItem {
+  final String bvid;
+  final String title;
+  final String coverUrl;
+  final int playCount;
+  final int duration;
+  final String publishTime;
+
+  VideoItem({
+    required this.bvid,
+    required this.title,
+    required this.coverUrl,
+    required this.playCount,
+    required this.duration,
+    required this.publishTime,
+  });
+}
 
 class UserSpacePage extends StatefulWidget {
   final String uid; // 用户UID
@@ -13,13 +33,16 @@ class UserSpacePage extends StatefulWidget {
 
 class _UserSpacePageState extends State<UserSpacePage> {
   UserInfoData? _userInfo;
+  List<VideoItem> _userVideos = [];
   bool _isLoading = false;
+  bool _isLoadingVideos = false;
   String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadUserVideos();
   }
 
   // 加载用户信息
@@ -53,9 +76,75 @@ class _UserSpacePageState extends State<UserSpacePage> {
     }
   }
 
+  // 加载用户投稿视频
+  Future<void> _loadUserVideos() async {
+    setState(() {
+      _isLoadingVideos = true;
+    });
+
+    try {
+      // 使用API工具类获取用户投稿视频
+      final videoData = await UserVideosApi.getUserVideos(uid: widget.uid);
+      
+      if (videoData != null && videoData['code'] == 0) {
+        final List<VideoItem> videos = [];
+        final vlist = videoData['data']['list']['vlist'];
+        
+        if (vlist != null && vlist is List) {
+          for (var video in vlist) {
+            if (video is Map<String, dynamic>) {
+              videos.add(VideoItem(
+                bvid: video['bvid']?.toString() ?? '',
+                title: video['title']?.toString() ?? '无标题',
+                coverUrl: video['pic']?.toString() ?? '',
+                playCount: video['play'] is int ? video['play'] : 0,
+                duration: video['duration'] is int ? video['duration'] : 0,
+                publishTime: video['created'] is int 
+                    ? DateTime.fromMillisecondsSinceEpoch(video['created'] * 1000)
+                        .toString().split(' ')[0]
+                    : '',
+              ));
+            }
+          }
+        }
+        
+        setState(() {
+          _userVideos = videos;
+        });
+      }
+    } catch (e) {
+      // 视频加载失败不显示错误信息，因为这是可选功能
+      print('获取用户投稿视频时出错: $e');
+    } finally {
+      setState(() {
+        _isLoadingVideos = false;
+      });
+    }
+  }
+
   // 刷新用户信息
   void _refreshUserInfo() {
     _loadUserInfo();
+    _loadUserVideos();
+  }
+
+  // 格式化数字显示
+  String _formatNumber(int number) {
+    if (number >= 10000) {
+      return '${(number / 10000).toStringAsFixed(1)}万';
+    } else {
+      return number.toString();
+    }
+  }
+
+  // 格式化时间显示
+  String _formatDuration(int seconds) {
+    final Duration duration = Duration(seconds: seconds);
+    if (duration.inHours > 0) {
+      return '${duration.inHours}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+    } else {
+      return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+    }
   }
 
   @override
@@ -109,6 +198,9 @@ class _UserSpacePageState extends State<UserSpacePage> {
                             if (_userInfo!.vip != null &&
                                 _userInfo!.vip!.status == 1)
                               _buildVipInfo(),
+                            const SizedBox(height: 16),
+                            // 用户投稿视频
+                            _buildUserVideos(),
                           ],
                         ),
                       ),
@@ -345,6 +437,149 @@ class _UserSpacePageState extends State<UserSpacePage> {
                   _userInfo!.vip!.dueDate != null
                       ? '到期时间: ${DateTime.fromMillisecondsSinceEpoch(_userInfo!.vip!.dueDate!).toString().split(' ')[0]}'
                       : '',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建用户投稿视频
+  Widget _buildUserVideos() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '投稿视频',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (_isLoadingVideos)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 视频列表
+          if (_userVideos.isEmpty && !_isLoadingVideos)
+            Container(
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text(
+                  '暂无投稿视频',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: _userVideos.length,
+              itemBuilder: (context, index) {
+                final video = _userVideos[index];
+                return _buildVideoItem(video);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  // 构建单个视频项
+  Widget _buildVideoItem(VideoItem video) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 视频封面
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
+              decoration: BoxDecoration(
+                image: video.coverUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(video.coverUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                color: Colors.grey[300],
+              ),
+              child: video.coverUrl.isEmpty
+                  ? const Icon(Icons.video_library, size: 40, color: Colors.grey)
+                  : null,
+            ),
+          ),
+          // 视频信息
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 视频标题
+                Text(
+                  video.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // 播放量和时长
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatNumber(video.playCount),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Text(
+                      _formatDuration(video.duration),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                // 发布时间
+                Text(
+                  video.publishTime,
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
