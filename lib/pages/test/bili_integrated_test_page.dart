@@ -13,7 +13,7 @@ class BiliIntegratedTestPage extends StatefulWidget {
 
 class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
     with SingleTickerProviderStateMixin {
-  final WebViewController _controller = WebViewController()
+  late final WebViewController _controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent(
         'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1')
@@ -25,8 +25,14 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
         onPageStarted: (String url) {
           // 页面开始加载
         },
-        onPageFinished: (String url) {
+        onPageFinished: (String url) async {
           // 页面加载完成
+          // 确保播放器默认暂停
+          try {
+            await _controller.runJavaScript('document.querySelector("video").pause();');
+          } catch (e) {
+            // 忽略错误，因为页面可能还没有完全加载
+          }
         },
         onWebResourceError: (WebResourceError error) {
           // 资源加载错误
@@ -35,10 +41,11 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
     );
 
   // B站视频参数
-  final String videoId = 'BV1GJ411x7h7'; // 示例视频ID
-  final String cid = '190597915'; // 示例cid
-  final String aid = '928861104'; // 示例aid
+  String videoId = 'BV1GJ411x7h7'; // 示例视频ID
+  String cid = '190597915'; // 示例cid
+  String aid = '928861104'; // 示例aid
   bool usePCPlayer = false; // 是否使用PC端播放器样式
+  final TextEditingController _urlController = TextEditingController();
 
   @override
   void initState() {
@@ -59,12 +66,66 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
     _controller.loadRequest(Uri.parse(playerUrl));
   }
 
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
+
   // 切换播放器样式
   void _togglePlayerStyle() {
     setState(() {
       usePCPlayer = !usePCPlayer;
     });
     _loadBiliPlayer();
+  }
+
+  // 跳转到指定视频
+  void _jumpToVideo() {
+    final input = _urlController.text.trim();
+    if (input.isEmpty) return;
+
+    // 解析输入的BV号或链接
+    String bvId = '';
+    
+    // 如果是完整的B站链接
+    if (input.contains('bilibili.com')) {
+      // 提取BV号
+      final bvRegex = RegExp(r'BV[0-9A-Za-z]+');
+      final match = bvRegex.firstMatch(input);
+      if (match != null) {
+        bvId = match.group(0)!;
+      }
+    } 
+    // 如果是BV号
+    else if (input.startsWith('BV') && input.length > 5) {
+      bvId = input;
+    }
+    
+    if (bvId.isNotEmpty) {
+      // 更新视频ID并重新加载
+      setState(() {
+        videoId = bvId;
+        // 重置CID和AID，实际应用中应该通过API获取对应的CID和AID
+        cid = '';
+        aid = '';
+      });
+      
+      // 显示提示信息
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('正在跳转到视频: $bvId')),
+      );
+      
+      // 重新加载播放器
+      _loadBiliPlayer();
+      
+      // 重新加载视频信息和评论
+      // 这里需要更新子页面的状态，可以通过回调或其他方式实现
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入有效的BV号或B站视频链接')),
+      );
+    }
   }
 
   @override
@@ -77,8 +138,33 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
       appBar: null,
       body: Column(
         children: [
-          // B站播放器区域
-          _buildPlayerSection(),
+          // 添加输入框和跳转按钮
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _urlController,
+                    decoration: const InputDecoration(
+                      hintText: '输入BV号或视频链接',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _jumpToVideo,
+                  child: const Text('跳转'),
+                ),
+              ],
+            ),
+          ),
+          // B站播放器区域，使用SafeArea避免与状态栏重叠
+          SafeArea(
+            bottom: false, // 只避免顶部状态栏重叠，底部不需要
+            child: _buildPlayerSection(),
+          ),
           // 直接显示视频信息和评论，完全去掉内部导航栏
           Expanded(
             child: _buildContentSection(),
@@ -92,18 +178,28 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
   // 构建播放器区域
   Widget _buildPlayerSection() {
     return Container(
-      // 向下移动一点点，避免与状态栏重叠
-      padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+      // 移除手动设置的padding，使用SafeArea来处理状态栏重叠
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // 计算容器的宽高比，使用16:9比例
-          double aspectRatio = 16 / 9;
+          // 计算容器的宽高比，使用更紧凑的比例
+          // 原来是16:9，现在调整为16:10或更小，以节省垂直空间
+          double aspectRatio = 16 / 10; // 从16:9改为16:10，减少高度
           double maxWidth = constraints.maxWidth;
           double maxHeight = constraints.maxHeight;
+
+          // 限制播放器的最大高度，避免占用过多垂直空间
+          double maxPlayerHeight = MediaQuery.of(context).size.height * 0.25; // 最大高度为屏幕高度的25%
 
           // 根据容器尺寸计算合适的尺寸
           double containerWidth = maxWidth;
           double containerHeight = containerWidth / aspectRatio;
+
+          // 如果计算出的高度超过最大高度，则以最大高度为准
+          if (containerHeight > maxPlayerHeight) {
+            containerHeight = maxPlayerHeight;
+            containerWidth = containerHeight * aspectRatio;
+          }
 
           // 如果计算出的高度超过最大高度，则以高度为准
           if (containerHeight > maxHeight) {

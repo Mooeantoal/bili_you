@@ -225,16 +225,8 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('视频详细信息'),
-        actions: [
-          // 刷新按钮
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshVideoInfo,
-          ),
-        ],
-      ),
+      // 移除AppBar以减少高度
+      appBar: null,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage.isNotEmpty

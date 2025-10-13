@@ -11,6 +11,9 @@ class Comment {
   final String publishTime;
   final int replyCount;
   final bool isHot;
+  final int root; // 根评论ID，如果本身就是根评论则为0
+  final int parent; // 父评论ID，如果本身就是根评论则为0
+  final List<Comment> replies; // 楼中楼评论列表
 
   Comment({
     required this.username,
@@ -20,9 +23,20 @@ class Comment {
     required this.publishTime,
     required this.replyCount,
     this.isHot = false,
+    this.root = 0,
+    this.parent = 0,
+    this.replies = const [],
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
+    // 解析楼中楼评论
+    List<Comment> replies = [];
+    if (json['replies'] != null && json['replies'] is List) {
+      for (var reply in json['replies']) {
+        replies.add(Comment.fromJson(reply));
+      }
+    }
+    
     return Comment(
       username: json['member']['uname'] ?? '未知用户',
       content: json['content']['message'] ?? '',
@@ -34,11 +48,22 @@ class Comment {
           : '',
       replyCount: json['rcount'] ?? 0,
       isHot: json['isHot'] ?? false,
+      root: json['root'] ?? 0,
+      parent: json['parent'] ?? 0,
+      replies: replies,
     );
   }
 
   // 从API响应创建热门评论
   factory Comment.fromHotComment(Map<String, dynamic> json) {
+    // 解析楼中楼评论
+    List<Comment> replies = [];
+    if (json['replies'] != null && json['replies'] is List) {
+      for (var reply in json['replies']) {
+        replies.add(Comment.fromJson(reply));
+      }
+    }
+    
     return Comment(
       username: json['member']['uname'] ?? '未知用户',
       content: json['content']['message'] ?? '',
@@ -50,6 +75,9 @@ class Comment {
           : '',
       replyCount: json['rcount'] ?? 0,
       isHot: true,
+      root: json['root'] ?? 0,
+      parent: json['parent'] ?? 0,
+      replies: replies,
     );
   }
 }
@@ -77,6 +105,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   int totalPages = 1;
   String sortType = '0'; // 0=按时间, 1=按点赞, 2=按回复
   final Dio _dio = Dio();
+  final TextEditingController _pageController = TextEditingController();
 
   @override
   void initState() {
@@ -184,9 +213,8 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('视频评论'),
-      ),
+      // 移除AppBar以减少高度
+      appBar: null,
       body: Column(
         children: [
           // 移除视频信息部分
@@ -357,6 +385,12 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 8),
+            // 楼中楼评论
+            if (comment.replies.isNotEmpty) ...[
+              const Divider(height: 16, thickness: 1),
+              ...comment.replies.map((reply) => _buildReplyItem(reply)).toList(),
+              const SizedBox(height: 8),
+            ],
             // 点赞和回复信息（移除图标）
             Row(
               children: [
@@ -379,24 +413,165 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     );
   }
 
-  // 构建分页控件
-  Widget _buildPaginationControls() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  // 构建楼中楼回复项
+  Widget _buildReplyItem(Comment reply) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ElevatedButton(
-            onPressed: currentPage > 1 ? _loadPreviousPage : null,
-            child: const Text('上一页'),
+          // 回复用户信息
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 12,
+                backgroundImage: reply.avatarUrl.isNotEmpty
+                    ? NetworkImage(reply.avatarUrl)
+                    : null,
+                child: reply.avatarUrl.isEmpty
+                    ? const Icon(Icons.account_circle, size: 24)
+                    : null,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                reply.username,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                reply.publishTime,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
           ),
-          Text('第 $currentPage / $totalPages 页'),
-          ElevatedButton(
-            onPressed: currentPage < totalPages ? _loadNextPage : null,
-            child: const Text('下一页'),
+          const SizedBox(height: 4),
+          // 回复内容
+          Text(
+            reply.content,
+            style: const TextStyle(fontSize: 12),
           ),
         ],
       ),
     );
+  }
+
+  // 构建分页控件
+  Widget _buildPaginationControls() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 首页按钮
+              ElevatedButton(
+                onPressed: currentPage > 1 ? () {
+                  setState(() {
+                    currentPage = 1;
+                  });
+                  _loadComments();
+                } : null,
+                child: const Text('首页'),
+              ),
+              const SizedBox(width: 8),
+              // 上一页按钮
+              ElevatedButton(
+                onPressed: currentPage > 1 ? _loadPreviousPage : null,
+                child: const Text('上一页'),
+              ),
+              const SizedBox(width: 8),
+              // 下一页按钮
+              ElevatedButton(
+                onPressed: currentPage < totalPages ? _loadNextPage : null,
+                child: const Text('下一页'),
+              ),
+              const SizedBox(width: 8),
+              // 尾页按钮
+              ElevatedButton(
+                onPressed: currentPage < totalPages ? () {
+                  setState(() {
+                    currentPage = totalPages;
+                  });
+                  _loadComments();
+                } : null,
+                child: const Text('尾页'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('第 $currentPage / $totalPages 页'),
+              const SizedBox(width: 16),
+              // 页码输入框和跳转按钮
+              SizedBox(
+                width: 100,
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                    hintText: '输入页码',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  onSubmitted: (value) {
+                    _jumpToPage(value);
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  final text = _pageController.text;
+                  _jumpToPage(text);
+                },
+                child: const Text('跳转'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 跳转到指定页码
+  void _jumpToPage(String pageText) {
+    if (pageText.isEmpty) return;
+    
+    final page = int.tryParse(pageText);
+    if (page == null || page < 1 || page > totalPages) {
+      // 显示错误提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('请输入有效的页码 (1-$totalPages)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    setState(() {
+      currentPage = page;
+    });
+    _loadComments();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 }
