@@ -305,6 +305,18 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
       child: BiliVideoInfoPage(
         videoId: isBvid ? videoId : aid,
         isBvid: isBvid,
+        onPageSelected: (String newCid) {
+          // 切换到指定分P并刷新播放器
+          setState(() {
+            cid = newCid;
+          });
+          _loadBiliPlayer();
+          
+          // 显示提示信息
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('已切换到选中的分P视频')),
+          );
+        },
       ),
     );
   }

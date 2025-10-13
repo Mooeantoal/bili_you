@@ -106,6 +106,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   String sortType = '0'; // 0=按时间, 1=按点赞, 2=按回复
   final Dio _dio = Dio();
   final TextEditingController _pageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -154,9 +155,12 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
           
           setState(() {
             comments = newComments;
+            // 添加调试信息
+            print('页面数据: ${data['page']}');
             totalPages = data['page'] != null && data['page']['count'] != null 
                 ? (data['page']['count'] / 20).ceil() 
                 : 1;
+            print('总页数: $totalPages');
           });
         }
       } else {
@@ -239,6 +243,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                     : RefreshIndicator(
                         onRefresh: () async => _refreshComments(),
                         child: ListView(
+                          controller: _scrollController,
                           children: [
                             // 热门评论（移除图标）
                             if (hotComments.isNotEmpty) ...[
@@ -525,10 +530,22 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               // 尾页按钮
               ElevatedButton(
                 onPressed: currentPage < totalPages ? () {
+                  print('跳转到尾页: $totalPages');
                   setState(() {
                     currentPage = totalPages;
                   });
                   _loadComments();
+                  
+                  // 滚动到分页控件位置
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.animateTo(
+                        _scrollController.position.maxScrollExtent,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                  });
                 } : null,
                 child: const Text('尾页'),
               ),
@@ -589,12 +606,131 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     
     setState(() {
       currentPage = page;
+      // 清空输入框
+      _pageController.clear();
     });
     _loadComments();
+    
+    // 滚动到分页控件位置
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
-  // 显示楼中楼评论详情
+  // 显示楼中楼评论详情（显示该评论的所有回复列表）
   void _showReplyDetail(Comment reply) {
+    // 查找包含该回复的根评论
+    Comment? rootComment;
+    for (var comment in comments) {
+      if (comment.replies.any((r) => r == reply)) {
+        rootComment = comment;
+        break;
+      }
+    }
+    
+    // 如果找不到根评论，则直接显示该回复的详情
+    if (rootComment == null) {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 用户信息
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: reply.avatarUrl.isNotEmpty
+                          ? NetworkImage(reply.avatarUrl)
+                          : null,
+                      child: reply.avatarUrl.isEmpty
+                          ? const Icon(Icons.account_circle, size: 40)
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            reply.username,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            reply.publishTime,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // 评论内容
+                Text(
+                  reply.content,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                // 点赞和回复信息
+                Row(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.thumb_up, size: 16, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          reply.likeCount.toString(),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const Text(
+                          ' 点赞',
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Row(
+                      children: [
+                        const Icon(Icons.comment, size: 16, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          reply.replyCount.toString(),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const Text(
+                          ' 回复',
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      return;
+    }
+    
+    // 显示该根评论的所有回复列表
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -604,15 +740,15 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 用户信息
+              // 根评论信息
               Row(
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: reply.avatarUrl.isNotEmpty
-                        ? NetworkImage(reply.avatarUrl)
+                    backgroundImage: rootComment!.avatarUrl.isNotEmpty
+                        ? NetworkImage(rootComment!.avatarUrl)
                         : null,
-                    child: reply.avatarUrl.isEmpty
+                    child: rootComment!.avatarUrl.isEmpty
                         ? const Icon(Icons.account_circle, size: 40)
                         : null,
                   ),
@@ -622,14 +758,14 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          reply.username,
+                          rootComment!.username,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         Text(
-                          reply.publishTime,
+                          rootComment!.publishTime,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -640,46 +776,115 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // 评论内容
+              const SizedBox(height: 8),
+              // 根评论内容
               Text(
-                reply.content,
+                rootComment!.content,
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
-              // 点赞和回复信息
-              Row(
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.thumb_up, size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(
-                        reply.likeCount.toString(),
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+              const Divider(),
+              const Text(
+                '回复列表',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // 回复列表
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: rootComment!.replies.length,
+                  itemBuilder: (context, index) {
+                    final replyItem = rootComment!.replies[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: replyItem == reply ? Colors.blue[50] : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      const Text(
-                        ' 点赞',
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 回复用户信息
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundImage: replyItem.avatarUrl.isNotEmpty
+                                    ? NetworkImage(replyItem.avatarUrl)
+                                    : null,
+                                child: replyItem.avatarUrl.isEmpty
+                                    ? const Icon(Icons.account_circle, size: 32)
+                                    : null,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                replyItem.username,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                replyItem.publishTime,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          // 回复内容
+                          Text(
+                            replyItem.content,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          const SizedBox(height: 4),
+                          // 点赞和回复信息
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.thumb_up, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    replyItem.likeCount.toString(),
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                  const Text(
+                                    ' 点赞',
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 16),
+                              Row(
+                                children: [
+                                  const Icon(Icons.comment, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    replyItem.replyCount.toString(),
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                  const Text(
+                                    ' 回复',
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(width: 16),
-                  Row(
-                    children: [
-                      const Icon(Icons.comment, size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(
-                        reply.replyCount.toString(),
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const Text(
-                        ' 回复',
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -691,6 +896,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   @override
   void dispose() {
     _pageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 }

@@ -122,11 +122,13 @@ class VideoPage {
 class BiliVideoInfoPage extends StatefulWidget {
   final String videoId; // BV号或av号
   final bool isBvid; // 是否为BV号
+  final Function(String cid)? onPageSelected; // 分P选择回调
 
   const BiliVideoInfoPage({
     Key? key,
     required this.videoId,
     required this.isBvid,
+    this.onPageSelected,
   }) : super(key: key);
 
   @override
@@ -564,12 +566,17 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
                   subtitle: Text(_formatDuration(page.duration)),
                   trailing: const Icon(Icons.play_arrow),
                   onTap: () {
-                    // TODO: 实现跳转到指定分P播放
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('点击了分P视频'),
-                      ),
-                    );
+                    // 实现跳转到指定分P播放
+                    // 通过回调通知测试页面切换到指定分P
+                    if (widget.onPageSelected != null) {
+                      widget.onPageSelected!(page.cid.toString());
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('切换到分P: P${page.page} ${page.part}'),
+                        ),
+                      );
+                    }
                   },
                 ),
               );
