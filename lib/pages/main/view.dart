@@ -278,9 +278,8 @@ class _MainPageState extends State<MainPage> {
                       label: "动态",
                     ),
                     BottomNavigationBarItem(
-                      icon: Icon(Icons.person_outline),
-                      activeIcon: Icon(Icons.person),
-                      label: "我的",
+                      icon: Icon(Icons.person),
+                      label: "空间",
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.comment), // 将测试图标改为评论图标

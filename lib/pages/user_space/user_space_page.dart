@@ -31,18 +31,26 @@ class UserSpacePage extends StatefulWidget {
   State<UserSpacePage> createState() => _UserSpacePageState();
 }
 
-class _UserSpacePageState extends State<UserSpacePage> {
+class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateMixin {
   UserInfoData? _userInfo;
   List<VideoItem> _userVideos = [];
   bool _isLoading = false;
   bool _isLoadingVideos = false;
   String _errorMessage = '';
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this); // 增加到4个标签页
     _loadUserInfo();
     _loadUserVideos();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   // 加载用户信息
@@ -150,15 +158,6 @@ class _UserSpacePageState extends State<UserSpacePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('用户空间'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshUserInfo,
-          ),
-        ],
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage.isNotEmpty
@@ -176,31 +175,44 @@ class _UserSpacePageState extends State<UserSpacePage> {
                   ),
                 )
               : _userInfo != null
-                  ? RefreshIndicator(
-                      onRefresh: () async => _refreshUserInfo(),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 用户基本信息
+                  ? DefaultTabController(
+                      length: 4,
+                      child: NestedScrollView(
+                        headerSliverBuilder: (context, innerBoxIsScrolled) {
+                          return [
+                            // 用户信息头部（固定在顶部）
                             _buildUserInfoHeader(),
-                            const SizedBox(height: 16),
-                            // 用户统计数据
-                            _buildUserStats(),
-                            const SizedBox(height: 16),
-                            // 用户认证信息
-                            if (_userInfo!.official != null &&
-                                _userInfo!.official!.title != null &&
-                                _userInfo!.official!.title!.isNotEmpty)
-                              _buildOfficialInfo(),
-                            const SizedBox(height: 16),
-                            // VIP信息
-                            if (_userInfo!.vip != null &&
-                                _userInfo!.vip!.status == 1)
-                              _buildVipInfo(),
-                            const SizedBox(height: 16),
-                            // 用户投稿视频
-                            _buildUserVideos(),
+                            // Tab栏
+                            SliverPersistentHeader(
+                              delegate: _SliverAppBarDelegate(
+                                TabBar(
+                                  controller: _tabController,
+                                  tabs: const [
+                                    Tab(text: '主页'),
+                                    Tab(text: '投稿'),
+                                    Tab(text: '收藏'),
+                                    Tab(text: '动态'),
+                                  ],
+                                  indicatorColor: Colors.white,
+                                  labelColor: Colors.white,
+                                  unselectedLabelColor: Colors.white70,
+                                ),
+                              ),
+                              pinned: true,
+                            ),
+                          ];
+                        },
+                        body: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            // 主页
+                            _buildHomePageTab(),
+                            // 投稿视频
+                            _buildUserVideosTab(),
+                            // 收藏内容
+                            const Center(child: Text('收藏内容')),
+                            // 动态内容
+                            const Center(child: Text('动态内容')),
                           ],
                         ),
                       ),
@@ -214,143 +226,162 @@ class _UserSpacePageState extends State<UserSpacePage> {
     );
   }
 
-  // 构建用户基本信息头部
+  // 构建用户信息头部（使用SliverAppBar实现吸顶效果）
   Widget _buildUserInfoHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          // 用户头像
-          CircleAvatar(
-            radius: 40,
-            backgroundImage: _userInfo!.face != null && _userInfo!.face!.isNotEmpty
-                ? NetworkImage(_userInfo!.face!)
-                : null,
-            child: _userInfo!.face == null || _userInfo!.face!.isEmpty
-                ? const Icon(Icons.account_circle, size: 80)
-                : null,
-          ),
-          const SizedBox(width: 16),
-          // 用户信息
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 用户名和等级
-                Row(
-                  children: [
-                    Text(
-                      _userInfo!.name ?? '未知用户',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // 用户等级
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'LV${_userInfo!.level ?? 0}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // 用户签名
-                Text(
-                  _userInfo!.sign ?? '这个人很懒，什么都没有留下',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // 性别
-                if (_userInfo!.sex != null && _userInfo!.sex!.isNotEmpty)
-                  Row(
-                    children: [
-                      const Icon(Icons.person, size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(
-                        _userInfo!.sex!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
+    return SliverAppBar(
+      expandedHeight: 300.0,
+      floating: false,
+      pinned: true,
+      backgroundColor: Theme.of(context).primaryColor,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).primaryColor.withOpacity(0.8),
               ],
             ),
           ),
-        ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 用户头像
+              CircleAvatar(
+                radius: 50,
+                backgroundImage: _userInfo!.face != null && _userInfo!.face!.isNotEmpty
+                    ? NetworkImage(_userInfo!.face!)
+                    : null,
+                child: _userInfo!.face == null || _userInfo!.face!.isEmpty
+                    ? const Icon(Icons.account_circle, size: 100, color: Colors.white)
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              // 用户名和等级
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _userInfo!.name ?? '未知用户',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 用户等级
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'LV${_userInfo!.level ?? 0}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // 关注和粉丝信息
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '关注 ${_formatNumber(_userInfo!.following ?? 0)}',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    '粉丝 ${_formatNumber(_userInfo!.follower ?? 0)}',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // 用户签名
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Text(
+                  _userInfo!.sign ?? '这个人很懒，什么都没有留下',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // 操作按钮
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // 关注/取消关注逻辑
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).primaryColor,
+                    ),
+                    child: const Text('关注'),
+                  ),
+                  const SizedBox(width: 16),
+                  OutlinedButton(
+                    onPressed: () {
+                      // 发私信逻辑
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('发私信'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh, color: Colors.white),
+          onPressed: _refreshUserInfo,
+        ),
+      ],
     );
   }
 
-  // 构建用户统计数据
-  Widget _buildUserStats() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+  // 构建主页标签页
+  Widget _buildHomePageTab() {
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '数据统计',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          // 统计数据网格
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.5,
-            children: [
-              _buildStatItem(Icons.favorite, '获赞', _userInfo!.likeNum?.toString() ?? '0'),
-              _buildStatItem(Icons.monetization_on, '硬币', _userInfo!.coins?.toString() ?? '0'),
-              _buildStatItem(Icons.bar_chart, '等级', _userInfo!.level?.toString() ?? '0'),
-            ],
-          ),
+          // 认证信息
+          if (_userInfo!.official != null &&
+              _userInfo!.official!.title != null &&
+              _userInfo!.official!.title!.isNotEmpty)
+            _buildOfficialInfo(),
+          // VIP信息
+          if (_userInfo!.vip != null &&
+              _userInfo!.vip!.status == 1)
+            _buildVipInfo(),
+          // 统计数据
+          _buildUserStats(),
+          // 最新投稿
+          _buildRecentVideos(),
         ],
       ),
-    );
-  }
-
-  // 构建统计数据项
-  Widget _buildStatItem(IconData icon, String label, String value) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, size: 24, color: Colors.grey),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-          ),
-        ),
-      ],
     );
   }
 
@@ -450,8 +481,188 @@ class _UserSpacePageState extends State<UserSpacePage> {
     );
   }
 
-  // 构建用户投稿视频
-  Widget _buildUserVideos() {
+  // 构建用户统计数据
+  Widget _buildUserStats() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '数据统计',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // 统计数据网格
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.5,
+            children: [
+              _buildStatItem(Icons.favorite, '获赞', _userInfo!.likeNum?.toString() ?? '0'),
+              _buildStatItem(Icons.monetization_on, '硬币', _userInfo!.coins?.toString() ?? '0'),
+              _buildStatItem(Icons.bar_chart, '等级', _userInfo!.level?.toString() ?? '0'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建统计数据项
+  Widget _buildStatItem(IconData icon, String label, String value) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 24, color: Theme.of(context).primaryColor),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 构建最新投稿
+  Widget _buildRecentVideos() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '最新投稿',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // 切换到投稿标签页
+                  _tabController.animateTo(1);
+                },
+                child: const Text('查看更多'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 视频列表
+          if (_userVideos.isEmpty && !_isLoadingVideos)
+            Container(
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text(
+                  '暂无投稿视频',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _userVideos.length > 5 ? 5 : _userVideos.length, // 只显示前5个
+                itemBuilder: (context, index) {
+                  final video = _userVideos[index];
+                  return _buildHorizontalVideoItem(video);
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // 构建水平滚动的视频项
+  Widget _buildHorizontalVideoItem(VideoItem video) {
+    return Container(
+      width: 150,
+      margin: const EdgeInsets.only(right: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 视频封面
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  image: video.coverUrl.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(video.coverUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  color: Colors.grey[300],
+                ),
+                child: video.coverUrl.isEmpty
+                    ? const Icon(Icons.video_library, size: 30, color: Colors.grey)
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          // 视频标题
+          Text(
+            video.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 2),
+          // 播放量和时间
+          Text(
+            _formatNumber(video.playCount),
+            style: const TextStyle(
+              fontSize: 10,
+              color: Colors.grey,
+            ),
+          ),
+          Text(
+            video.publishTime,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建用户投稿视频标签页
+  Widget _buildUserVideosTab() {
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -479,7 +690,7 @@ class _UserSpacePageState extends State<UserSpacePage> {
           // 视频列表
           if (_userVideos.isEmpty && !_isLoadingVideos)
             Container(
-              height: 100,
+              height: 200,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(8),
@@ -495,20 +706,20 @@ class _UserSpacePageState extends State<UserSpacePage> {
               ),
             )
           else
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 0.8,
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 0.8,
+                ),
+                itemCount: _userVideos.length,
+                itemBuilder: (context, index) {
+                  final video = _userVideos[index];
+                  return _buildVideoItem(video);
+                },
               ),
-              itemCount: _userVideos.length,
-              itemBuilder: (context, index) {
-                final video = _userVideos[index];
-                return _buildVideoItem(video);
-              },
             ),
         ],
       ),
@@ -518,25 +729,32 @@ class _UserSpacePageState extends State<UserSpacePage> {
   // 构建单个视频项
   Widget _buildVideoItem(VideoItem video) {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 视频封面
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: Container(
-              decoration: BoxDecoration(
-                image: video.coverUrl.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(video.coverUrl),
-                        fit: BoxFit.cover,
-                      )
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              child: Container(
+                decoration: BoxDecoration(
+                  image: video.coverUrl.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(video.coverUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  color: Colors.grey[300],
+                ),
+                child: video.coverUrl.isEmpty
+                    ? const Icon(Icons.video_library, size: 40, color: Colors.grey)
                     : null,
-                color: Colors.grey[300],
               ),
-              child: video.coverUrl.isEmpty
-                  ? const Icon(Icons.video_library, size: 40, color: Colors.grey)
-                  : null,
             ),
           ),
           // 视频信息
@@ -591,5 +809,31 @@ class _UserSpacePageState extends State<UserSpacePage> {
         ],
       ),
     );
+  }
+}
+
+// 自定义SliverPersistentHeaderDelegate
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar _tabBar;
+
+  _SliverAppBarDelegate(this._tabBar);
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height;
+  
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Theme.of(context).primaryColor,
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

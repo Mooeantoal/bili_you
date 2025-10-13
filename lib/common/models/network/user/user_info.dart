@@ -49,6 +49,8 @@ class UserInfoData {
     this.coins,
     this.fansBadge,
     this.likeNum,
+    this.following,
+    this.follower,
     this.vip,
     this.official,
     this.nameplate,
@@ -72,6 +74,8 @@ class UserInfoData {
   int? coins;
   int? fansBadge;
   int? likeNum;
+  int? following;
+  int? follower;
   Vip? vip;
   Official? official;
   Nameplate? nameplate;
@@ -100,6 +104,8 @@ class UserInfoData {
         coins: json["coins"],
         fansBadge: json["fans_badge"],
         likeNum: json["like_num"],
+        following: json["following"],
+        follower: json["follower"],
         vip: json["vip"] == null ? null : Vip.fromJson(json["vip"]),
         official:
             json["official"] == null ? null : Official.fromJson(json["official"]),
@@ -131,6 +137,8 @@ class UserInfoData {
         "coins": coins,
         "fans_badge": fansBadge,
         "like_num": likeNum,
+        "following": following,
+        "follower": follower,
         "vip": vip?.toJson(),
         "official": official?.toJson(),
         "nameplate": nameplate?.toJson(),
