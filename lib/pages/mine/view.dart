@@ -7,8 +7,6 @@ import 'package:bili_you/pages/login/qrcode_login/view.dart';
 import 'package:bili_you/pages/login/web_login/view.dart';
 import 'package:bili_you/pages/settings_page/settings_page.dart';
 import 'package:bili_you/pages/relation/view.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fluent;
-import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -22,47 +20,21 @@ class MinePage extends GetView<MineController> {
   @override
   Widget build(BuildContext context) {
     print('MinePage build called');
-    // 检查当前使用的 UI 框架
-    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
-    final bool useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
-    
-    print('UI Framework - Cupertino: $useCupertino, Fluent: $useFluent');
-    
-    if (useCupertino) {
-      // 使用 Cupertino 风格的页面
-      print('Building Cupertino page');
-      return cupertino.CupertinoPageScaffold(
-        navigationBar: const cupertino.CupertinoNavigationBar(
-          middle: Text("我的"),
-        ),
-        child: _buildView(context),
-      );
-    } else if (useFluent) {
-      // 使用 Fluent UI 风格的页面
-      print('Building Fluent UI page');
-      return fluent.ScaffoldPage(
-        header: const fluent.PageHeader(
-          title: Text("我的"),
-        ),
-        content: _buildView(context),
-      );
-    } else {
-      // 使用 Material 风格的页面
-      print('Building Material page');
-      return GetBuilder<MineController>(
-        init: MineController(),
-        id: "user_face",
-        builder: (_) {
-          print('GetBuilder builder called');
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text("我的"),
-            ),
-            body: _buildView(context),
-          );
-        },
-      );
-    }
+    // 只使用 Material 风格的页面
+    print('Building Material page');
+    return GetBuilder<MineController>(
+      init: MineController(),
+      id: "user_face",
+      builder: (_) {
+        print('GetBuilder builder called');
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("我的"),
+          ),
+          body: _buildView(context),
+        );
+      },
+    );
   }
   
   // 为不同UI框架提供不同的视图构建方法
@@ -423,51 +395,16 @@ class MineListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 检查当前使用的 UI 框架
-    final bool useCupertino = SettingsUtil.getValue(SettingsStorageKeys.useCupertinoUI, defaultValue: false);
-    final bool useFluent = SettingsUtil.getValue(SettingsStorageKeys.useFluentUI, defaultValue: false);
-    
-    if (useCupertino) {
-      // 使用 Cupertino 风格的列表项
-      return cupertino.CupertinoListTile(
-        leading: icon,
-        title: Text(title),
-        trailing: const Icon(cupertino.CupertinoIcons.forward),
-        onTap: onTap,
-      );
-    } else if (useFluent) {
-      // 使用 Fluent UI 风格的列表项
-      return fluent.Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              icon,
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(title),
-              ),
-              Icon(
-                fluent.FluentIcons.chevron_right,
-                size: 16,
-                color: fluent.FluentTheme.of(context).typography.caption?.color,
-              ),
-            ],
-          ),
-        ),
-      );
-    } else {
-      // 使用 Material 风格的列表项
-      return ListTile(
-        leading: icon,
-        title: Text(title),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: Theme.of(context).textTheme.bodySmall?.color,
-        ),
-        onTap: onTap,
-      );
-    }
+    // 只使用 Material 风格的列表项
+    return ListTile(
+      leading: icon,
+      title: Text(title),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: Theme.of(context).textTheme.bodySmall?.color,
+      ),
+      onTap: onTap,
+    );
   }
 }
