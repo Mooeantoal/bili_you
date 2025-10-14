@@ -182,15 +182,53 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   // 加载完整的楼中楼评论列表
   Future<List<Comment>> _loadFullReplies(String oid, String rootId) async {
     try {
-      // 使用UAPI提供的API获取完整的楼中楼评论
+      // 使用B站官方API获取完整的楼中楼评论
+      // B站评论API参数说明:
+      // oid: 视频aid
+      // type: 1(视频)
+      // root: 根评论rpid (为0表示获取根评论)
+      // ps: 每页条数
+      // pn: 页码
       final url = 
+        'https://api.bilibili.com/x/v2/reply'
+        '?oid=$oid'
+        '&type=1'
+        '&root=$rootId'
+        '&ps=20'
+        '&pn=1';
+
+      final response = await _dio.get(url);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        
+        // 检查API返回是否成功
+        if (data['code'] == 0 && data['data'] != null) {
+          // 解析楼中楼评论
+          List<Comment> replies = [];
+          if (data['data']['replies'] != null && data['data']['replies'] is List) {
+            for (var reply in data['data']['replies']) {
+              replies.add(Comment.fromJson(reply));
+            }
+          }
+          
+          return replies;
+        }
+      }
+    } catch (e) {
+      print('获取完整楼中楼评论时出错: $e');
+    }
+    
+    // 如果B站官方API失败，尝试使用UAPI
+    try {
+      final uapiUrl = 
         'https://uapis.cn/api/v1/social/bilibili/replies'
         '?oid=$oid'
         '&root=$rootId'
-        '&ps=20'  // 每页20条
-        '&pn=1';  // 只获取第一页，可根据需要扩展分页功能
+        '&ps=20'
+        '&pn=1';
 
-      final response = await _dio.get(url);
+      final response = await _dio.get(uapiUrl);
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -206,7 +244,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         return replies;
       }
     } catch (e) {
-      print('获取完整楼中楼评论时出错: $e');
+      print('使用UAPI获取完整楼中楼评论时出错: $e');
     }
     
     return [];
@@ -765,7 +803,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     }
     
     // 获取完整的楼中楼评论列表
-    List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootComment.root.toString());
+    List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString());
     if (fullReplies.isEmpty) {
       fullReplies = rootComment.replies; // 如果获取失败，使用原始数据
     }

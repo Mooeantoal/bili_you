@@ -70,13 +70,16 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
         });
       } else {
         setState(() {
-          _errorMessage = '获取用户信息失败';
+          _errorMessage = '获取用户信息失败，请检查网络连接或稍后重试';
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = '获取用户信息时出错: $e';
+        _errorMessage = '获取用户信息时出错: $e\n\n请检查网络连接或稍后重试';
       });
+      // 打印详细错误信息到控制台
+      print('获取用户信息详细错误: $e');
+      print('请求的UID: ${widget.uid}');
     } finally {
       setState(() {
         _isLoading = false;
