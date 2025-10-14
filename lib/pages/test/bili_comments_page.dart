@@ -104,6 +104,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   int currentPage = 1;
   int totalPages = 1;
   String sortType = '0'; // 0=按时间, 1=按点赞, 2=按回复
+  bool hasMore = true; // 是否还有更多数据
   final Dio _dio = Dio();
   final TextEditingController _pageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -112,17 +113,30 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   void initState() {
     super.initState();
     _loadComments();
+    
+    // 监听滚动事件，实现无限滚动加载
+    _scrollController.addListener(_scrollListener);
   }
 
-  // 加载评论数据
-  Future<void> _loadComments() async {
+  // 滚动监听器
+  void _scrollListener() {
+    // 当滚动到接近底部时加载更多
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreComments();
+    }
+  }
+
+  // 加载更多评论
+  Future<void> _loadMoreComments() async {
+    if (!hasMore || isLoading) return;
+    
     setState(() {
       isLoading = true;
-      errorMessage = '';
     });
 
     try {
-      // 使用UAPI提供的API获取评论
+      currentPage++;
       final url = 
         'https://uapis.cn/api/v1/social/bilibili/replies'
         '?oid=${widget.aid}'
@@ -134,6 +148,64 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
 
       if (response.statusCode == 200) {
         final data = response.data;
+        
+        // 解析普通评论
+        if (data['replies'] != null) {
+          List<Comment> newComments = [];
+          for (var commentJson in data['replies']) {
+            newComments.add(Comment.fromJson(commentJson));
+          }
+          
+          setState(() {
+            comments.addAll(newComments);
+            totalPages = data['page'] != null && data['page']['count'] != null 
+                ? (data['page']['count'] / 20).ceil() 
+                : currentPage;
+            hasMore = currentPage < totalPages;
+          });
+        } else {
+          setState(() {
+            hasMore = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('加载更多评论时出错: $e');
+      // 回退页码
+      setState(() {
+        currentPage--;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // 加载评论数据
+  Future<void> _loadComments() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    try {
+      // 使用UAPI提供的API获取评论
+      // 检查参数是否正确
+      print('请求评论数据: oid=${widget.aid}, sort=$sortType, ps=20, pn=$currentPage');
+      final url = 
+        'https://uapis.cn/api/v1/social/bilibili/replies'
+        '?oid=${widget.aid}'
+        '&sort=$sortType'
+        '&ps=20'
+        '&pn=$currentPage';
+
+      final response = await _dio.get(url);
+      print('收到响应状态码: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        print('收到评论数据: ${data.keys}');
         
         // 解析热门评论（仅第一页）
         if (currentPage == 1 && data['hots'] != null) {
@@ -150,55 +222,6 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         if (data['replies'] != null) {
           List<Comment> newComments = [];
           for (var commentJson in data['replies']) {
-            // 对于有回复的评论，预先加载完整的回复列表
-            if (commentJson is Map<String, dynamic> && 
-                commentJson['rcount'] != null && 
-                commentJson['rcount'] > 0 &&
-                commentJson['replies'] != null &&
-                (commentJson['replies'] as List).length < commentJson['rcount']) {
-              // 如果回复数少于总回复数，需要获取完整列表
-              final fullReplies = await _loadFullReplies(widget.aid, commentJson['rpid'].toString());
-              if (fullReplies.isNotEmpty) {
-                // 更新评论的回复列表
-                commentJson['replies'] = fullReplies.map((reply) => {
-                  'rpid': reply.root,
-                  'oid': reply.parent,
-                  'type': 1,
-                  'mid': 0,
-                  'root': reply.root,
-                  'parent': reply.parent,
-                  'dialog': 0,
-                  'count': 0,
-                  'rcount': 0,
-                  'state': 0,
-                  'fansgrade': 0,
-                  'attr': 0,
-                  'ctime': 0,
-                  'like': reply.likeCount,
-                  'action': 0,
-                  'member': {
-                    'mid': '0',
-                    'uname': reply.username,
-                    'sex': '保密',
-                    'sign': '',
-                    'avatar': reply.avatarUrl,
-                    'rank': '10000',
-                    'level_info': {'current_level': 1},
-                    'official_verify': {'type': -1, 'desc': ''},
-                    'vip': {'vipType': 0, 'vipStatus': 0, 'vipDueDate': 0}
-                  },
-                  'content': {
-                    'message': reply.content,
-                    'emote': null,
-                    'members': [],
-                    'jump_url': {}
-                  },
-                  'replies': null,
-                  'reply_control': {'time_desc': reply.publishTime, 'location': ''}
-                }).toList();
-              }
-            }
-            
             newComments.add(Comment.fromJson(commentJson));
           }
           
@@ -216,11 +239,14 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         setState(() {
           errorMessage = '获取评论失败: ${response.statusCode}';
         });
+        print('错误响应内容: ${response.data}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       setState(() {
         errorMessage = '获取评论时出错: $e';
       });
+      print('异常详情: $e');
+      print('堆栈跟踪: $stackTrace');
     } finally {
       setState(() {
         isLoading = false;
@@ -232,6 +258,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   Future<List<Comment>> _loadFullReplies(String oid, String rootId) async {
     try {
       // 使用UAPI提供的API获取完整的楼中楼评论
+      // 确保参数正确：oid为视频aid，root为根评论的rpid
       final url = 
         'https://uapis.cn/api/v1/social/bilibili/replies'
         '?oid=$oid'
@@ -239,10 +266,12 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         '&ps=20'  // 每页20条
         '&pn=1';  // 只获取第一页，可根据需要扩展分页功能
 
+      print('请求完整回复列表: $url');
       final response = await _dio.get(url);
 
       if (response.statusCode == 200) {
         final data = response.data;
+        print('收到回复数据: ${data.keys}');
         
         // 解析楼中楼评论
         List<Comment> replies = [];
@@ -252,7 +281,10 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
           }
         }
         
+        print('解析到 ${replies.length} 条回复');
         return replies;
+      } else {
+        print('HTTP错误: ${response.statusCode}');
       }
     } catch (e) {
       print('获取完整楼中楼评论时出错: $e');
@@ -263,28 +295,12 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
 
   // 刷新评论
   void _refreshComments() {
-    currentPage = 1;
+    setState(() {
+      currentPage = 1;
+      hasMore = true;
+      comments.clear();
+    });
     _loadComments();
-  }
-
-  // 加载下一页
-  void _loadNextPage() {
-    if (currentPage < totalPages) {
-      setState(() {
-        currentPage++;
-      });
-      _loadComments();
-    }
-  }
-
-  // 加载上一页
-  void _loadPreviousPage() {
-    if (currentPage > 1) {
-      setState(() {
-        currentPage--;
-      });
-      _loadComments();
-    }
   }
 
   // 更改排序方式
@@ -292,6 +308,8 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     setState(() {
       sortType = newSortType;
       currentPage = 1;
+      hasMore = true;
+      comments.clear();
     });
     _loadComments();
   }
@@ -306,7 +324,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
           // 移除视频信息部分
           // 评论内容
           Expanded(
-            child: isLoading
+            child: isLoading && comments.isEmpty // 只在初次加载时显示loading
                 ? const Center(child: CircularProgressIndicator())
                 : errorMessage.isNotEmpty
                     ? Center(
@@ -391,7 +409,24 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                               ),
                               for (var comment in comments)
                                 _buildCommentItem(comment),
-                            ] else
+                              // 加载更多指示器
+                              if (isLoading && comments.isNotEmpty) ...[
+                                const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                ),
+                              ] else if (!hasMore) ...[
+                                const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Center(
+                                    child: Text(
+                                      '没有更多评论了',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ] else if (!isLoading)
                               const Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(16.0),
@@ -401,9 +436,6 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                 ),
                               ),
-                            // 分页控件
-                            if (comments.isNotEmpty)
-                              _buildPaginationControls(),
                           ],
                         ),
                       ),
@@ -605,135 +637,6 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     );
   }
 
-  // 构建分页控件
-  Widget _buildPaginationControls() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 首页按钮
-              ElevatedButton(
-                onPressed: currentPage > 1 ? () {
-                  setState(() {
-                    currentPage = 1;
-                  });
-                  _loadComments();
-                } : null,
-                child: const Text('首页'),
-              ),
-              const SizedBox(width: 8),
-              // 上一页按钮
-              ElevatedButton(
-                onPressed: currentPage > 1 ? _loadPreviousPage : null,
-                child: const Text('上一页'),
-              ),
-              const SizedBox(width: 8),
-              // 下一页按钮
-              ElevatedButton(
-                onPressed: currentPage < totalPages ? _loadNextPage : null,
-                child: const Text('下一页'),
-              ),
-              const SizedBox(width: 8),
-              // 尾页按钮
-              ElevatedButton(
-                onPressed: () {
-                  print('跳转到尾页: $totalPages');
-                  setState(() {
-                    currentPage = totalPages;
-                  });
-                  _loadComments();
-                  
-                  // 滚动到分页控件位置
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                      );
-                    }
-                  });
-                },
-                child: const Text('尾页'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('第 $currentPage / $totalPages 页'),
-              const SizedBox(width: 16),
-              // 页码输入框和跳转按钮
-              SizedBox(
-                width: 100,
-                child: TextField(
-                  controller: _pageController,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    hintText: '输入页码',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  onSubmitted: (value) {
-                    _jumpToPage(value);
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () {
-                  final text = _pageController.text;
-                  _jumpToPage(text);
-                },
-                child: const Text('跳转'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 跳转到指定页码
-  void _jumpToPage(String pageText) {
-    if (pageText.isEmpty) return;
-    
-    final page = int.tryParse(pageText);
-    if (page == null || page < 1 || page > totalPages) {
-      // 显示错误提示
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('请输入有效的页码 (1-$totalPages)'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    
-    setState(() {
-      currentPage = page;
-      // 清空输入框
-      _pageController.clear();
-    });
-    _loadComments();
-    
-    // 滚动到分页控件位置
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
   // 显示楼中楼评论详情（显示该评论的所有回复列表）
   void _showReplyDetail(Comment reply) async {
     // 查找包含该回复的根评论
@@ -842,6 +745,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     }
     
     // 获取完整的楼中楼评论列表
+    // 使用根评论的rpid作为root参数来获取该评论的所有回复
     List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString());
     if (fullReplies.isEmpty) {
       fullReplies = rootComment.replies; // 如果获取失败，使用原始数据
@@ -1013,6 +917,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   // 显示完整回复列表
   void _showFullReplies(Comment rootComment) async {
     // 获取完整的楼中楼评论列表
+    // 使用根评论的rpid作为root参数来获取该评论的所有回复
     List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString());
     if (fullReplies.isEmpty) {
       fullReplies = rootComment.replies; // 如果获取失败，使用原始数据

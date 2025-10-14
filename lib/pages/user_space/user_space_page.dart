@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bili_you/common/models/network/user/user_info.dart';
 import 'package:bili_you/common/api/user_info_api.dart';
 import 'package:bili_you/common/api/user_videos_api.dart';
+import 'dart:convert';
 
 // 视频数据模型
 class VideoItem {
@@ -34,8 +35,10 @@ class UserSpacePage extends StatefulWidget {
 class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateMixin {
   UserInfoData? _userInfo;
   List<VideoItem> _userVideos = [];
+  List<dynamic> _userDynamics = []; // 用户动态列表
   bool _isLoading = false;
   bool _isLoadingVideos = false;
+  bool _isLoadingDynamics = false; // 动态加载状态
   String _errorMessage = '';
   late TabController _tabController;
 
@@ -45,6 +48,7 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
     _tabController = TabController(length: 4, vsync: this); // 增加到4个标签页
     _loadUserInfo();
     _loadUserVideos();
+    _loadUserDynamics(); // 加载用户动态
   }
 
   @override
@@ -122,12 +126,14 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
     });
 
     try {
-      // 使用API工具类获取用户投稿视频
+      // 首先尝试使用B站官方API
+      print('尝试使用B站官方API获取用户投稿视频');
       final videoData = await UserVideosApi.getUserVideos(uid: widget.uid);
       
       if (videoData != null && videoData['code'] == 0) {
+        print('B站官方API获取成功');
         final List<VideoItem> videos = [];
-        final vlist = videoData['data']['list']['vlist'];
+        final vlist = videoData['data']?['list']?['vlist'];
         
         if (vlist != null && vlist is List) {
           for (var video in vlist) {
@@ -150,15 +156,123 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
         setState(() {
           _userVideos = videos;
         });
+        return;
+      } else {
+        print('B站官方API获取失败，尝试UAPI');
       }
     } catch (e) {
-      // 视频加载失败不显示错误信息，因为这是可选功能
-      print('获取用户投稿视频时出错: $e');
-    } finally {
-      setState(() {
-        _isLoadingVideos = false;
-      });
+      print('B站官方API获取用户投稿视频时出错: $e');
     }
+    
+    // 如果官方API失败，尝试使用UAPI
+    try {
+      print('尝试使用UAPI获取用户投稿视频');
+      final videoData = await UserVideosApi.getUserVideosFromUAPI(uid: widget.uid);
+      
+      if (videoData != null && videoData['code'] == 0) {
+        print('UAPI获取成功');
+        final List<VideoItem> videos = [];
+        final vlist = videoData['data']?['list']?['vlist'];
+        
+        if (vlist != null && vlist is List) {
+          for (var video in vlist) {
+            if (video is Map<String, dynamic>) {
+              videos.add(VideoItem(
+                bvid: video['bvid']?.toString() ?? '',
+                title: video['title']?.toString() ?? '无标题',
+                coverUrl: video['pic']?.toString() ?? '',
+                playCount: video['play'] is int ? video['play'] : 0,
+                duration: video['duration'] is int ? video['duration'] : 0,
+                publishTime: video['created'] is int 
+                    ? DateTime.fromMillisecondsSinceEpoch(video['created'] * 1000)
+                        .toString().split(' ')[0]
+                    : '',
+              ));
+            }
+          }
+        }
+        
+        setState(() {
+          _userVideos = videos;
+        });
+        return;
+      } else {
+        print('UAPI获取失败');
+      }
+    } catch (e) {
+      print('UAPI获取用户投稿视频时出错: $e');
+    }
+    
+    // 如果都失败了，显示错误信息
+    print('获取用户投稿视频失败');
+    
+    setState(() {
+      _isLoadingVideos = false;
+    });
+  }
+
+  // 加载用户动态
+  Future<void> _loadUserDynamics() async {
+    setState(() {
+      _isLoadingDynamics = true;
+    });
+
+    try {
+      // 首先尝试使用B站官方API
+      print('尝试使用B站官方API获取用户动态');
+      final dynamicsData = await UserVideosApi.getUserDynamics(uid: widget.uid);
+      
+      if (dynamicsData != null && dynamicsData['code'] == 0) {
+        print('B站官方API获取动态成功');
+        final items = dynamicsData['data']?['items'];
+        
+        if (items != null && items is List) {
+          setState(() {
+            _userDynamics = List.from(items);
+          });
+        }
+        setState(() {
+          _isLoadingDynamics = false;
+        });
+        return;
+      } else {
+        print('B站官方API获取动态失败，尝试UAPI');
+      }
+    } catch (e) {
+      print('B站官方API获取用户动态时出错: $e');
+    }
+    
+    // 如果官方API失败，尝试使用UAPI
+    try {
+      print('尝试使用UAPI获取用户动态');
+      final dynamicsData = await UserVideosApi.getUserDynamicsFromUAPI(uid: widget.uid);
+      
+      if (dynamicsData != null && dynamicsData['code'] == 0) {
+        print('UAPI获取动态成功');
+        final cards = dynamicsData['data']?['cards'];
+        
+        if (cards != null && cards is List) {
+          setState(() {
+            _userDynamics = List.from(cards);
+          });
+        }
+        setState(() {
+          _isLoadingDynamics = false;
+        });
+        return;
+      } else {
+        print('UAPI获取动态失败');
+      }
+    } catch (e) {
+      print('UAPI获取用户动态时出错: $e');
+    }
+    
+    // 如果都失败了，显示错误信息
+    print('获取用户动态失败');
+    
+    setState(() {
+      _isLoadingDynamics = false;
+    });
   }
 
   // 刷新用户信息
@@ -243,7 +357,7 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
                             // 收藏内容
                             const Center(child: Text('收藏内容')),
                             // 动态内容
-                            const Center(child: Text('动态内容')),
+                            _buildUserDynamicsTab(),
                           ],
                         ),
                       ),
@@ -467,7 +581,7 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'VIP信息',
+            '大会员信息',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -838,6 +952,173 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // 构建用户动态标签页
+  Widget _buildUserDynamicsTab() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '用户动态',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (_isLoadingDynamics)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 动态列表
+          if (_userDynamics.isEmpty && !_isLoadingDynamics)
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text(
+                  '暂无动态',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                itemCount: _userDynamics.length,
+                itemBuilder: (context, index) {
+                  final dynamicItem = _userDynamics[index];
+                  return _buildDynamicItem(dynamicItem);
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+  
+  // 构建单个动态项
+  Widget _buildDynamicItem(dynamic dynamicItem) {
+    // 解析动态内容 (根据新的API结构调整)
+    final modules = dynamicItem['modules'] as Map<String, dynamic>?;
+    final moduleAuthor = modules?['module_author'] as Map<String, dynamic>?;
+    final moduleDesc = modules?['module_desc'] as Map<String, dynamic>?;
+    
+    String userName = moduleAuthor?['name'] ?? '未知用户';
+    String publishTime = moduleAuthor?['pub_ts'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(moduleAuthor!['pub_ts'] * 1000)
+            .toString().split(' ')[0]
+        : '';
+    
+    // 获取动态内容
+    String dynamicContent = '';
+    if (moduleDesc != null) {
+      final text = moduleDesc['text'] as String?;
+      if (text != null) {
+        dynamicContent = text;
+      } else {
+        // 尝试从其他字段获取内容
+        dynamicContent = moduleDesc.toString();
+      }
+    } else {
+      // 兼容旧的API结构
+      final desc = dynamicItem['desc'] as Map<String, dynamic>?;
+      final card = dynamicItem['card'] as String?;
+      
+      // 尝试解析card中的JSON数据
+      Map<String, dynamic>? cardData;
+      if (card != null) {
+        try {
+          cardData = json.decode(card) as Map<String, dynamic>?;
+        } catch (e) {
+          print('解析动态card数据失败: $e');
+        }
+      }
+      
+      final oldUserName = desc?['user_profile']?['info']?['uname'] ?? '未知用户';
+      final oldPublishTime = desc?['timestamp'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(desc!['timestamp'] * 1000)
+              .toString().split(' ')[0]
+          : '';
+      
+      // 如果用户名为空，使用旧的数据
+      if (userName == '未知用户') {
+        userName = oldUserName;
+      }
+      
+      if (publishTime.isEmpty) {
+        publishTime = oldPublishTime;
+      }
+      
+      // 获取动态内容
+      if (cardData != null) {
+        // 根据动态类型获取内容
+        if (cardData['item'] != null) {
+          dynamicContent = cardData['item']['content']?.toString() ?? 
+                          cardData['item']['description']?.toString() ??
+                          cardData['item']['title']?.toString() ??
+                          '动态内容';
+        } else {
+          dynamicContent = cardData['title']?.toString() ?? 
+                          cardData['description']?.toString() ??
+                          '动态内容';
+        }
+      }
+    }
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 用户信息和时间
+            Row(
+              children: [
+                Text(
+                  userName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  publishTime,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // 动态内容
+            Text(
+              dynamicContent,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }
