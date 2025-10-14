@@ -32,8 +32,11 @@ class UserSpacePageController extends GetxController {
     update(); // 通知UI更新
 
     try {
-      final userData = await UserInfoApi.getUserInfo(mid);
-      userInfo = UserInfo.fromJson(userData);
+      // 修复：使用正确的参数名 uid 而不是 mid
+      final userData = await UserInfoApi.getUserInfo(uid: mid.toString());
+      if (userData != null) {
+        userInfo = UserInfo.fromJson(userData.toJson()); // 转换为本地模型
+      }
     } catch (e) {
       log("Failed to load user info: $e");
     } finally {

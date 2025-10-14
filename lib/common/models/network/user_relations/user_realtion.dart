@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import 'package:bili_you/common/models/network/user/user_info.dart';
+// 修复：导入OfficialVerify模型并使用别名避免冲突
+import 'package:bili_you/common/models/network/login/login_user_info.dart' as login;
+import 'package:bili_you/common/models/network/user/user_info.dart' as user;
 
 class UserRelation {
   int? mid;
@@ -13,8 +15,8 @@ class UserRelation {
   String? face;
   int? faceNft;
   String? sign;
-  OfficialVerify? officialVerify;
-  Vip? vip;
+  login.OfficialVerify? officialVerify; // 修复：使用正确的类型
+  user.Vip? vip;
   String? nftIcon;
   String? recReason;
   String? trackId;
@@ -49,8 +51,9 @@ class UserRelation {
       face: json["face"],
       faceNft: json["face_nft"],
       sign: json["sign"],
-      officialVerify: OfficialVerify.fromJson(json["official_verify"]),
-      vip: Vip.fromJson(json["vip"]),
+      // 修复：使用正确的构造方法
+      officialVerify: json["official_verify"] == null ? null : login.OfficialVerify.fromJson(json["official_verify"]),
+      vip: json["vip"] == null ? null : user.Vip.fromJson(json["vip"]),
       nftIcon: json["nft_icon"],
       recReason: json["rec_reason"],
       trackId: json["track_id"]);
