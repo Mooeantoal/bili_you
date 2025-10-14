@@ -77,7 +77,7 @@ class VideoTileItem extends StatelessWidget {
                           imageUrl: picUrl,
                           cacheManager: cacheManager,
                           placeholder: () => Container(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
                           ),
                         ));
                   }),
