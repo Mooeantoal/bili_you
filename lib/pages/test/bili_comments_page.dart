@@ -179,6 +179,39 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     }
   }
 
+  // 加载完整的楼中楼评论列表
+  Future<List<Comment>> _loadFullReplies(String oid, String rootId) async {
+    try {
+      // 使用UAPI提供的API获取完整的楼中楼评论
+      final url = 
+        'https://uapis.cn/api/v1/social/bilibili/replies'
+        '?oid=$oid'
+        '&root=$rootId'
+        '&ps=20'  // 每页20条
+        '&pn=1';  // 只获取第一页，可根据需要扩展分页功能
+
+      final response = await _dio.get(url);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        
+        // 解析楼中楼评论
+        List<Comment> replies = [];
+        if (data['replies'] != null && data['replies'] is List) {
+          for (var reply in data['replies']) {
+            replies.add(Comment.fromJson(reply));
+          }
+        }
+        
+        return replies;
+      }
+    } catch (e) {
+      print('获取完整楼中楼评论时出错: $e');
+    }
+    
+    return [];
+  }
+
   // 刷新评论
   void _refreshComments() {
     currentPage = 1;
@@ -529,7 +562,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               const SizedBox(width: 8),
               // 尾页按钮
               ElevatedButton(
-                onPressed: currentPage < totalPages ? () {
+                onPressed: () {
                   print('跳转到尾页: $totalPages');
                   setState(() {
                     currentPage = totalPages;
@@ -546,7 +579,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                       );
                     }
                   });
-                } : null,
+                },
                 child: const Text('尾页'),
               ),
             ],
@@ -561,6 +594,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               SizedBox(
                 width: 100,
                 child: TextField(
+                  controller: _pageController,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
                   decoration: const InputDecoration(
@@ -624,7 +658,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   }
 
   // 显示楼中楼评论详情（显示该评论的所有回复列表）
-  void _showReplyDetail(Comment reply) {
+  void _showReplyDetail(Comment reply) async {
     // 查找包含该回复的根评论
     Comment? rootComment;
     for (var comment in comments) {
@@ -701,7 +735,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                         ),
                         const Text(
                           ' 点赞',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -716,7 +750,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                         ),
                         const Text(
                           ' 回复',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -728,6 +762,12 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         },
       );
       return;
+    }
+    
+    // 获取完整的楼中楼评论列表
+    List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootComment.root.toString());
+    if (fullReplies.isEmpty) {
+      fullReplies = rootComment.replies; // 如果获取失败，使用原始数据
     }
     
     // 显示该根评论的所有回复列表
@@ -796,9 +836,9 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: rootComment.replies.length,
+                  itemCount: fullReplies.length,
                   itemBuilder: (context, index) {
-                    final replyItem = rootComment!.replies[index];
+                    final replyItem = fullReplies[index];
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(8),
@@ -859,7 +899,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 点赞',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),
@@ -874,7 +914,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 回复',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),

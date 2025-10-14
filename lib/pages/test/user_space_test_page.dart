@@ -1,0 +1,21 @@
+import 'package:flutter/material.dart';
+import 'package:bili_you/pages/user_space/user_space_page.dart';
+
+class UserSpaceTestPage extends StatelessWidget {
+  const UserSpaceTestPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // 使用一个测试UID，实际应用中应该从参数传入
+    const String testUid = "2"; // B站官方账号UID
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('用户空间测试页面'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: UserSpacePage(uid: testUid),
+    );
+  }
+}
