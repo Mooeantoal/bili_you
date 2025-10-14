@@ -5,18 +5,17 @@ import 'package:bili_you/common/models/local/login/login_user_info.dart';
 import 'package:bili_you/common/models/local/login/login_user_stat.dart';
 import 'package:bili_you/common/models/local/reply/official_verify.dart';
 import 'package:bili_you/common/models/local/reply/vip.dart';
-import 'package:bili_you/common/models/network/user/user_info.dart' as raw;
-import 'package:bili_you/common/models/network/user/user_stat.dart' as raw;
+import 'package:bili_you/common/models/network/login/login_user_info.dart' as raw;
+import 'package:bili_you/common/models/network/login/login_user_stat.dart' as raw;import 'package:bili_you/common/models/network/login/captcha_data.dart' as raw;
+import 'package:bili_you/common/models/network/login/captcha_result.dart' as raw;
+import 'package:bili_you/common/models/network/login/password_login_key_hash.dart' as raw;
+import 'package:bili_you/common/models/network/login/password_login_result.dart' as raw;
+import 'package:bili_you/common/models/network/login/post_sms_login.dart' as raw;
+import 'package:bili_you/common/models/network/login/post_sms_require.dart' as raw;
 import 'package:bili_you/common/utils/http_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:encrypt/encrypt.dart';
 import 'api_constants.dart';
-import '../models/network/login/captcha_data.dart' as raw;
-import '../models/network/login/captcha_result.dart' as raw;
-import '../models/network/login/password_login_key_hash.dart' as raw;
-import '../models/network/login/password_login_result.dart' as raw;
-import '../models/network/login/post_sms_login.dart' as raw;
-import '../models/network/login/post_sms_require.dart' as raw;
 
 abstract class LoginApi {
   ///获取登录需要的key和hash
