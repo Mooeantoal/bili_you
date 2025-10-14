@@ -2,7 +2,6 @@ import 'package:bili_you/common/utils/bili_you_storage.dart';
 import 'package:bili_you/common/utils/cache_util.dart';
 import 'package:bili_you/common/utils/settings.dart';
 import 'package:bili_you/common/widget/bili_url_scheme.dart';
-import 'package:bili_you/common/widget/frosted_glass_card.dart';
 import 'package:bili_you/pages/dynamic/view.dart';
 import 'package:bili_you/pages/home/index.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../dynamic/controller.dart';
-import 'index.dart';
 import '../mine/index.dart';
 import '../test/bili_integrated_test_page.dart';
 

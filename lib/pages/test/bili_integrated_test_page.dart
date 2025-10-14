@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'bili_comments_page.dart';
 import 'bili_video_info_page.dart';

@@ -7,7 +7,7 @@ class TestUserSpacePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 使用一个测试UID，实际应用中应该从参数传入
-    final String testUid = "2"; // B站官方账号UID
+    const String testUid = "2"; // B站官方账号UID
     
     return Scaffold(
       appBar: AppBar(

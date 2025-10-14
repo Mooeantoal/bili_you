@@ -358,7 +358,7 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
           // 视频时长和创建时间
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.access_time,
                 size: 16,
                 color: Colors.grey,
@@ -372,7 +372,7 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
                 ),
               ),
               const SizedBox(width: 16),
-              Icon(
+              const Icon(
                 Icons.calendar_today,
                 size: 16,
                 color: Colors.grey,

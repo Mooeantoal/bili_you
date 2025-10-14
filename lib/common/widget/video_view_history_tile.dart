@@ -60,7 +60,7 @@ class VideoViewHistoryTile extends StatelessWidget {
                           imageUrl: videoViewHistoryItem.cover,
                           cacheManager: cacheManager,
                           placeholder: () => Container(
-                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           ),
                         ));
                   }),

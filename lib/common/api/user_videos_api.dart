@@ -11,7 +11,7 @@ class UserVideosApi {
     int pageSize = 30,
   }) async {
     try {
-      final url = '$_baseUrl/x/space/arc/search';
+      const url = '$_baseUrl/x/space/arc/search';
       final dio = Dio();
       
       // 添加必要的请求头

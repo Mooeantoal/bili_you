@@ -454,10 +454,10 @@ class _UserSpacePageState extends State<UserSpacePage> with TickerProviderStateM
               children: [
                 const Icon(Icons.star, color: Colors.red),
                 const SizedBox(width: 8),
-                Expanded(
+                const Expanded(
                   child: Text(
                     'B站大会员',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: Colors.red,
                       fontWeight: FontWeight.bold,

@@ -10,7 +10,6 @@ import 'package:bili_you/pages/relation/view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:bili_you/common/utils/settings.dart';
 
 import 'controller.dart';
 

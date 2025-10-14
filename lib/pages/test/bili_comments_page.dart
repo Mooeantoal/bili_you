@@ -315,7 +315,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   padding: EdgeInsets.all(16.0),
                                   child: Text(
                                     '暂无评论',
-                                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                                    style: TextStyle(fontSize: 16, color: Colors.grey),
                                   ),
                                 ),
                               ),
@@ -412,7 +412,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                     ),
                     const Text(
                       ' 点赞',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -427,7 +427,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                     ),
                     const Text(
                       ' 回复',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -701,7 +701,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                         ),
                         const Text(
                           ' 点赞',
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -716,7 +716,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                         ),
                         const Text(
                           ' 回复',
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -746,9 +746,9 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                   CircleAvatar(
                     radius: 20,
                     backgroundImage: rootComment!.avatarUrl.isNotEmpty
-                        ? NetworkImage(rootComment!.avatarUrl)
+                        ? NetworkImage(rootComment.avatarUrl)
                         : null,
-                    child: rootComment!.avatarUrl.isEmpty
+                    child: rootComment.avatarUrl.isEmpty
                         ? const Icon(Icons.account_circle, size: 40)
                         : null,
                   ),
@@ -758,14 +758,14 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          rootComment!.username,
+                          rootComment.username,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         Text(
-                          rootComment!.publishTime,
+                          rootComment.publishTime,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -779,7 +779,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               const SizedBox(height: 8),
               // 根评论内容
               Text(
-                rootComment!.content,
+                rootComment.content,
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
@@ -796,7 +796,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: rootComment!.replies.length,
+                  itemCount: rootComment.replies.length,
                   itemBuilder: (context, index) {
                     final replyItem = rootComment!.replies[index];
                     return Container(
@@ -859,7 +859,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 点赞',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),
@@ -874,7 +874,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 回复',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),
