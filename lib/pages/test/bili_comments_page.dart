@@ -149,8 +149,57 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         // 解析普通评论
         if (data['replies'] != null) {
           List<Comment> newComments = [];
-          for (var comment in data['replies']) {
-            newComments.add(Comment.fromJson(comment));
+          for (var commentJson in data['replies']) {
+            // 对于有回复的评论，预先加载完整的回复列表
+            if (commentJson is Map<String, dynamic> && 
+                commentJson['rcount'] != null && 
+                commentJson['rcount'] > 0 &&
+                commentJson['replies'] != null &&
+                (commentJson['replies'] as List).length < commentJson['rcount']) {
+              // 如果回复数少于总回复数，需要获取完整列表
+              final fullReplies = await _loadFullReplies(widget.aid, commentJson['rpid'].toString());
+              if (fullReplies.isNotEmpty) {
+                // 更新评论的回复列表
+                commentJson['replies'] = fullReplies.map((reply) => {
+                  'rpid': reply.root,
+                  'oid': reply.parent,
+                  'type': 1,
+                  'mid': 0,
+                  'root': reply.root,
+                  'parent': reply.parent,
+                  'dialog': 0,
+                  'count': 0,
+                  'rcount': 0,
+                  'state': 0,
+                  'fansgrade': 0,
+                  'attr': 0,
+                  'ctime': 0,
+                  'like': reply.likeCount,
+                  'action': 0,
+                  'member': {
+                    'mid': '0',
+                    'uname': reply.username,
+                    'sex': '保密',
+                    'sign': '',
+                    'avatar': reply.avatarUrl,
+                    'rank': '10000',
+                    'level_info': {'current_level': 1},
+                    'official_verify': {'type': -1, 'desc': ''},
+                    'vip': {'vipType': 0, 'vipStatus': 0, 'vipDueDate': 0}
+                  },
+                  'content': {
+                    'message': reply.content,
+                    'emote': null,
+                    'members': [],
+                    'jump_url': {}
+                  },
+                  'replies': null,
+                  'reply_control': {'time_desc': reply.publishTime, 'location': ''}
+                }).toList();
+              }
+            }
+            
+            newComments.add(Comment.fromJson(commentJson));
           }
           
           setState(() {
@@ -182,53 +231,15 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
   // 加载完整的楼中楼评论列表
   Future<List<Comment>> _loadFullReplies(String oid, String rootId) async {
     try {
-      // 使用B站官方API获取完整的楼中楼评论
-      // B站评论API参数说明:
-      // oid: 视频aid
-      // type: 1(视频)
-      // root: 根评论rpid (为0表示获取根评论)
-      // ps: 每页条数
-      // pn: 页码
+      // 使用UAPI提供的API获取完整的楼中楼评论
       final url = 
-        'https://api.bilibili.com/x/v2/reply'
-        '?oid=$oid'
-        '&type=1'
-        '&root=$rootId'
-        '&ps=20'
-        '&pn=1';
-
-      final response = await _dio.get(url);
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        
-        // 检查API返回是否成功
-        if (data['code'] == 0 && data['data'] != null) {
-          // 解析楼中楼评论
-          List<Comment> replies = [];
-          if (data['data']['replies'] != null && data['data']['replies'] is List) {
-            for (var reply in data['data']['replies']) {
-              replies.add(Comment.fromJson(reply));
-            }
-          }
-          
-          return replies;
-        }
-      }
-    } catch (e) {
-      print('获取完整楼中楼评论时出错: $e');
-    }
-    
-    // 如果B站官方API失败，尝试使用UAPI
-    try {
-      final uapiUrl = 
         'https://uapis.cn/api/v1/social/bilibili/replies'
         '?oid=$oid'
         '&root=$rootId'
-        '&ps=20'
-        '&pn=1';
+        '&ps=20'  // 每页20条
+        '&pn=1';  // 只获取第一页，可根据需要扩展分页功能
 
-      final response = await _dio.get(uapiUrl);
+      final response = await _dio.get(url);
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -244,7 +255,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         return replies;
       }
     } catch (e) {
-      print('使用UAPI获取完整楼中楼评论时出错: $e');
+      print('获取完整楼中楼评论时出错: $e');
     }
     
     return [];
@@ -465,9 +476,37 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
             if (comment.replies.isNotEmpty) ...[
               const Divider(height: 16, thickness: 1),
               ...comment.replies.map((reply) => _buildReplyItem(reply, onTap: () {
-                // 点击楼中楼评论时显示弹出式卡片
+                // 点击楼中楼评论时显示弹出式卡片，显示完整回复列表
                 _showReplyDetail(reply);
               })).toList(),
+              // 如果还有更多回复，显示"查看更多回复"按钮
+              if (comment.replyCount > comment.replies.length) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      // 显示完整回复列表
+                      _showFullReplies(comment);
+                    },
+                    child: Text('查看更多回复 (${comment.replyCount - comment.replies.length}条)'),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
+            ] else if (comment.replyCount > 0) ...[
+              // 如果没有显示的回复但有回复数，显示"查看回复"按钮
+              const Divider(height: 16, thickness: 1),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    // 显示完整回复列表
+                    _showFullReplies(comment);
+                  },
+                  child: Text('查看回复 (${comment.replyCount}条)'),
+                ),
+              ),
               const SizedBox(height: 8),
             ],
             // 点赞和回复信息（添加文字标识）
@@ -483,7 +522,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                     ),
                     const Text(
                       ' 点赞',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -498,7 +537,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                     ),
                     const Text(
                       ' 回复',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -882,6 +921,177 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: replyItem == reply ? Colors.blue[50] : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 回复用户信息
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundImage: replyItem.avatarUrl.isNotEmpty
+                                    ? NetworkImage(replyItem.avatarUrl)
+                                    : null,
+                                child: replyItem.avatarUrl.isEmpty
+                                    ? const Icon(Icons.account_circle, size: 32)
+                                    : null,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                replyItem.username,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                replyItem.publishTime,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          // 回复内容
+                          Text(
+                            replyItem.content,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          const SizedBox(height: 4),
+                          // 点赞和回复信息
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.thumb_up, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    replyItem.likeCount.toString(),
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                  const Text(
+                                    ' 点赞',
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 16),
+                              Row(
+                                children: [
+                                  const Icon(Icons.comment, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    replyItem.replyCount.toString(),
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                  const Text(
+                                    ' 回复',
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 显示完整回复列表
+  void _showFullReplies(Comment rootComment) async {
+    // 获取完整的楼中楼评论列表
+    List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString());
+    if (fullReplies.isEmpty) {
+      fullReplies = rootComment.replies; // 如果获取失败，使用原始数据
+    }
+    
+    // 显示该根评论的所有回复列表
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 根评论信息
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: rootComment.avatarUrl.isNotEmpty
+                        ? NetworkImage(rootComment.avatarUrl)
+                        : null,
+                    child: rootComment.avatarUrl.isEmpty
+                        ? const Icon(Icons.account_circle, size: 40)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          rootComment.username,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          rootComment.publishTime,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // 根评论内容
+              Text(
+                rootComment.content,
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const Text(
+                '回复列表',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // 回复列表
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: fullReplies.length,
+                  itemBuilder: (context, index) {
+                    final replyItem = fullReplies[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Column(
