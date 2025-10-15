@@ -7,6 +7,7 @@ import 'package:bili_you/common/widget/icon_text_button.dart';
 import 'package:bili_you/common/widget/video_tile_item.dart';
 import 'package:bili_you/pages/bili_video/view.dart';
 import 'package:bili_you/pages/user_space/view.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -170,10 +171,9 @@ class UpperTile extends StatelessWidget {
     
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(GetPageRoute(
-          page: () => UserSpacePage(
-              key: ValueKey('UserSpacePage:${controller.videoInfo!.ownerMid}'),
-              mid: controller.videoInfo!.ownerMid),
+        // 跳转到测试用户空间页面，并传递UP主的UID
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => UserSpaceTestPage(uid: controller.videoInfo!.ownerMid),
         ));
       },
       child: Row(

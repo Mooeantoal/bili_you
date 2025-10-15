@@ -218,10 +218,17 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
           });
         }
 
-        // 解析普通评论
+        // 解析普通评论 (只获取前3条回复)
         if (data['replies'] != null) {
           List<Comment> newComments = [];
           for (var commentJson in data['replies']) {
+            // 只保留前3条回复
+            if (commentJson['replies'] != null && commentJson['replies'] is List) {
+              // 限制回复数量为3条
+              if (commentJson['replies'].length > 3) {
+                commentJson['replies'] = commentJson['replies'].sublist(0, 3);
+              }
+            }
             newComments.add(Comment.fromJson(commentJson));
           }
           
@@ -263,8 +270,8 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
         'https://uapis.cn/api/v1/social/bilibili/replies'
         '?oid=$oid'
         '&root=$rootId'
-        '&ps=20'  // 每页20条
-        '&pn=1';  // 只获取第一页，可根据需要扩展分页功能
+        '&ps=3'  // 只获取前3条回复
+        '&pn=1';  // 只获取第一页
 
       print('请求完整回复列表: $url');
       final response = await _dio.get(url);
@@ -504,39 +511,39 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
               style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 8),
-            // 楼中楼评论
+            // 楼中楼评论 (只显示前3条)
             if (comment.replies.isNotEmpty) ...[
               const Divider(height: 16, thickness: 1),
-              ...comment.replies.map((reply) => _buildReplyItem(reply, onTap: () {
+              ...comment.replies.take(3).map((reply) => _buildReplyItem(reply, onTap: () {
                 // 点击楼中楼评论时显示弹出式卡片，显示完整回复列表
                 _showReplyDetail(reply);
               })).toList(),
-              // 如果还有更多回复，显示"查看更多回复"按钮
-              if (comment.replyCount > comment.replies.length) ...[
+              // 如果还有更多回复，显示"共X条回复"文字
+              if (comment.replyCount > 3) ...[
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      // 显示完整回复列表
-                      _showFullReplies(comment);
-                    },
-                    child: Text('查看更多回复 (${comment.replyCount - comment.replies.length}条)'),
+                  child: Text(
+                    '共${comment.replyCount}条回复',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ],
               const SizedBox(height: 8),
             ] else if (comment.replyCount > 0) ...[
-              // 如果没有显示的回复但有回复数，显示"查看回复"按钮
+              // 如果没有显示的回复但有回复数，显示"共X条回复"文字
               const Divider(height: 16, thickness: 1),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    // 显示完整回复列表
-                    _showFullReplies(comment);
-                  },
-                  child: Text('查看回复 (${comment.replyCount}条)'),
+                child: Text(
+                  '共${comment.replyCount}条回复',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
