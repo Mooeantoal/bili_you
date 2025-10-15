@@ -173,7 +173,7 @@ class UpperTile extends StatelessWidget {
       onTap: () {
         // 跳转到测试用户空间页面，并传递UP主的UID
         Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => UserSpaceTestPage(uid: controller.videoInfo!.ownerMid),
+          builder: (context) => UserSpaceTestPage(uid: controller.videoInfo!.ownerMid.toString()),
         ));
       },
       child: Row(
