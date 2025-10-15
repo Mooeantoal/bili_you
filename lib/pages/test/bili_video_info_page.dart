@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 
 // 视频详细信息数据模型
 class VideoInfo {
@@ -292,45 +293,63 @@ class _BiliVideoInfoPageState extends State<BiliVideoInfoPage> {
           const SizedBox(height: 12),
           // UP主卡片
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                children: [
-                  // UP主头像
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundImage: videoInfo!.owner.face.isNotEmpty
-                        ? NetworkImage(videoInfo!.owner.face)
-                        : null,
-                    child: videoInfo!.owner.face.isEmpty
-                        ? const Icon(Icons.account_circle, size: 48)
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  // UP主名称
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          videoInfo!.owner.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'UID: ${videoInfo!.owner.mid}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
+            child: InkWell(
+              onTap: () {
+                // 点击UP主信息，跳转到测试用户空间页面
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => UserSpaceTestPage(
+                      uid: videoInfo!.owner.mid.toString(),
                     ),
                   ),
-                ],
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    // UP主头像
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundImage: videoInfo!.owner.face.isNotEmpty
+                          ? NetworkImage(videoInfo!.owner.face)
+                          : null,
+                      child: videoInfo!.owner.face.isEmpty
+                          ? const Icon(Icons.account_circle, size: 48)
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    // UP主名称
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            videoInfo!.owner.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'UID: ${videoInfo!.owner.mid}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 添加一个图标表示可以点击
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

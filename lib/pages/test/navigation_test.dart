@@ -3,6 +3,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:get/get.dart';
 import 'bili_comments_page.dart';
 import 'bili_video_info_page.dart';
+import 'bili_player_test.dart';
+import 'bili_player_advanced.dart';
+import 'bili_web_player_test.dart';
 
 class NavigationTestPage extends StatefulWidget {
   const NavigationTestPage({Key? key}) : super(key: key);
@@ -70,6 +73,21 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
     Get.to(() => BiliVideoInfoPage(videoId: isBvid ? videoId : aid, isBvid: isBvid));
   }
 
+  // 跳转到基础播放器测试页面
+  void _goToBasicPlayer() {
+    Get.to(() => const BiliPlayerTestPage());
+  }
+
+  // 跳转到高级播放器测试页面
+  void _goToAdvancedPlayer() {
+    Get.to(() => const BiliPlayerAdvancedPage());
+  }
+
+  // 跳转到网页播放器测试页面
+  void _goToWebPlayer() {
+    Get.to(() => const BiliWebPlayerTestPage());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,6 +146,25 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
                 const Text(
                   '说明：点击左上角图标可在PC端和移动端播放器样式间切换',
                   style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                // 播放器选择按钮
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _goToBasicPlayer,
+                      child: const Text('基础播放器'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _goToAdvancedPlayer,
+                      child: const Text('高级播放器'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _goToWebPlayer,
+                      child: const Text('网页播放器'),
+                    ),
+                  ],
                 ),
               ],
             ),
