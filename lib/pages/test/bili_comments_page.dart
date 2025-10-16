@@ -649,10 +649,17 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     // 查找包含该回复的根评论
     Comment? rootComment;
     for (var comment in comments) {
-      if (comment.replies.any((r) => r == reply)) {
-        rootComment = comment;
-        break;
+      // 遍历每个根评论的回复，查找匹配的回复
+      for (var r in comment.replies) {
+        // 通过比较用户名、内容和发布时间来判断是否是同一个回复
+        if (r.username == reply.username && 
+            r.content == reply.content && 
+            r.publishTime == reply.publishTime) {
+          rootComment = comment;
+          break;
+        }
       }
+      if (rootComment != null) break;
     }
     
     // 如果找不到根评论，则直接显示该回复的详情
