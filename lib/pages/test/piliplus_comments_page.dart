@@ -178,6 +178,13 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
       }
     } catch (e) {
       print('加载更多评论时出错: $e');
+      // 检查是否为DioException且状态码为500
+      if (e is DioException && e.response?.statusCode == 500) {
+        print('服务器500错误，停止继续请求');
+        setState(() {
+          hasMore = false; // 停止继续加载更多
+        });
+      }
       // 回退页码
       setState(() {
         currentPage--;
@@ -267,11 +274,21 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
         print('错误响应内容: ${response.data}');
       }
     } catch (e, stackTrace) {
-      setState(() {
-        errorMessage = '获取评论时出错: $e';
-      });
-      print('异常详情: $e');
+      print('获取评论时出错: $e');
       print('堆栈跟踪: $stackTrace');
+      
+      // 检查是否为DioException且状态码为500
+      if (e is DioException && e.response?.statusCode == 500) {
+        setState(() {
+          errorMessage = '服务器错误，请稍后再试';
+          hasMore = false; // 停止继续加载更多
+        });
+        print('服务器500错误，停止继续请求');
+      } else {
+        setState(() {
+          errorMessage = '获取评论时出错: $e';
+        });
+      }
     } finally {
       setState(() {
         isLoading = false;
@@ -319,6 +336,10 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
       }
     } catch (e) {
       print('获取完整楼中楼评论时出错: $e');
+      // 检查是否为DioException且状态码为500
+      if (e is DioException && e.response?.statusCode == 500) {
+        print('服务器500错误，无法获取完整回复列表');
+      }
     }
     
     return [];
