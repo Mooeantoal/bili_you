@@ -3,6 +3,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:dio/dio.dart';
 import 'bili_comments_page.dart';
 import 'bili_video_info_page.dart';
+import 'comments_test_page.dart';
 
 class BiliIntegratedTestPage extends StatefulWidget {
   const BiliIntegratedTestPage({Key? key}) : super(key: key);
@@ -170,21 +171,44 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
           // 添加输入框和跳转按钮
           Container(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _urlController,
-                    decoration: const InputDecoration(
-                      hintText: '输入BV号或视频链接',
-                      border: OutlineInputBorder(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _urlController,
+                        decoration: const InputDecoration(
+                          hintText: '输入BV号或视频链接',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: _jumpToVideo,
+                      child: const Text('跳转'),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _jumpToVideo,
-                  child: const Text('跳转'),
+                const SizedBox(height: 8),
+                // 添加测试PiliPlus评论页面的按钮
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CommentsTestPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('测试PiliPlus评论页面'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
