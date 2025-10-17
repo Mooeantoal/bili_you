@@ -14,7 +14,7 @@ import 'package:bili_you/common/widget/icon_text_button.dart';
 import 'package:bili_you/common/widget/tag.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/add_reply_util.dart';
 import 'package:bili_you/pages/search_result/view.dart';
-import 'package:bili_you/pages/user_space/view.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:bili_you/pages/webview/browser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -170,9 +170,7 @@ class _ReplyItemWidgetState extends State<ReplyItemWidget> {
                         //     key: ValueKey("UserSpacePage:${reply.member.mid}"),
                         //     mid: reply.member.mid));
                         Navigator.of(context).push(GetPageRoute(
-                            page: () => UserSpacePage(
-                                key: ValueKey(
-                                    "UserSpacePage:${widget.reply.member.mid}"),
+                            page: () => UserSpaceTestPage(
                                 mid: widget.reply.member.mid)));
                       },
                       cacheWidthHeight: 200,
@@ -198,9 +196,7 @@ class _ReplyItemWidgetState extends State<ReplyItemWidget> {
                               //         ValueKey("UserSpacePage:${reply.member.mid}"),
                               //     mid: reply.member.mid));
                               Navigator.of(context).push(GetPageRoute(
-                                  page: () => UserSpacePage(
-                                      key: ValueKey(
-                                          "UserSpacePage:${widget.reply.member.mid}"),
+                                  page: () => UserSpaceTestPage(
                                       mid: widget.reply.member.mid)));
                             },
                             child: Column(

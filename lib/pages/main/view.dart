@@ -8,6 +8,7 @@ import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
 import 'package:bili_you/pages/test/user_space_test_page.dart';
+import 'package:bili_you/pages/test/recommend_single_column_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -125,9 +126,9 @@ class _MainPageState extends State<MainPage> {
                         selectedIcon: Icon(Icons.comment),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.account_circle),
-                        label: Text("用户空间测试"),
-                        selectedIcon: Icon(Icons.account_circle),
+                        icon: Icon(Icons.video_library_outlined),
+                        label: Text("推荐单列测试"),
+                        selectedIcon: Icon(Icons.video_library),
                       ),
                       NavigationRailDestination(
                         icon: Icon(Icons.comment_outlined),
@@ -181,8 +182,8 @@ class _MainPageState extends State<MainPage> {
                     label: "测试",
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.account_circle),
-                    label: "用户空间测试",
+                    icon: Icon(Icons.video_library_outlined),
+                    label: "推荐单列测试",
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.comment_outlined),
@@ -204,7 +205,7 @@ class MainController extends GetxController {
     const DynamicPage(),
     const MinePage(),
     const BiliIntegratedTestPage(), // 恢复整合测试页面
-    const UserSpaceTestPage(), // 添加用户空间测试页面
+    const RecommendSingleColumnTestPage(), // 添加推荐单列测试页面
     const CommentsTestPage(), // 添加评论测试页面
   ];
 

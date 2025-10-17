@@ -1,7 +1,7 @@
 import 'package:bili_you/common/models/local/search/search_user_item.dart';
 import 'package:bili_you/common/utils/index.dart';
 import 'package:bili_you/common/widget/avatar.dart';
-import 'package:bili_you/pages/user_space/view.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,7 +17,7 @@ class UserTileItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       onTap: () {
         Navigator.of(context).push(GetPageRoute(
-          page: () => UserSpacePage(mid: searchUserItem.mid),
+          page: () => UserSpaceTestPage(mid: searchUserItem.mid),
         ));
       },
       child: SizedBox(

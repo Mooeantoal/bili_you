@@ -1,13 +1,17 @@
 import 'dart:developer';
+import 'dart:async';
 
 import 'package:bili_you/common/api/search_api.dart';
 import 'package:bili_you/common/models/local/search/hot_word_item.dart';
 import 'package:bili_you/common/models/local/search/search_suggest_item.dart';
 import 'package:bili_you/common/utils/bili_you_storage.dart';
+import 'package:bili_you/common/utils/settings.dart';
+import 'package:bili_you/pages/search_input/widgets/search_text.dart';
 import 'package:bili_you/pages/search_result/index.dart';
 import 'package:bili_you/pages/search_result/view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class SearchInputPageController extends GetxController {
   SearchInputPageController();
@@ -18,42 +22,97 @@ class SearchInputPageController extends GetxController {
   late String defaultSearchWord;
   RxBool showEditDelete = false.obs;
 
-  Rx<List<Widget>> historySearchedWords = Rx<List<Widget>>([]);
+  // history
+  late final RxList<String> historyList;
 
-  //构造热搜按钮列表
-  Future<List<Widget>> requestHotWordButtons() async {
-    List<Widget> widgetList = [];
-    late List<HotWordItem> wordList;
-    try {
-      wordList = await SearchApi.getHotWords();
-    } catch (e) {
-      log("requestHotWordButtons:$e");
-      return widgetList;
-    }
-    for (var i in wordList) {
-      widgetList.add(
-        SizedBox(
-            width: MediaQuery.of(Get.context!).size.width * 0.5,
-            child: InkWell(
-                onTap: () {
-                  setTextFieldText(i.keyWord);
-                  search(i.keyWord);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 5, 12, 5),
-                  child: Text(
-                    overflow: TextOverflow.ellipsis,
-                    i.showWord,
-                    maxLines: 1,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ))),
-      );
-    }
-    return widgetList;
+  // suggestion
+  StreamController<String>? _ctr;
+  StreamSubscription<String>? _sub;
+  late final RxList<SearchSuggestItem> searchSuggestList;
+
+  // trending
+  late final RxList<HotWordItem> hotSearchList;
+
+  @override
+  void onInit() {
+    super.onInit();
+    historyList = List<String>.from(
+      BiliYouStorage.history.get("searchHistory", defaultValue: <String>[]) ?? [],
+    ).obs;
+    
+    searchSuggestList = <SearchSuggestItem>[].obs;
+    hotSearchList = <HotWordItem>[].obs;
+    
+    _ctr = StreamController<String>();
+    _sub = _ctr!.stream
+        .debounce(const Duration(milliseconds: 200), trailing: true)
+        .listen(querySearchSuggest);
+        
+    queryHotSearchList();
   }
 
-//获取搜索建议并构造其控件
+  // 搜索
+  Future<void> submit() async {
+    if (textEditingController.text.isEmpty) {
+      if (defaultSearchWord.isNotEmpty) {
+        textEditingController.text = defaultSearchWord;
+      } else {
+        return;
+      }
+    }
+
+    // 保存搜索历史
+    if (!historyList.contains(textEditingController.text)) {
+      historyList.insert(0, textEditingController.text);
+      BiliYouStorage.history.put("searchHistory", historyList);
+    }
+
+    textFeildFocusNode.unfocus();
+    Get.to(() => SearchResultPage(
+        key: ValueKey('SearchResultPage:${textEditingController.text}'), 
+        keyWord: textEditingController.text));
+  }
+
+  // 获取热搜关键词
+  Future<void> queryHotSearchList() async {
+    try {
+      var list = await SearchApi.getHotWords();
+      hotSearchList.value = list;
+    } catch (e) {
+      log("queryHotSearchList: $e");
+    }
+  }
+
+  void onClickKeyword(String keyword) {
+    textEditingController.text = keyword;
+    searchSuggestList.clear();
+    submit();
+  }
+
+  Future<void> querySearchSuggest(String value) async {
+    if (value.isEmpty) {
+      searchSuggestList.clear();
+    } else {
+      try {
+        var list = await SearchApi.getSearchSuggests(keyWord: value);
+        searchSuggestList.value = list;
+      } catch (e) {
+        log("querySearchSuggest: $e");
+      }
+    }
+  }
+
+  void onLongSelect(String word) {
+    historyList.remove(word);
+    BiliYouStorage.history.put("searchHistory", historyList);
+  }
+
+  void onClearHistory() {
+    historyList.clear();
+    BiliYouStorage.history.put("searchHistory", []);
+  }
+
+  //获取搜索建议并构造其控件
   Future<void> requestSearchSuggestions(String keyWord) async {
     late List<SearchSuggestItem> list;
     try {
@@ -82,6 +141,9 @@ class SearchInputPageController extends GetxController {
 
 //搜索框内容改变
   onSearchWordChanged(String keyWord) {
+    // 添加到流控制器中用于防抖搜索建议
+    _ctr?.add(keyWord);
+    
     //搜索框不为空,且不为空字符,请求显示搜索提示
     if (keyWord.trim().isNotEmpty) {
       showSearchSuggest.value = true;
@@ -192,6 +254,10 @@ class SearchInputPageController extends GetxController {
   void onClose() {
     textFeildFocusNode.dispose();
     textEditingController.dispose();
+    _sub?.cancel();
+    _ctr?.close();
     super.onClose();
   }
+  
+  Rx<List<Widget>> historySearchedWords = Rx<List<Widget>>([]);
 }

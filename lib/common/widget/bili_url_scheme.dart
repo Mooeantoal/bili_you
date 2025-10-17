@@ -4,7 +4,7 @@ import 'package:appscheme/appscheme.dart';
 import 'package:bili_you/common/api/index.dart';
 import 'package:bili_you/common/utils/bvid_avid_util.dart';
 import 'package:bili_you/pages/bili_video/index.dart';
-import 'package:bili_you/pages/user_space/view.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -28,7 +28,7 @@ class BiliUrlScheme {
         else if (event.host == 'space') {
           _navigatorPushToPage(
             context,
-            UserSpacePage(
+            UserSpaceTestPage(
                 mid: int.tryParse(event.path
                             ?.replaceFirstMapped('/', (match) => '')
                             .split('/')[0] ??
@@ -96,7 +96,7 @@ class BiliUrlScheme {
                 isBangumi: true,
                 ssid: int.parse(idStr.replaceAllMapped('ss', (match) => '')));
           } else if (event.host!.contains('space')) {
-            _navigatorPushToPage(context, UserSpacePage(mid: int.parse(idStr)));
+            _navigatorPushToPage(context, UserSpaceTestPage(mid: int.parse(idStr)));
           }
         }
       }

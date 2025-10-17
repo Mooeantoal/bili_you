@@ -10,7 +10,7 @@ import 'package:bili_you/index.dart';
 import 'package:bili_you/pages/bili_video/widgets/reply/index.dart';
 import 'package:bili_you/pages/dynamic/widget/dynamic_article.dart';
 import 'package:bili_you/pages/dynamic/widget/dynamic_draw.dart';
-import 'package:bili_you/pages/user_space/view.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
@@ -88,8 +88,7 @@ class _DynamicItemCardState extends State<DynamicItemCard> {
     //         ValueKey('UserSpacePage:${dynamicItem.author.mid}'),
     //     mid: dynamicItem.author.mid));
     Navigator.of(context).push(GetPageRoute(
-        page: () => UserSpacePage(
-            key: ValueKey('UserSpacePage:${widget.dynamicItem.author.mid}'),
+        page: () => UserSpaceTestPage(
             mid: widget.dynamicItem.author.mid)));
   }
 

@@ -1,4 +1,6 @@
 import 'package:bili_you/common/utils/index.dart';
+import 'package:bili_you/pages/search_input/widgets/hot_keyword.dart';
+import 'package:bili_you/pages/search_input/widgets/search_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,6 +33,157 @@ class _SearchInputPageState extends State<SearchInputPage> {
     super.dispose();
   }
 
+  Widget _searchSuggest() {
+    return Obx(
+      () => controller.searchSuggestList.isNotEmpty &&
+              controller.textEditingController.text != ''
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: controller.searchSuggestList
+                  .map(
+                    (item) => InkWell(
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                      onTap: () => controller.onClickKeyword(item.realWord),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          top: 9,
+                          bottom: 9,
+                        ),
+                        child: Text(item.showWord),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+
+  Widget hotSearch(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 25, 4, 25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '大家都在搜',
+                  style: theme.textTheme.titleMedium!.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: 34,
+                  child: TextButton.icon(
+                    style: const ButtonStyle(
+                      padding: WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                    ),
+                    onPressed: controller.queryHotSearchList,
+                    icon: Icon(
+                      Icons.refresh_outlined,
+                      size: 18,
+                      color: theme.colorScheme.secondary,
+                    ),
+                    label: Text(
+                      '刷新',
+                      style: TextStyle(color: theme.colorScheme.secondary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Obx(
+            () => HotKeyword(
+              width: MediaQuery.of(context).size.width,
+              hotSearchList: controller.hotSearchList,
+              onClick: controller.onClickKeyword,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _history(ThemeData theme) {
+    return Obx(
+      () {
+        if (controller.historyList.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 6, 25),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+                child: Row(
+                  children: [
+                    Text(
+                      '搜索历史',
+                      style: theme.textTheme.titleMedium!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 34,
+                      child: TextButton.icon(
+                        style: ButtonStyle(
+                          padding: WidgetStateProperty.all(
+                            const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                          ),
+                        ),
+                        onPressed: controller.onClearHistory,
+                        icon: Icon(
+                          Icons.clear_all_outlined,
+                          size: 18,
+                          color: theme.colorScheme.secondary,
+                        ),
+                        label: Text(
+                          '清空',
+                          style: TextStyle(color: theme.colorScheme.secondary),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                direction: Axis.horizontal,
+                textDirection: TextDirection.ltr,
+                children: controller.historyList
+                    .map(
+                      (item) => SearchText(
+                        text: item,
+                        onTap: controller.onClickKeyword,
+                        onLongPress: controller.onLongSelect,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _defaultHintView() {
     List<Widget> list = [];
     bool showHotSearch = SettingsUtil.getValue(
@@ -40,75 +193,10 @@ class _SearchInputPageState extends State<SearchInputPage> {
         SettingsStorageKeys.showSearchHistory,
         defaultValue: true);
     if (showHotSearch) {
-      list.addAll([
-        const Padding(
-          padding: EdgeInsets.all(10),
-          child: Text(
-            "热搜",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        FutureBuilder(
-          future: controller.requestHotWordButtons(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                if (snapshot.data!.length >= 10) {
-                  return Wrap(
-                    children: snapshot.data!.sublist(0, 10),
-                  );
-                } else {
-                  return Wrap(
-                    children: snapshot.data!,
-                  );
-                }
-              } else {
-                return const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text("暂无热搜数据"),
-                );
-              }
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          },
-        ),
-      ]);
+      list.add(hotSearch(Theme.of(context)));
     }
     if (showSearchHistory) {
-      list.addAll([
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            height: 40,
-            child: Row(
-              children: [
-                const Text(
-                  "历史",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                    onPressed: controller.clearAllSearchedWords,
-                    icon: const Icon(Icons.delete_rounded))
-              ],
-            ),
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: Obx(() => Wrap(
-                spacing: 8,
-                children: controller.historySearchedWords.value,
-              )),
-        )
-      ]);
+      list.add(_history(Theme.of(context)));
     }
     return ListView(children: list);
   }

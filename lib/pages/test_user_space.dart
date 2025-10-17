@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bili_you/pages/user_space/user_space_page.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 
 class TestUserSpacePage extends StatelessWidget {
   const TestUserSpacePage({Key? key}) : super(key: key);
@@ -11,9 +11,9 @@ class TestUserSpacePage extends StatelessWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('测试用户空间页面'),
+        title: Text('测试用户空间页面'),
       ),
-      body: UserSpacePage(uid: testUid),
+      body: UserSpaceTestPage(uid: testUid),
     );
   }
 }

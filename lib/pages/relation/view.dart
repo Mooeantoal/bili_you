@@ -3,7 +3,7 @@ import 'package:bili_you/common/models/network/user_relations/user_relation_type
 import 'package:bili_you/common/widget/avatar.dart';
 import 'package:bili_you/common/widget/simple_easy_refresher.dart';
 import 'package:bili_you/pages/relation/controller.dart';
-import 'package:bili_you/pages/user_space/view.dart';
+import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -73,8 +73,7 @@ class RelationWidget extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(GetPageRoute(
-          page: () => UserSpacePage(
-              key: ValueKey('UserSpacePage:${relation.mid}'),
+          page: () => UserSpaceTestPage(
               mid: relation.mid!),
         ));
       },
