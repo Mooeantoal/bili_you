@@ -81,7 +81,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
               children: [
                 Text(
                   '大家都在搜',
-                  style: theme.textTheme.titleMedium!.copyWith(
+                  style: theme.textTheme.titleSmall!.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -157,7 +157,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
                   children: [
                     Text(
                       '搜索历史',
-                      style: theme.textTheme.titleMedium!.copyWith(
+                      style: theme.textTheme.titleSmall!.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -199,6 +199,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
                         text: item,
                         onTap: controller.onClickKeyword,
                         onLongPress: controller.onLongSelect,
+                        fontSize: 12, // 缩小字体
                       ),
                     )
                     .toList(),

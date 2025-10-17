@@ -31,38 +31,36 @@ class HotKeyword extends StatelessWidget {
       );
     }
     
-    return Wrap(
-      runSpacing: 0.4,
-      spacing: 5.0,
+    // 使用 GridView 实现双列布局
+    return GridView.count(
+      crossAxisCount: 2, // 双列显示
+      crossAxisSpacing: 5.0, // 列间距
+      mainAxisSpacing: 5.0, // 行间距
+      shrinkWrap: true, // 自适应高度
+      physics: const NeverScrollableScrollPhysics(), // 禁止滚动
       children: [
         for (var i in hotSearchList)
-          SizedBox(
-            width: width,
-            child: Material(
-              type: MaterialType.transparency,
+          Material(
+            type: MaterialType.transparency,
+            borderRadius: const BorderRadius.all(Radius.circular(3)),
+            child: InkWell(
               borderRadius: const BorderRadius.all(Radius.circular(3)),
-              child: InkWell(
-                borderRadius: const BorderRadius.all(Radius.circular(3)),
-                onTap: () => onClick?.call(i.keyWord),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 2, right: 10),
-                  child: Tooltip(
-                    message: i.keyWord,
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(6, 5, 0, 5),
-                            child: Text(
-                              i.showWord,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
+              onTap: () => onClick?.call(i.keyWord),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0), // 调整内边距
+                child: Tooltip(
+                  message: i.keyWord,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          i.showWord,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: const TextStyle(fontSize: 12), // 缩小字体
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
