@@ -142,6 +142,16 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
         '&pn=$currentPage';
 
       final response = await _dio.get(url);
+      
+      // 检查是否为500错误，如果是则停止继续请求
+      if (response.statusCode == 500) {
+        setState(() {
+          isLoading = false;
+          hasMore = false; // 停止继续加载更多
+        });
+        print('服务器500错误，停止继续请求');
+        return;
+      }
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -199,6 +209,17 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
 
       final response = await _dio.get(url);
       print('收到响应状态码: ${response.statusCode}');
+
+      // 检查是否为500错误，如果是则停止继续请求
+      if (response.statusCode == 500) {
+        setState(() {
+          errorMessage = '服务器错误，请稍后再试';
+          isLoading = false;
+          hasMore = false; // 停止继续加载更多
+        });
+        print('服务器500错误，停止继续请求');
+        return;
+      }
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -272,6 +293,12 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
 
       print('请求完整回复列表: $url');
       final response = await _dio.get(url);
+      
+      // 检查是否为500错误
+      if (response.statusCode == 500) {
+        print('服务器500错误，无法获取完整回复列表');
+        return [];
+      }
 
       if (response.statusCode == 200) {
         final data = response.data;
