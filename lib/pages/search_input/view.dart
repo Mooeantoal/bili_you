@@ -23,6 +23,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
   late SearchInputPageController controller;
   @override
   void initState() {
+    print('Search input page initialized');
     controller = Get.put(SearchInputPageController());
     super.initState();
   }
@@ -35,34 +36,39 @@ class _SearchInputPageState extends State<SearchInputPage> {
 
   Widget _searchSuggest() {
     return Obx(
-      () => controller.searchSuggestList.isNotEmpty &&
-              controller.textEditingController.text != ''
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: controller.searchSuggestList
-                  .map(
-                    (item) => InkWell(
-                      borderRadius: const BorderRadius.all(Radius.circular(4)),
-                      onTap: () => controller.onClickKeyword(item.realWord),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.only(
-                          left: 20,
-                          top: 9,
-                          bottom: 9,
+      () {
+        print('Search suggest list updated: ${controller.searchSuggestList.length} items');
+        print('Search text: "${controller.textEditingController.text}"');
+        return controller.searchSuggestList.isNotEmpty &&
+                controller.textEditingController.text != ''
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: controller.searchSuggestList
+                    .map(
+                      (item) => InkWell(
+                        borderRadius: const BorderRadius.all(Radius.circular(4)),
+                        onTap: () => controller.onClickKeyword(item.realWord),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            top: 9,
+                            bottom: 9,
+                          ),
+                          child: Text(item.showWord),
                         ),
-                        child: Text(item.showWord),
                       ),
-                    ),
-                  )
-                  .toList(),
-            )
-          : const SizedBox.shrink(),
+                    )
+                    .toList(),
+              )
+            : const SizedBox.shrink();
+      },
     );
   }
 
   Widget hotSearch(ThemeData theme) {
+    print('Building hot search section');
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 25, 4, 25),
       child: Column(
@@ -103,11 +109,23 @@ class _SearchInputPageState extends State<SearchInputPage> {
             ),
           ),
           Obx(
-            () => HotKeyword(
-              width: MediaQuery.of(context).size.width,
-              hotSearchList: controller.hotSearchList,
-              onClick: controller.onClickKeyword,
-            ),
+            () {
+              print('Hot search list updated: ${controller.hotSearchList.length} items');
+              if (controller.hotSearchList.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    '暂无热搜数据',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+              return HotKeyword(
+                width: MediaQuery.of(context).size.width,
+                hotSearchList: controller.hotSearchList,
+                onClick: controller.onClickKeyword,
+              );
+            },
           ),
         ],
       ),
@@ -115,10 +133,18 @@ class _SearchInputPageState extends State<SearchInputPage> {
   }
 
   Widget _history(ThemeData theme) {
+    print('Building search history section');
     return Obx(
       () {
+        print('Search history updated: ${controller.historyList.length} items');
         if (controller.historyList.isEmpty) {
-          return const SizedBox.shrink();
+          return const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              '暂无搜索历史',
+              style: TextStyle(color: Colors.grey),
+            ),
+          );
         }
         return Padding(
           padding: const EdgeInsets.fromLTRB(10, 6, 6, 25),
@@ -192,13 +218,28 @@ class _SearchInputPageState extends State<SearchInputPage> {
     bool showSearchHistory = SettingsUtil.getValue(
         SettingsStorageKeys.showSearchHistory,
         defaultValue: true);
+    print('Show hot search: $showHotSearch, Show search history: $showSearchHistory');
     if (showHotSearch) {
       list.add(hotSearch(Theme.of(context)));
     }
     if (showSearchHistory) {
       list.add(_history(Theme.of(context)));
     }
-    return ListView(children: list);
+    if (list.isEmpty) {
+      list.add(const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            '暂无内容',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      ));
+    }
+    return Container(
+      color: Theme.of(context).colorScheme.surface, // 确保有背景色
+      child: ListView(children: list),
+    );
   }
 
   Widget _searchHintView() {
@@ -210,6 +251,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
   Widget _viewSelecter() {
     return Obx(
       () {
+        print('View selector - show search suggest: ${controller.showSearchSuggest.value}');
         if (controller.showSearchSuggest.value) {
           return _searchHintView();
         } else {
@@ -229,7 +271,9 @@ class _SearchInputPageState extends State<SearchInputPage> {
   // 主视图
   Widget _buildView() {
     _init();
+    print('Building search view');
     return Container(
+      color: Theme.of(context).colorScheme.surface, // 确保有背景色
       child: _viewSelecter(),
     );
   }
@@ -292,10 +336,12 @@ class _SearchInputPageState extends State<SearchInputPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('Search input page build called');
     return GetBuilder<SearchInputPageController>(
       init: SearchInputPageController(),
       id: "search",
       builder: (_) {
+        print('Search input page GetBuilder build called');
         return Scaffold(
           appBar: _appBar(context),
           body: SafeArea(

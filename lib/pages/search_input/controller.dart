@@ -36,9 +36,11 @@ class SearchInputPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    print('Search controller initialized');
     historyList = List<String>.from(
       BiliYouStorage.history.get("searchHistory", defaultValue: <String>[]) ?? [],
     ).obs;
+    print('History list loaded: ${historyList.length} items');
     
     searchSuggestList = <SearchSuggestItem>[].obs;
     hotSearchList = <HotWordItem>[].obs;
@@ -77,9 +79,15 @@ class SearchInputPageController extends GetxController {
   Future<void> queryHotSearchList() async {
     try {
       var list = await SearchApi.getHotWords();
+      print('Hot search words loaded: ${list.length} items');
+      for (var item in list) {
+        print('Hot word: ${item.keyWord} - ${item.showWord}');
+      }
       hotSearchList.value = list;
     } catch (e) {
       log("queryHotSearchList: $e");
+      // 即使出现错误，也要确保hotSearchList是一个空列表而不是null
+      hotSearchList.value = [];
     }
   }
 
@@ -90,14 +98,20 @@ class SearchInputPageController extends GetxController {
   }
 
   Future<void> querySearchSuggest(String value) async {
+    print('Query search suggest for: "$value"');
     if (value.isEmpty) {
       searchSuggestList.clear();
     } else {
       try {
         var list = await SearchApi.getSearchSuggests(keyWord: value);
+        print('Search suggest results: ${list.length} items');
+        for (var item in list) {
+          print('Suggest item: ${item.showWord} - ${item.realWord}');
+        }
         searchSuggestList.value = list;
       } catch (e) {
         log("querySearchSuggest: $e");
+        searchSuggestList.value = [];
       }
     }
   }
@@ -112,13 +126,16 @@ class SearchInputPageController extends GetxController {
     BiliYouStorage.history.put("searchHistory", []);
   }
 
-  //获取搜索建议并构造其控件
+//获取搜索建议并构造其控件
   Future<void> requestSearchSuggestions(String keyWord) async {
+    print('Request search suggestions for: "$keyWord"');
     late List<SearchSuggestItem> list;
     try {
       list = await SearchApi.getSearchSuggests(keyWord: keyWord);
+      print('Search suggestions loaded: ${list.length} items');
     } catch (e) {
       log("requestSearchSuggestions:$e");
+      list = [];
       return;
     }
     searchSuggestionItems.clear();
@@ -141,6 +158,7 @@ class SearchInputPageController extends GetxController {
 
 //搜索框内容改变
   onSearchWordChanged(String keyWord) {
+    print('Search word changed: "$keyWord"');
     // 添加到流控制器中用于防抖搜索建议
     _ctr?.add(keyWord);
     
@@ -176,9 +194,14 @@ class SearchInputPageController extends GetxController {
 
 //获取/刷新历史搜索词控件
   _refreshHistoryWord() async {
+    print('Refreshing search history');
     var box = BiliYouStorage.history;
     List<Widget> widgetList = [];
     List<dynamic> list = box.get("searchHistory", defaultValue: <String>[]);
+    print('Search history loaded: ${list.length} items');
+    for (var item in list) {
+      print('History item: $item');
+    }
     for (String i in list.reversed) {
       widgetList.add(
         GestureDetector(
@@ -235,6 +258,7 @@ class SearchInputPageController extends GetxController {
   }
 
   _initData() async {
+    print('Initializing search data');
     _refreshHistoryWord();
     textFeildFocusNode.addListener(() {
       if (textFeildFocusNode.hasFocus &&
@@ -247,6 +271,7 @@ class SearchInputPageController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+    print('Search controller ready');
     _initData();
   }
 
@@ -261,3 +286,17 @@ class SearchInputPageController extends GetxController {
   
   Rx<List<Widget>> historySearchedWords = Rx<List<Widget>>([]);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

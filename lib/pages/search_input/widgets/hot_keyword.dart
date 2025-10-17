@@ -16,6 +16,21 @@ class HotKeyword extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('HotKeyword build called with ${hotSearchList.length} items');
+    for (var item in hotSearchList) {
+      print('Hot keyword item: ${item.keyWord} - ${item.showWord}');
+    }
+    
+    if (hotSearchList.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          '暂无热搜数据',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+    
     return Wrap(
       runSpacing: 0.4,
       spacing: 5.0,

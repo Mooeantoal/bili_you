@@ -651,10 +651,11 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     for (var comment in comments) {
       // 遍历每个根评论的回复，查找匹配的回复
       for (var r in comment.replies) {
-        // 通过比较用户名、内容和发布时间来判断是否是同一个回复
-        if (r.username == reply.username && 
-            r.content == reply.content && 
-            r.publishTime == reply.publishTime) {
+        // 通过比较对象引用或者更准确的标识来判断是否是同一个回复
+        if (r == reply || 
+            (r.username == reply.username && 
+             r.content == reply.content && 
+             r.publishTime == reply.publishTime)) {
           rootComment = comment;
           break;
         }
@@ -759,8 +760,15 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
     }
     
     // 获取完整的楼中楼评论列表
-    // 使用根评论的rpid作为root参数来获取该评论的所有回复
-    List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString());
+    // 使用根评论的ID作为root参数来获取该评论的所有回复
+    // 注意：这里的参数可能需要根据API的具体要求进行调整
+    String rootId = rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString();
+    if (rootId == "0") {
+      // 如果rootId为0，尝试使用根评论本身的ID
+      rootId = rootComment.parent.toString();
+    }
+    
+    List<Comment> fullReplies = await _loadFullReplies(widget.aid, rootId);
     if (fullReplies.isEmpty) {
       fullReplies = rootComment.replies; // 如果获取失败，使用原始数据
     }

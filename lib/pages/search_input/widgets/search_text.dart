@@ -24,6 +24,7 @@ class SearchText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('SearchText build: $text');
     late final theme = Theme.of(context);
     return Material(
       color: bgColor ?? theme.colorScheme.onInverseSurface,
