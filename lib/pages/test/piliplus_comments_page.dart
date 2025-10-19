@@ -1,85 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-
-// 评论数据模型
-class Comment {
-  final String username;
-  final String content;
-  final int likeCount;
-  final String avatarUrl;
-  final String publishTime;
-  final int replyCount;
-  final bool isHot;
-  final int root; // 根评论ID，如果本身就是根评论则为0
-  final int parent; // 父评论ID，如果本身就是根评论则为0
-  final List<Comment> replies; // 楼中楼评论列表
-
-  Comment({
-    required this.username,
-    required this.content,
-    required this.likeCount,
-    required this.avatarUrl,
-    required this.publishTime,
-    required this.replyCount,
-    this.isHot = false,
-    this.root = 0,
-    this.parent = 0,
-    this.replies = const [],
-  });
-
-  factory Comment.fromJson(Map<String, dynamic> json) {
-    // 解析楼中楼评论
-    List<Comment> replies = [];
-    if (json['replies'] != null && json['replies'] is List) {
-      for (var reply in json['replies']) {
-        replies.add(Comment.fromJson(reply));
-      }
-    }
-    
-    return Comment(
-      username: json['member']['uname'] ?? '未知用户',
-      content: json['content']['message'] ?? '',
-      likeCount: json['like'] ?? 0,
-      avatarUrl: json['member']['avatar'] ?? '',
-      publishTime: json['ctime'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(json['ctime'] * 1000)
-              .toString().substring(0, 19).replaceFirst(' ', '\n') 
-          : '',
-      replyCount: json['rcount'] ?? 0,
-      isHot: json['isHot'] ?? false,
-      root: json['root'] ?? 0,
-      parent: json['parent'] ?? 0,
-      replies: replies,
-    );
-  }
-
-  // 从API响应创建热门评论
-  factory Comment.fromHotComment(Map<String, dynamic> json) {
-    // 解析楼中楼评论
-    List<Comment> replies = [];
-    if (json['replies'] != null && json['replies'] is List) {
-      for (var reply in json['replies']) {
-        replies.add(Comment.fromJson(reply));
-      }
-    }
-    
-    return Comment(
-      username: json['member']['uname'] ?? '未知用户',
-      content: json['content']['message'] ?? '',
-      likeCount: json['like'] ?? 0,
-      avatarUrl: json['member']['avatar'] ?? '',
-      publishTime: json['ctime'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(json['ctime'] * 1000)
-              .toString().substring(0, 19).replaceFirst(' ', '\n') 
-          : '',
-      replyCount: json['rcount'] ?? 0,
-      isHot: true,
-      root: json['root'] ?? 0,
-      parent: json['parent'] ?? 0,
-      replies: replies,
-    );
-  }
-}
+import 'package:bili_you/common/api/piliplus_reply_api.dart';
+import 'package:bili_you/common/models/local/reply/reply_info.dart';
+import 'package:bili_you/common/models/local/reply/reply_item.dart';
 
 class PiliPlusCommentsPage extends StatefulWidget {
   final String videoUrl; // 视频URL
@@ -94,8 +17,8 @@ class PiliPlusCommentsPage extends StatefulWidget {
 }
 
 class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
-  List<Comment> comments = [];
-  List<Comment> hotComments = [];
+  List<ReplyItem> comments = [];
+  List<ReplyItem> hotComments = [];
   bool isLoading = false;
   String errorMessage = '';
   int currentPage = 1;
@@ -103,12 +26,15 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
   String sortType = '0'; // 0=按时间, 1=按点赞, 2=按回复
   bool hasMore = true; // 是否还有更多数据
   final Dio _dio = Dio();
-  final TextEditingController _pageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    // 配置Dio
+    _dio.options.connectTimeout = const Duration(seconds: 10);
+    _dio.options.receiveTimeout = const Duration(seconds: 10);
+    
     _loadComments();
     
     // 监听滚动事件，实现无限滚动加载
@@ -134,65 +60,48 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
 
     try {
       currentPage++;
-      final url = 
-        'https://uapis.cn/api/v1/social/bilibili/replies'
-        '?oid=1559365249' // 使用指定视频的aid
-        '&sort=$sortType'
-        '&ps=20'
-        '&pn=$currentPage';
-
-      final response = await _dio.get(url);
       
-      // 检查是否为500错误，如果是则停止继续请求
-      if (response.statusCode == 500) {
-        setState(() {
-          isLoading = false;
-          hasMore = false; // 停止继续加载更多
-        });
-        print('服务器500错误，停止继续请求');
-        return;
-      }
+      // 使用新的API获取更多评论
+      final replyInfo = await PiliPlusReplyApi.getReply(
+        oid: '1559365249', // 使用指定视频的aid
+        pageNum: currentPage,
+        type: ReplyType.video,
+        sort: _getReplySort(),
+      );
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        
-        // 解析普通评论
-        if (data['replies'] != null) {
-          List<Comment> newComments = [];
-          for (var commentJson in data['replies']) {
-            newComments.add(Comment.fromJson(commentJson));
-          }
-          
-          setState(() {
-            comments.addAll(newComments);
-            totalPages = data['page'] != null && data['page']['count'] != null 
-                ? (data['page']['count'] / 20).ceil() 
-                : currentPage;
-            hasMore = currentPage < totalPages;
-          });
-        } else {
-          setState(() {
-            hasMore = false;
-          });
-        }
-      }
+      setState(() {
+        comments.addAll(replyInfo.replies);
+        hasMore = replyInfo.replies.isNotEmpty;
+        isLoading = false;
+      });
     } catch (e) {
       print('加载更多评论时出错: $e');
-      // 检查是否为DioException且状态码为500
-      if (e is DioException && e.response?.statusCode == 500) {
-        print('服务器500错误，停止继续请求');
-        setState(() {
-          hasMore = false; // 停止继续加载更多
-        });
-      }
+      
+      setState(() {
+        hasMore = false;
+        isLoading = false;
+        if (errorMessage.isEmpty) {
+          errorMessage = '加载更多评论时出错: $e';
+        }
+      });
       // 回退页码
       setState(() {
         currentPage--;
       });
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+    }
+  }
+
+  // 获取排序类型
+  ReplySort _getReplySort() {
+    switch (sortType) {
+      case '0':
+        return ReplySort.time;
+      case '1':
+        return ReplySort.like;
+      case '2':
+        return ReplySort.reply;
+      default:
+        return ReplySort.like;
     }
   }
 
@@ -204,142 +113,42 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
     });
 
     try {
-      // 使用UAPI提供的API获取评论
-      // 检查参数是否正确
-      print('请求评论数据: oid=1559365249, sort=$sortType, ps=20, pn=$currentPage');
-      final url = 
-        'https://uapis.cn/api/v1/social/bilibili/replies'
-        '?oid=1559365249' // 使用指定视频的aid
-        '&sort=$sortType'
-        '&ps=20'
-        '&pn=$currentPage';
+      // 使用新的API获取评论
+      final replyInfo = await PiliPlusReplyApi.getReply(
+        oid: '1559365249', // 使用指定视频的aid
+        pageNum: currentPage,
+        type: ReplyType.video,
+        sort: _getReplySort(),
+      );
 
-      final response = await _dio.get(url);
-      print('收到响应状态码: ${response.statusCode}');
-
-      // 检查是否为500错误，如果是则停止继续请求
-      if (response.statusCode == 500) {
-        setState(() {
-          errorMessage = '服务器错误，请稍后再试';
-          isLoading = false;
-          hasMore = false; // 停止继续加载更多
-        });
-        print('服务器500错误，停止继续请求');
-        return;
-      }
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        print('收到评论数据: ${data.keys}');
-        
-        // 解析热门评论（仅第一页）
-        if (currentPage == 1 && data['hots'] != null) {
-          List<Comment> newHotComments = [];
-          for (var hotComment in data['hots']) {
-            newHotComments.add(Comment.fromHotComment(hotComment));
-          }
-          setState(() {
-            hotComments = newHotComments;
-          });
-        }
-
-        // 解析普通评论 (只获取前3条回复)
-        if (data['replies'] != null) {
-          List<Comment> newComments = [];
-          for (var commentJson in data['replies']) {
-            // 只保留前3条回复
-            if (commentJson['replies'] != null && commentJson['replies'] is List) {
-              // 限制回复数量为3条
-              if (commentJson['replies'].length > 3) {
-                commentJson['replies'] = commentJson['replies'].sublist(0, 3);
-              }
-            }
-            newComments.add(Comment.fromJson(commentJson));
-          }
-          
-          setState(() {
-            comments = newComments;
-            // 添加调试信息
-            print('页面数据: ${data['page']}');
-            totalPages = data['page'] != null && data['page']['count'] != null 
-                ? (data['page']['count'] / 20).ceil() 
-                : 1;
-            print('总页数: $totalPages');
-          });
-        }
-      } else {
-        setState(() {
-          errorMessage = '获取评论失败: ${response.statusCode}';
-        });
-        print('错误响应内容: ${response.data}');
-      }
-    } catch (e, stackTrace) {
-      print('获取评论时出错: $e');
-      print('堆栈跟踪: $stackTrace');
-      
-      // 检查是否为DioException且状态码为500
-      if (e is DioException && e.response?.statusCode == 500) {
-        setState(() {
-          errorMessage = '服务器错误，请稍后再试';
-          hasMore = false; // 停止继续加载更多
-        });
-        print('服务器500错误，停止继续请求');
-      } else {
-        setState(() {
-          errorMessage = '获取评论时出错: $e';
-        });
-      }
-    } finally {
       setState(() {
+        comments = replyInfo.replies;
+        hotComments = replyInfo.topReplies;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('获取评论时出错: $e');
+      setState(() {
+        errorMessage = '获取评论时出错: $e';
         isLoading = false;
       });
     }
   }
 
   // 加载完整的楼中楼评论列表
-  Future<List<Comment>> _loadFullReplies(String oid, String rootId) async {
+  Future<List<ReplyItem>> _loadFullReplies(String oid, int rootId) async {
     try {
-      // 使用UAPI提供的API获取完整的楼中楼评论
-      // 确保参数正确：oid为视频aid，root为根评论的rpid
-      final url = 
-        'https://uapis.cn/api/v1/social/bilibili/replies'
-        '?oid=$oid'
-        '&root=$rootId'
-        '&ps=3'  // 只获取前3条回复
-        '&pn=1';  // 只获取第一页
+      // 使用新的API获取完整的楼中楼评论
+      final replyReplyInfo = await PiliPlusReplyApi.getReplyReply(
+        oid: oid,
+        rootId: rootId,
+        pageNum: 1,
+        pageSize: 20,
+      );
 
-      print('请求完整回复列表: $url');
-      final response = await _dio.get(url);
-      
-      // 检查是否为500错误
-      if (response.statusCode == 500) {
-        print('服务器500错误，无法获取完整回复列表');
-        return [];
-      }
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        print('收到回复数据: ${data.keys}');
-        
-        // 解析楼中楼评论
-        List<Comment> replies = [];
-        if (data['replies'] != null && data['replies'] is List) {
-          for (var reply in data['replies']) {
-            replies.add(Comment.fromJson(reply));
-          }
-        }
-        
-        print('解析到 ${replies.length} 条回复');
-        return replies;
-      } else {
-        print('HTTP错误: ${response.statusCode}');
-      }
+      return replyReplyInfo.replies;
     } catch (e) {
       print('获取完整楼中楼评论时出错: $e');
-      // 检查是否为DioException且状态码为500
-      if (e is DioException && e.response?.statusCode == 500) {
-        print('服务器500错误，无法获取完整回复列表');
-      }
     }
     
     return [];
@@ -351,6 +160,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
       currentPage = 1;
       hasMore = true;
       comments.clear();
+      hotComments.clear();
     });
     _loadComments();
   }
@@ -362,6 +172,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
       currentPage = 1;
       hasMore = true;
       comments.clear();
+      hotComments.clear();
     });
     _loadComments();
   }
@@ -536,7 +347,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
   }
 
   // 构建评论项 (采用PiliPlus风格)
-  Widget _buildCommentItem(Comment comment) {
+  Widget _buildCommentItem(ReplyItem comment) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 0,
@@ -558,10 +369,10 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                 // 用户头像
                 CircleAvatar(
                   radius: 16,
-                  backgroundImage: comment.avatarUrl.isNotEmpty
-                      ? NetworkImage(comment.avatarUrl)
+                  backgroundImage: comment.member.avatarUrl.isNotEmpty
+                      ? NetworkImage(comment.member.avatarUrl)
                       : null,
-                  child: comment.avatarUrl.isEmpty
+                  child: comment.member.avatarUrl.isEmpty
                       ? const Icon(Icons.account_circle, size: 32)
                       : null,
                 ),
@@ -574,13 +385,14 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                       Row(
                         children: [
                           Text(
-                            comment.username,
+                            comment.member.name,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
-                          if (comment.isHot) // 热门评论标识
+                          // 热门评论标识
+                          if (comment.tags.contains('热评'))
                             Container(
                               margin: const EdgeInsets.only(left: 4),
                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -600,7 +412,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                         ],
                       ),
                       Text(
-                        comment.publishTime,
+                        _formatTime(comment.replyTime),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -625,14 +437,14 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
             const SizedBox(height: 8),
             // 评论内容
             Text(
-              comment.content,
+              comment.content.message,
               style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 8),
             // 楼中楼评论 (只显示前3条)
-            if (comment.replies.isNotEmpty) ...[
+            if (comment.preReplies.isNotEmpty) ...[
               const Divider(height: 16, thickness: 1),
-              ...comment.replies.take(3).map((reply) => _buildReplyItem(reply, onTap: () {
+              ...comment.preReplies.take(3).map((reply) => _buildReplyItem(reply, onTap: () {
                 // 点击楼中楼评论时显示弹出式卡片，显示完整回复列表
                 _showReplyDetail(reply);
               })).toList(),
@@ -691,8 +503,19 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
     );
   }
 
+  // 格式化时间
+  String _formatTime(int timestamp) {
+    if (timestamp == 0) return '';
+    try {
+      final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '';
+    }
+  }
+
   // 构建楼中楼回复项
-  Widget _buildReplyItem(Comment reply, {VoidCallback? onTap}) {
+  Widget _buildReplyItem(ReplyItem reply, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -710,16 +533,16 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
               children: [
                 CircleAvatar(
                   radius: 12,
-                  backgroundImage: reply.avatarUrl.isNotEmpty
-                      ? NetworkImage(reply.avatarUrl)
+                  backgroundImage: reply.member.avatarUrl.isNotEmpty
+                      ? NetworkImage(reply.member.avatarUrl)
                       : null,
-                  child: reply.avatarUrl.isEmpty
+                  child: reply.member.avatarUrl.isEmpty
                       ? const Icon(Icons.account_circle, size: 24)
                       : null,
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  reply.username,
+                  reply.member.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -727,7 +550,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  reply.publishTime,
+                  _formatTime(reply.replyTime),
                   style: const TextStyle(
                     fontSize: 10,
                     color: Colors.grey,
@@ -738,7 +561,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
             const SizedBox(height: 4),
             // 回复内容
             Text(
-              reply.content,
+              reply.content.message,
               style: const TextStyle(fontSize: 12),
             ),
           ],
@@ -748,17 +571,14 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
   }
 
   // 显示楼中楼评论详情（显示该评论的所有回复列表）
-  void _showReplyDetail(Comment reply) async {
+  void _showReplyDetail(ReplyItem reply) async {
     // 查找包含该回复的根评论
-    Comment? rootComment;
+    ReplyItem? rootComment;
     for (var comment in comments) {
       // 遍历每个根评论的回复，查找匹配的回复
-      for (var r in comment.replies) {
-        // 通过比较对象引用或者更准确的标识来判断是否是同一个回复
-        if (r == reply || 
-            (r.username == reply.username && 
-             r.content == reply.content && 
-             r.publishTime == reply.publishTime)) {
+      for (var r in comment.preReplies) {
+        // 通过比较rpid来判断是否是同一个回复
+        if (r.rpid == reply.rpid) {
           rootComment = comment;
           break;
         }
@@ -782,10 +602,10 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                   children: [
                     CircleAvatar(
                       radius: 20,
-                      backgroundImage: reply.avatarUrl.isNotEmpty
-                          ? NetworkImage(reply.avatarUrl)
+                      backgroundImage: reply.member.avatarUrl.isNotEmpty
+                          ? NetworkImage(reply.member.avatarUrl)
                           : null,
-                      child: reply.avatarUrl.isEmpty
+                      child: reply.member.avatarUrl.isEmpty
                           ? const Icon(Icons.account_circle, size: 40)
                           : null,
                     ),
@@ -795,14 +615,14 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            reply.username,
+                            reply.member.name,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
                           ),
                           Text(
-                            reply.publishTime,
+                            _formatTime(reply.replyTime),
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
@@ -816,7 +636,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                 const SizedBox(height: 16),
                 // 评论内容
                 Text(
-                  reply.content,
+                  reply.content.message,
                   style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 16),
@@ -863,17 +683,9 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
     }
     
     // 获取完整的楼中楼评论列表
-    // 使用根评论的ID作为root参数来获取该评论的所有回复
-    // 注意：这里的参数可能需要根据API的具体要求进行调整
-    String rootId = rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString();
-    if (rootId == "0") {
-      // 如果rootId为0，尝试使用根评论本身的ID
-      rootId = rootComment.parent.toString();
-    }
-    
-    List<Comment> fullReplies = await _loadFullReplies('1559365249', rootId);
+    List<ReplyItem> fullReplies = await _loadFullReplies('1559365249', rootComment.rpid);
     if (fullReplies.isEmpty) {
-      fullReplies = rootComment.replies; // 如果获取失败，使用原始数据
+      fullReplies = rootComment.preReplies; // 如果获取失败，使用原始数据
     }
     
     // 显示该根评论的所有回复列表
@@ -891,10 +703,10 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: rootComment!.avatarUrl.isNotEmpty
-                        ? NetworkImage(rootComment.avatarUrl)
+                    backgroundImage: rootComment!.member.avatarUrl.isNotEmpty
+                        ? NetworkImage(rootComment.member.avatarUrl)
                         : null,
-                    child: rootComment.avatarUrl.isEmpty
+                    child: rootComment.member.avatarUrl.isEmpty
                         ? const Icon(Icons.account_circle, size: 40)
                         : null,
                   ),
@@ -904,14 +716,14 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          rootComment.username,
+                          rootComment.member.name,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         Text(
-                          rootComment.publishTime,
+                          _formatTime(rootComment.replyTime),
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -925,7 +737,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
               const SizedBox(height: 8),
               // 根评论内容
               Text(
-                rootComment.content,
+                rootComment.content.message,
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
@@ -949,7 +761,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: replyItem == reply ? Colors.blue[50] : Colors.grey[100],
+                        color: replyItem.rpid == reply.rpid ? Colors.blue[50] : Colors.grey[100],
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Column(
@@ -960,16 +772,16 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                             children: [
                               CircleAvatar(
                                 radius: 16,
-                                backgroundImage: replyItem.avatarUrl.isNotEmpty
-                                    ? NetworkImage(replyItem.avatarUrl)
+                                backgroundImage: replyItem.member.avatarUrl.isNotEmpty
+                                    ? NetworkImage(replyItem.member.avatarUrl)
                                     : null,
-                                child: replyItem.avatarUrl.isEmpty
+                                child: replyItem.member.avatarUrl.isEmpty
                                     ? const Icon(Icons.account_circle, size: 32)
                                     : null,
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                replyItem.username,
+                                replyItem.member.name,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -977,7 +789,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                replyItem.publishTime,
+                                _formatTime(replyItem.replyTime),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
@@ -988,7 +800,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                           const SizedBox(height: 4),
                           // 回复内容
                           Text(
-                            replyItem.content,
+                            replyItem.content.message,
                             style: const TextStyle(fontSize: 13),
                           ),
                           const SizedBox(height: 4),
@@ -1040,7 +852,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
   }
 
   // 显示回复对话框
-  void _showReplyDialog(Comment comment) {
+  void _showReplyDialog(ReplyItem comment) {
     final TextEditingController textController = TextEditingController();
     showModalBottomSheet(
       context: context,
@@ -1108,181 +920,8 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
     );
   }
 
-  // 显示完整回复列表
-  void _showFullReplies(Comment rootComment) async {
-    // 获取完整的楼中楼评论列表
-    // 使用根评论的rpid作为root参数来获取该评论的所有回复
-    List<Comment> fullReplies = await _loadFullReplies('1559365249', rootComment.root == 0 ? rootComment.parent.toString() : rootComment.root.toString());
-    if (fullReplies.isEmpty) {
-      fullReplies = rootComment.replies; // 如果获取失败，使用原始数据
-    }
-    
-    // 显示该根评论的所有回复列表
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 根评论信息
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: rootComment.avatarUrl.isNotEmpty
-                        ? NetworkImage(rootComment.avatarUrl)
-                        : null,
-                    child: rootComment.avatarUrl.isEmpty
-                        ? const Icon(Icons.account_circle, size: 40)
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          rootComment.username,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          rootComment.publishTime,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // 根评论内容
-              Text(
-                rootComment.content,
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              const Divider(),
-              const Text(
-                '回复列表',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              // 回复列表
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: fullReplies.length,
-                  itemBuilder: (context, index) {
-                    final replyItem = fullReplies[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 回复用户信息
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundImage: replyItem.avatarUrl.isNotEmpty
-                                    ? NetworkImage(replyItem.avatarUrl)
-                                    : null,
-                                child: replyItem.avatarUrl.isEmpty
-                                    ? const Icon(Icons.account_circle, size: 32)
-                                    : null,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                replyItem.username,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                replyItem.publishTime,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          // 回复内容
-                          Text(
-                            replyItem.content,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                          const SizedBox(height: 4),
-                          // 点赞和回复信息
-                          Row(
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.thumb_up, size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    replyItem.likeCount.toString(),
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                  ),
-                                  const Text(
-                                    ' 点赞',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 16),
-                              Row(
-                                children: [
-                                  const Icon(Icons.comment, size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    replyItem.replyCount.toString(),
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                  ),
-                                  const Text(
-                                    ' 回复',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   void dispose() {
-    _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
