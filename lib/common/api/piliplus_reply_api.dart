@@ -46,10 +46,19 @@ class PiliPlusReplyApi {
       final response = await _uapiDio.get(url);
       print('收到响应状态码: ${response.statusCode}');
       
+      // 打印响应头信息用于调试
+      print('响应头信息: ${response.headers.map}');
+      
       if (response.statusCode == 200) {
         // 解析响应数据
         final data = response.data;
         print('收到评论数据: ${data.keys}');
+        
+        // 检查返回的数据是否为Map类型
+        if (data is! Map<String, dynamic>) {
+          print('返回数据格式不正确: $data');
+          throw "API返回数据格式不正确";
+        }
         
         // 检查API返回的code字段
         if (data['code'] != 0) {
@@ -65,6 +74,9 @@ class PiliPlusReplyApi {
             throw "请求的资源不存在";
           } else if (code == 403) {
             throw "访问被拒绝，请检查权限设置";
+          } else if (code == -404) {
+            // B站特有的错误码，表示视频不存在或无评论
+            throw "视频不存在或暂无评论";
           } else {
             throw "API错误: $message (code: $code)";
           }
@@ -75,29 +87,65 @@ class PiliPlusReplyApi {
           return ReplyInfo.zero;
         }
         
+        // 检查data字段是否为Map类型
+        if (data['data'] is! Map<String, dynamic>) {
+          print('返回的data字段格式不正确: ${data['data']}');
+          throw "API返回的data字段格式不正确";
+        }
+        
         final replyData = data['data'];
         
         // 解析热门评论（仅第一页）
         List<ReplyItem> topReplies = [];
         if (pageNum == 1 && replyData['hots'] != null) {
-          for (var hotComment in replyData['hots']) {
-            topReplies.add(_parseReplyItem(hotComment));
+          // 检查hots字段是否为List类型
+          if (replyData['hots'] is List) {
+            for (var hotComment in replyData['hots']) {
+              // 确保hotComment是Map类型
+              if (hotComment is Map<String, dynamic>) {
+                topReplies.add(_parseReplyItem(hotComment));
+              }
+            }
+          } else {
+            print('hots字段格式不正确: ${replyData['hots']}');
           }
         }
         
         // 解析普通评论
         List<ReplyItem> replies = [];
         if (replyData['replies'] != null) {
-          for (var comment in replyData['replies']) {
-            replies.add(_parseReplyItem(comment));
+          // 检查replies字段是否为List类型
+          if (replyData['replies'] is List) {
+            for (var comment in replyData['replies']) {
+              // 确保comment是Map类型
+              if (comment is Map<String, dynamic>) {
+                replies.add(_parseReplyItem(comment));
+              }
+            }
+          } else {
+            print('replies字段格式不正确: ${replyData['replies']}');
           }
+        }
+        
+        // 解析up主mid
+        int upperMid = 0;
+        if (replyData['upper'] != null && replyData['upper'] is Map<String, dynamic>) {
+          upperMid = replyData['upper']['mid'] is String 
+              ? int.tryParse(replyData['upper']['mid']) ?? 0 
+              : replyData['upper']['mid'] ?? 0;
+        }
+        
+        // 解析评论总数
+        int replyCount = 0;
+        if (replyData['page'] != null && replyData['page'] is Map<String, dynamic>) {
+          replyCount = replyData['page']['count'] ?? 0;
         }
         
         return ReplyInfo(
           replies: replies,
           topReplies: topReplies,
-          upperMid: replyData['upper'] != null ? replyData['upper']['mid'] : 0,
-          replyCount: replyData['page'] != null ? replyData['page']['count'] : 0,
+          upperMid: upperMid,
+          replyCount: replyCount,
         );
       } else {
         // 处理HTTP错误状态码
@@ -122,6 +170,8 @@ class PiliPlusReplyApi {
                  e.type == DioExceptionType.receiveTimeout || 
                  e.type == DioExceptionType.sendTimeout) {
         throw "网络连接超时，请检查网络设置";
+      } else if (e.type == DioExceptionType.badResponse) {
+        throw "服务器响应格式错误，请稍后再试";
       } else {
         throw "网络请求失败，请稍后再试";
       }
@@ -159,10 +209,19 @@ class PiliPlusReplyApi {
       final response = await _uapiDio.get(url);
       print('收到响应状态码: ${response.statusCode}');
       
+      // 打印响应头信息用于调试
+      print('响应头信息: ${response.headers.map}');
+      
       if (response.statusCode == 200) {
         // 解析响应数据
         final data = response.data;
         print('收到楼中楼评论数据: ${data.keys}');
+        
+        // 检查返回的数据是否为Map类型
+        if (data is! Map<String, dynamic>) {
+          print('返回数据格式不正确: $data');
+          throw "API返回数据格式不正确";
+        }
         
         // 检查API返回的code字段
         if (data['code'] != 0) {
@@ -178,6 +237,9 @@ class PiliPlusReplyApi {
             throw "请求的资源不存在";
           } else if (code == 403) {
             throw "访问被拒绝，请检查权限设置";
+          } else if (code == -404) {
+            // B站特有的错误码，表示评论不存在
+            throw "评论不存在或已被删除";
           } else {
             throw "API错误: $message (code: $code)";
           }
@@ -188,27 +250,55 @@ class PiliPlusReplyApi {
           return ReplyReplyInfo.zero;
         }
         
+        // 检查data字段是否为Map类型
+        if (data['data'] is! Map<String, dynamic>) {
+          print('返回的data字段格式不正确: ${data['data']}');
+          throw "API返回的data字段格式不正确";
+        }
+        
         final replyData = data['data'];
         
         // 解析楼中楼评论
         List<ReplyItem> replies = [];
         if (replyData['replies'] != null) {
-          for (var reply in replyData['replies']) {
-            replies.add(_parseReplyItem(reply));
+          // 检查replies字段是否为List类型
+          if (replyData['replies'] is List) {
+            for (var reply in replyData['replies']) {
+              // 确保reply是Map类型
+              if (reply is Map<String, dynamic>) {
+                replies.add(_parseReplyItem(reply));
+              }
+            }
+          } else {
+            print('replies字段格式不正确: ${replyData['replies']}');
           }
         }
         
         // 解析根评论（如果存在）
         ReplyItem rootReply = ReplyItem.zero;
-        if (replyData['root'] != null) {
+        if (replyData['root'] != null && replyData['root'] is Map<String, dynamic>) {
           rootReply = _parseReplyItem(replyData['root']);
+        }
+        
+        // 解析up主mid
+        int upperMid = 0;
+        if (replyData['upper'] != null && replyData['upper'] is Map<String, dynamic>) {
+          upperMid = replyData['upper']['mid'] is String 
+              ? int.tryParse(replyData['upper']['mid']) ?? 0 
+              : replyData['upper']['mid'] ?? 0;
+        }
+        
+        // 解析评论总数
+        int replyCount = 0;
+        if (replyData['page'] != null && replyData['page'] is Map<String, dynamic>) {
+          replyCount = replyData['page']['count'] ?? 0;
         }
         
         return ReplyReplyInfo(
           replies: replies,
           rootReply: rootReply,
-          upperMid: replyData['upper'] != null ? replyData['upper']['mid'] : 0,
-          replyCount: replyData['page'] != null ? replyData['page']['count'] : 0,
+          upperMid: upperMid,
+          replyCount: replyCount,
         );
       } else {
         // 处理HTTP错误状态码
@@ -233,6 +323,8 @@ class PiliPlusReplyApi {
                  e.type == DioExceptionType.receiveTimeout || 
                  e.type == DioExceptionType.sendTimeout) {
         throw "网络连接超时，请检查网络设置";
+      } else if (e.type == DioExceptionType.badResponse) {
+        throw "服务器响应格式错误，请稍后再试";
       } else {
         throw "网络请求失败，请稍后再试";
       }

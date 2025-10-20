@@ -32,7 +32,9 @@ void main() async {
         print('热门评论${i + 1}: ${comment.member.name} - ${comment.content.message}');
       }
     }
-  } catch (e) {
+  } on Exception catch (e) {
     print('测试过程中出现错误: $e');
+  } catch (e) {
+    print('测试过程中出现未知错误: $e');
   }
 }

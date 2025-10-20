@@ -168,8 +168,22 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
       );
 
       return replyReplyInfo.replies;
-    } catch (e) {
+    } on Exception catch (e) {
       print('获取完整楼中楼评论时出错: $e');
+      // 显示错误信息给用户
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('获取回复列表失败: ${e.toString()}')),
+        );
+      }
+    } catch (e) {
+      print('获取完整楼中楼评论时出现未知错误: $e');
+      // 显示错误信息给用户
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('获取回复列表时出现未知错误，请稍后再试')),
+        );
+      }
     }
     
     return [];
