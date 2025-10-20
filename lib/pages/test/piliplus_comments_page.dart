@@ -74,14 +74,29 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
         hasMore = replyInfo.replies.isNotEmpty;
         isLoading = false;
       });
-    } catch (e) {
+    } on Exception catch (e) {
       print('加载更多评论时出错: $e');
       
       setState(() {
         hasMore = false;
         isLoading = false;
+        // 只有在还没有错误信息时才设置错误信息
         if (errorMessage.isEmpty) {
-          errorMessage = '加载更多评论时出错: $e';
+          errorMessage = e.toString().contains('服务器') ? e.toString() : '加载更多评论时出错，请稍后再试';
+        }
+      });
+      // 回退页码
+      setState(() {
+        currentPage--;
+      });
+    } catch (e) {
+      print('加载更多评论时出现未知错误: $e');
+      
+      setState(() {
+        hasMore = false;
+        isLoading = false;
+        if (errorMessage.isEmpty) {
+          errorMessage = '加载更多评论时出现未知错误，请稍后再试';
         }
       });
       // 回退页码
@@ -126,10 +141,16 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
         hotComments = replyInfo.topReplies;
         isLoading = false;
       });
-    } catch (e) {
+    } on Exception catch (e) {
       print('获取评论时出错: $e');
       setState(() {
-        errorMessage = '获取评论时出错: $e';
+        errorMessage = e.toString().contains('服务器') ? e.toString() : '获取评论时出错，请稍后再试';
+        isLoading = false;
+      });
+    } catch (e) {
+      print('获取评论时出现未知错误: $e');
+      setState(() {
+        errorMessage = '获取评论时出现未知错误，请稍后再试';
         isLoading = false;
       });
     }

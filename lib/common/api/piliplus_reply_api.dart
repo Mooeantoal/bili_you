@@ -16,6 +16,13 @@ import 'package:dio/dio.dart';
 import '../models/local/reply/official_verify.dart';
 
 class PiliPlusReplyApi {
+  // 创建一个专门用于UAPI请求的Dio实例
+  static final Dio _uapiDio = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+    contentType: Headers.jsonContentType,
+  ));
+
   // 使用UAPI获取评论列表
   static Future<ReplyInfo> getReply({
     required String oid,
@@ -35,7 +42,8 @@ class PiliPlusReplyApi {
       
       print('发送请求到: $url');
       
-      final response = await HttpUtils().get(url);
+      // 使用专门的Dio实例发送请求，避免baseUrl干扰
+      final response = await _uapiDio.get(url);
       print('收到响应状态码: ${response.statusCode}');
       
       if (response.statusCode == 200) {
@@ -43,11 +51,27 @@ class PiliPlusReplyApi {
         final data = response.data;
         print('收到评论数据: ${data.keys}');
         
+        // 检查API返回的code字段
         if (data['code'] != 0) {
-          throw "getReplies: code:${data['code']}, message:${data['message']}";
+          // 根据错误代码提供更具体的错误信息
+          final code = data['code'];
+          final message = data['message'] ?? '未知错误';
+          print('API返回错误: code=$code, message=$message');
+          
+          // 特别处理500错误
+          if (code == 500) {
+            throw "服务器内部错误，请稍后再试";
+          } else if (code == 404) {
+            throw "请求的资源不存在";
+          } else if (code == 403) {
+            throw "访问被拒绝，请检查权限设置";
+          } else {
+            throw "API错误: $message (code: $code)";
+          }
         }
         
         if (data['data'] == null) {
+          print('返回数据为空');
           return ReplyInfo.zero;
         }
         
@@ -76,12 +100,24 @@ class PiliPlusReplyApi {
           replyCount: replyData['page'] != null ? replyData['page']['count'] : 0,
         );
       } else {
-        throw "HTTP Error: ${response.statusCode}";
+        // 处理HTTP错误状态码
+        print('HTTP错误: ${response.statusCode}');
+        if (response.statusCode == 500) {
+          throw "服务器内部错误，请稍后再试";
+        } else if (response.statusCode == 404) {
+          throw "请求的资源不存在";
+        } else if (response.statusCode == 403) {
+          throw "访问被拒绝，请检查权限设置";
+        } else {
+          throw "HTTP错误: ${response.statusCode}";
+        }
       }
     } on DioException catch (e) {
       print('DioException: ${e.type}, 状态码: ${e.response?.statusCode}, 错误信息: ${e.message}');
+      
+      // 特别处理500错误
       if (e.response?.statusCode == 500) {
-        throw "服务器错误，请稍后再试";
+        throw "服务器内部错误，请稍后再试";
       } else if (e.type == DioExceptionType.connectionTimeout || 
                  e.type == DioExceptionType.receiveTimeout || 
                  e.type == DioExceptionType.sendTimeout) {
@@ -91,7 +127,12 @@ class PiliPlusReplyApi {
       }
     } catch (e) {
       print('获取评论时出错: $e');
-      throw "获取评论时发生未知错误: $e";
+      // 如果是字符串类型的错误，直接抛出
+      if (e is String) {
+        throw e;
+      } else {
+        throw "获取评论时发生未知错误: $e";
+      }
     }
   }
   
@@ -114,7 +155,8 @@ class PiliPlusReplyApi {
       
       print('发送请求到: $url');
       
-      final response = await HttpUtils().get(url);
+      // 使用专门的Dio实例发送请求，避免baseUrl干扰
+      final response = await _uapiDio.get(url);
       print('收到响应状态码: ${response.statusCode}');
       
       if (response.statusCode == 200) {
@@ -122,11 +164,27 @@ class PiliPlusReplyApi {
         final data = response.data;
         print('收到楼中楼评论数据: ${data.keys}');
         
+        // 检查API返回的code字段
         if (data['code'] != 0) {
-          throw "getReplyReply: code:${data['code']}, message:${data['message']}";
+          // 根据错误代码提供更具体的错误信息
+          final code = data['code'];
+          final message = data['message'] ?? '未知错误';
+          print('API返回错误: code=$code, message=$message');
+          
+          // 特别处理500错误
+          if (code == 500) {
+            throw "服务器内部错误，请稍后再试";
+          } else if (code == 404) {
+            throw "请求的资源不存在";
+          } else if (code == 403) {
+            throw "访问被拒绝，请检查权限设置";
+          } else {
+            throw "API错误: $message (code: $code)";
+          }
         }
         
         if (data['data'] == null) {
+          print('返回数据为空');
           return ReplyReplyInfo.zero;
         }
         
@@ -153,12 +211,24 @@ class PiliPlusReplyApi {
           replyCount: replyData['page'] != null ? replyData['page']['count'] : 0,
         );
       } else {
-        throw "HTTP Error: ${response.statusCode}";
+        // 处理HTTP错误状态码
+        print('HTTP错误: ${response.statusCode}');
+        if (response.statusCode == 500) {
+          throw "服务器内部错误，请稍后再试";
+        } else if (response.statusCode == 404) {
+          throw "请求的资源不存在";
+        } else if (response.statusCode == 403) {
+          throw "访问被拒绝，请检查权限设置";
+        } else {
+          throw "HTTP错误: ${response.statusCode}";
+        }
       }
     } on DioException catch (e) {
       print('DioException: ${e.type}, 状态码: ${e.response?.statusCode}, 错误信息: ${e.message}');
+      
+      // 特别处理500错误
       if (e.response?.statusCode == 500) {
-        throw "服务器错误，请稍后再试";
+        throw "服务器内部错误，请稍后再试";
       } else if (e.type == DioExceptionType.connectionTimeout || 
                  e.type == DioExceptionType.receiveTimeout || 
                  e.type == DioExceptionType.sendTimeout) {
@@ -168,7 +238,12 @@ class PiliPlusReplyApi {
       }
     } catch (e) {
       print('获取楼中楼评论时出错: $e');
-      throw "获取楼中楼评论时发生未知错误: $e";
+      // 如果是字符串类型的错误，直接抛出
+      if (e is String) {
+        throw e;
+      } else {
+        throw "获取楼中楼评论时发生未知错误: $e";
+      }
     }
   }
   
