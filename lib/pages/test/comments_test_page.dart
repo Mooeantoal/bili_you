@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:bili_you/pages/test/piliplus_comments_page.dart';
+import 'package:get/get.dart';
+import 'package:bili_you/pages/test/reply/reply_page.dart';
+import 'package:bili_you/common/models/local/reply/reply_item.dart';
 
 class CommentsTestPage extends StatelessWidget {
   const CommentsTestPage({Key? key}) : super(key: key);
@@ -11,18 +13,32 @@ class CommentsTestPage extends StatelessWidget {
         title: const Text('评论测试页面'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const PiliPlusCommentsPage(
-                  videoUrl: 'https://www.bilibili.com/video/BV1xhmnYFEir/',
-                ),
-              ),
-            );
-          },
-          child: const Text('打开PiliPlus评论页面'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ReplyPage(
+                      oid: '1559365249', // 示例视频aid
+                      type: ReplyType.video,
+                      videoTitle: 'BV1xhmnYFEir',
+                    ),
+                  ),
+                );
+              },
+              child: const Text('打开评论页面'),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '测试视频: BV1xhmnYFEir\n'
+              '视频aid: 1559365249',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
         ),
       ),
     );

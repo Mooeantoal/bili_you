@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'bili_comments_page.dart';
 import 'bili_video_info_page.dart';
 import 'comments_test_page.dart';
-import 'api_test_page.dart'; // 添加API测试页面导入
 
 class BiliIntegratedTestPage extends StatefulWidget {
   const BiliIntegratedTestPage({Key? key}) : super(key: key);
@@ -193,7 +192,7 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
                   ],
                 ),
                 const SizedBox(height: 8),
-                // 添加测试PiliPlus评论页面的按钮
+                // 添加评论测试页面的按钮
                 Row(
                   children: [
                     Expanded(
@@ -206,26 +205,7 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
                             ),
                           );
                         },
-                        child: const Text('测试PiliPlus评论页面'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // 添加API测试页面的按钮
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ApiTestPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('测试PiliPlus API'),
+                        child: const Text('测试评论功能'),
                       ),
                     ),
                   ],
