@@ -89,7 +89,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
                   height: 34,
                   child: TextButton.icon(
                     style: const ButtonStyle(
-                      padding: WidgetStatePropertyAll(
+                      padding: MaterialStatePropertyAll(
                         EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
@@ -166,7 +166,7 @@ class _SearchInputPageState extends State<SearchInputPage> {
                       height: 34,
                       child: TextButton.icon(
                         style: ButtonStyle(
-                          padding: WidgetStateProperty.all(
+                          padding: MaterialStateProperty.all(
                             const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,
