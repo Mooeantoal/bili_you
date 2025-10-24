@@ -7,7 +7,7 @@ void main() async {
     print('正在测试API连接...');
     
     // 测试视频信息API
-    final videoUrl = "https://uapis.cn/api/v1/social/bilibili/videoinfo?bvid=BV1GJ411x7h7";
+    const videoUrl = "https://uapis.cn/api/v1/social/bilibili/videoinfo?bvid=BV1GJ411x7h7";
     print('请求视频信息: $videoUrl');
     final videoResponse = await dio.get(videoUrl);
     print('视频信息响应状态码: ${videoResponse.statusCode}');

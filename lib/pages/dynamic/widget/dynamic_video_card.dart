@@ -67,7 +67,7 @@ class DynamicVideoCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           imageUrl: content.picUrl,
                           placeholder: () => Container(
-                            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.8),
                           ),
                           errorWidget: () => const Icon(Icons.error),
                           filterQuality: FilterQuality.none,

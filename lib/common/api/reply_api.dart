@@ -140,7 +140,7 @@ class ReplyApi {
     } catch (e) {
       // 如果是字符串类型的错误，直接抛出
       if (e is String) {
-        throw e;
+        rethrow;
       } else {
         throw "获取评论时发生未知错误: $e";
       }
@@ -264,7 +264,7 @@ class ReplyApi {
     } catch (e) {
       // 如果是字符串类型的错误，直接抛出
       if (e is String) {
-        throw e;
+        rethrow;
       } else {
         throw "获取楼中楼评论时发生未知错误: $e";
       }

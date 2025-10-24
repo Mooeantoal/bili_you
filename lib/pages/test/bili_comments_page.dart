@@ -561,7 +561,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                     ),
                     const Text(
                       ' 点赞',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -576,7 +576,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                     ),
                     const Text(
                       ' 回复',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -730,7 +730,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                         ),
                         const Text(
                           ' 点赞',
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -745,7 +745,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                         ),
                         const Text(
                           ' 回复',
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -902,7 +902,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 点赞',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),
@@ -917,7 +917,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 回复',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),
@@ -1074,7 +1074,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 点赞',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),
@@ -1089,7 +1089,7 @@ class _BiliCommentsPageState extends State<BiliCommentsPage> {
                                   ),
                                   const Text(
                                     ' 回复',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
                               ),

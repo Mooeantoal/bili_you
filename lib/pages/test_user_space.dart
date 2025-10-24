@@ -11,9 +11,9 @@ class TestUserSpacePage extends StatelessWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('测试用户空间页面'),
+        title: const Text('测试用户空间页面'),
       ),
-      body: UserSpaceTestPage(uid: testUid),
+      body: const UserSpaceTestPage(uid: testUid),
     );
   }
 }

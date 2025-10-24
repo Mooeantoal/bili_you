@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:bili_you/pages/test/reply/reply_page.dart';
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
 

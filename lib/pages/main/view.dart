@@ -7,7 +7,6 @@ import 'package:bili_you/pages/home/index.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
-import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:bili_you/pages/test/recommend_single_column_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

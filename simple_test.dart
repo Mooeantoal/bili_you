@@ -7,11 +7,11 @@ void main() async {
     print('测试API连接...');
     
     // 添加一些基本的配置
-    dio.options.connectTimeout = Duration(seconds: 10);
-    dio.options.receiveTimeout = Duration(seconds: 10);
+    dio.options.connectTimeout = const Duration(seconds: 10);
+    dio.options.receiveTimeout = const Duration(seconds: 10);
     
     // 测试评论API
-    final url = "https://uapis.cn/api/v1/social/bilibili/replies?oid=1559365249&ps=10&pn=1";
+    const url = "https://uapis.cn/api/v1/social/bilibili/replies?oid=1559365249&ps=10&pn=1";
     print('请求URL: $url');
     
     final response = await dio.get(url);

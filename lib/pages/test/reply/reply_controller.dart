@@ -1,8 +1,6 @@
 import 'package:get/get.dart';
 import 'package:bili_you/common/api/reply_api.dart';
-import 'package:bili_you/common/models/local/reply/reply_info.dart';
 import 'package:bili_you/common/models/local/reply/reply_item.dart';
-import 'package:bili_you/common/models/local/reply/reply_reply_info.dart';
 
 class ReplyController extends GetxController {
   // 评论数据

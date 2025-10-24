@@ -6,7 +6,6 @@ import 'package:bili_you/common/widget/foldable_text.dart';
 import 'package:bili_you/common/widget/icon_text_button.dart';
 import 'package:bili_you/common/widget/video_tile_item.dart';
 import 'package:bili_you/pages/bili_video/view.dart';
-import 'package:bili_you/pages/user_space/view.dart';
 import 'package:bili_you/pages/test/user_space_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

@@ -42,7 +42,6 @@ class _ReplyReplyPageState extends State<ReplyReplyPage>
     late ReplyReplyInfo replyReplyInfo;
     try {
       replyReplyInfo = await ReplyApi.getReplyReply(
-          type: widget.replyType,
           oid: widget.replyId,
           rootId: widget.rootId,
           pageNum: _pageNum);
