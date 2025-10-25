@@ -1,40 +1,47 @@
-import 'package:bili_you/common/api/piliplus_reply_api.dart';
-import 'package:bili_you/common/models/local/reply/reply_item.dart';
+import 'package:dio/dio.dart';
+import 'dart:convert';
 
 void main() async {
+  final dio = Dio();
+  
   try {
-    print('开始测试获取评论...');
+    // 测试获取评论数据
+    final url = 'https://uapis.cn/api/v1/social/bilibili/replies?oid=1559365249&sort=0&ps=20&pn=1';
+    print('请求URL: $url');
     
-    // 测试获取评论
-    final replyInfo = await PiliPlusReplyApi.getReply(
-      oid: '1559365249', // 使用指定视频的aid
-      pageNum: 1,
-      type: ReplyType.video,
-      sort: ReplySort.like,
-    );
+    final response = await dio.get(url);
+    print('响应状态码: ${response.statusCode}');
     
-    print('获取评论成功!');
-    print('普通评论数量: ${replyInfo.replies.length}');
-    print('热门评论数量: ${replyInfo.topReplies.length}');
-    print('总评论数: ${replyInfo.replyCount}');
-    
-    // 显示前几条评论的内容
-    print('\n前3条普通评论:');
-    for (int i = 0; i < replyInfo.replies.length && i < 3; i++) {
-      final comment = replyInfo.replies[i];
-      print('评论${i + 1}: ${comment.member.name} - ${comment.content.message}');
-    }
-    
-    if (replyInfo.topReplies.isNotEmpty) {
-      print('\n热门评论:');
-      for (int i = 0; i < replyInfo.topReplies.length && i < 3; i++) {
-        final comment = replyInfo.topReplies[i];
-        print('热门评论${i + 1}: ${comment.member.name} - ${comment.content.message}');
+    if (response.statusCode == 200) {
+      final data = response.data;
+      print('响应数据类型: ${data.runtimeType}');
+      
+      // 检查是否有code字段
+      if (data is Map && data.containsKey('code')) {
+        print('API返回code: ${data['code']}');
+        if (data['code'] != 0) {
+          print('错误信息: ${data['message']}');
+        }
       }
+      
+      // 检查是否有replies字段
+      if (data is Map && data.containsKey('replies')) {
+        print('成功获取到评论数据');
+        if (data['replies'] is List) {
+          print('评论数量: ${data['replies'].length}');
+        }
+      } else {
+        print('响应数据结构: ${data.keys}');
+      }
+    } else {
+      print('HTTP错误: ${response.statusCode}');
+      print('错误内容: ${response.data}');
     }
-  } on Exception catch (e) {
-    print('测试过程中出现错误: $e');
   } catch (e) {
-    print('测试过程中出现未知错误: $e');
+    print('发生异常: $e');
+    if (e is DioException) {
+      print('Dio错误类型: ${e.type}');
+      print('响应信息: ${e.response?.data}');
+    }
   }
 }

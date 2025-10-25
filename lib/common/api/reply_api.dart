@@ -24,11 +24,15 @@ class ReplyApi {
   }) async {
     try {
       // 使用UAPI提供的API获取评论
+      // 确保oid是数字字符串
+      final cleanOid = oid.toString();
       final url = 'https://uapis.cn/api/v1/social/bilibili/replies'
-          '?oid=$oid'
+          '?oid=$cleanOid'
           '&sort=${sort.index}'
           '&ps=20'
           '&pn=$pageNum';
+      
+      print('请求评论API: $url');
 
       // 使用专门的Dio实例发送请求，避免baseUrl干扰
       final response = await _uapiDio.get(url);
@@ -125,6 +129,12 @@ class ReplyApi {
         }
       }
     } on DioException catch (e) {
+      print('DioException: ${e.message}, type: ${e.type}');
+      if (e.response != null) {
+        print('Response status: ${e.response?.statusCode}');
+        print('Response data: ${e.response?.data}');
+      }
+      
       // 特别处理500错误
       if (e.response?.statusCode == 500) {
         throw "服务器内部错误，请稍后再试";
@@ -138,6 +148,7 @@ class ReplyApi {
         throw "网络请求失败，请稍后再试";
       }
     } catch (e) {
+      print('Unexpected error: $e');
       // 如果是字符串类型的错误，直接抛出
       if (e is String) {
         rethrow;
@@ -156,11 +167,15 @@ class ReplyApi {
   }) async {
     try {
       // 使用UAPI提供的API获取楼中楼评论
+      // 确保oid是数字字符串
+      final cleanOid = oid.toString();
       final url = 'https://uapis.cn/api/v1/social/bilibili/replies'
-          '?oid=$oid'
+          '?oid=$cleanOid'
           '&root=$rootId'
           '&ps=$pageSize'
           '&pn=$pageNum';
+      
+      print('请求楼中楼评论API: $url');
 
       // 使用专门的Dio实例发送请求，避免baseUrl干扰
       final response = await _uapiDio.get(url);
@@ -249,6 +264,12 @@ class ReplyApi {
         }
       }
     } on DioException catch (e) {
+      print('DioException in getReplyReply: ${e.message}, type: ${e.type}');
+      if (e.response != null) {
+        print('Response status: ${e.response?.statusCode}');
+        print('Response data: ${e.response?.data}');
+      }
+      
       // 特别处理500错误
       if (e.response?.statusCode == 500) {
         throw "服务器内部错误，请稍后再试";
@@ -262,6 +283,7 @@ class ReplyApi {
         throw "网络请求失败，请稍后再试";
       }
     } catch (e) {
+      print('Unexpected error in getReplyReply: $e');
       // 如果是字符串类型的错误，直接抛出
       if (e is String) {
         rethrow;
