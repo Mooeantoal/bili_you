@@ -26,6 +26,12 @@ class ReplyApi {
       // 使用UAPI提供的API获取评论
       // 确保oid是数字字符串
       final cleanOid = oid.toString();
+      
+      // 验证oid是否为有效的数字字符串
+      if (cleanOid.isEmpty || cleanOid == '0') {
+        throw '无效的视频ID: $cleanOid';
+      }
+      
       final url = 'https://uapis.cn/api/v1/social/bilibili/replies'
           '?oid=$cleanOid'
           '&sort=${sort.index}'
@@ -40,9 +46,15 @@ class ReplyApi {
       if (response.statusCode == 200) {
         // 解析响应数据
         final data = response.data;
+        
+        // 添加调试信息
+        print('API响应数据类型: ${data.runtimeType}');
+        if (data is Map) {
+          print('API响应keys: ${data.keys}');
+        }
 
         // 检查API返回的code字段
-        if (data['code'] != 0) {
+        if (data is Map && data.containsKey('code') && data['code'] != 0) {
           // 根据错误代码提供更具体的错误信息
           final code = data['code'];
           final message = data['message'] ?? '未知错误';
@@ -169,6 +181,12 @@ class ReplyApi {
       // 使用UAPI提供的API获取楼中楼评论
       // 确保oid是数字字符串
       final cleanOid = oid.toString();
+      
+      // 验证oid是否为有效的数字字符串
+      if (cleanOid.isEmpty || cleanOid == '0') {
+        throw '无效的视频ID: $cleanOid';
+      }
+      
       final url = 'https://uapis.cn/api/v1/social/bilibili/replies'
           '?oid=$cleanOid'
           '&root=$rootId'
@@ -183,9 +201,15 @@ class ReplyApi {
       if (response.statusCode == 200) {
         // 解析响应数据
         final data = response.data;
+        
+        // 添加调试信息
+        print('楼中楼API响应数据类型: ${data.runtimeType}');
+        if (data is Map) {
+          print('楼中楼API响应keys: ${data.keys}');
+        }
 
         // 检查API返回的code字段
-        if (data['code'] != 0) {
+        if (data is Map && data.containsKey('code') && data['code'] != 0) {
           // 根据错误代码提供更具体的错误信息
           final code = data['code'];
           final message = data['message'] ?? '未知错误';

@@ -59,7 +59,15 @@ class ReplyController extends GetxController {
       }
     } catch (e) {
       print('加载评论时发生错误: $e');
-      errorMessage.value = e.toString();
+      print('错误类型: ${e.runtimeType}');
+      
+      // 提供更友好的错误信息
+      if (e.toString().contains('未知错误')) {
+        errorMessage.value = '获取评论数据失败，请稍后重试';
+      } else {
+        errorMessage.value = e.toString();
+      }
+      
       // 特别处理服务器内部错误
       if (e.toString().contains('服务器内部错误')) {
         // 不再继续请求，避免重复错误
@@ -90,6 +98,7 @@ class ReplyController extends GetxController {
       return replyReplyInfo.replies;
     } catch (e) {
       print('加载楼中楼评论时发生错误: $e');
+      print('楼中楼错误类型: ${e.runtimeType}');
       // 如果加载失败，返回空列表
       return [];
     }
