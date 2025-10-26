@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'bili_comments_page.dart';
 import 'bili_video_info_page.dart';
 import 'comments_test_page.dart';
+import 'piliplus_comments_page.dart';
 
 class BiliIntegratedTestPage extends StatefulWidget {
   const BiliIntegratedTestPage({Key? key}) : super(key: key);
@@ -206,6 +207,23 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
                           );
                         },
                         child: const Text('测试评论功能'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PiliPlusCommentsPage(
+                                videoId: videoId,
+                                aid: aid,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text('PiliPlus评论'),
                       ),
                     ),
                   ],
