@@ -219,6 +219,7 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
                               builder: (context) => PiliPlusCommentsPage(
                                 videoId: videoId,
                                 aid: aid,
+                                upMid: 0, // 需要从API获取UP主ID
                               ),
                             ),
                           );
