@@ -679,7 +679,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
               // 用户信息行
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 12,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   // 用户头像
                   CircleAvatar(
@@ -697,7 +697,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
-                          spacing: 6,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             Text(
                               comment.username,
@@ -803,7 +803,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                   style: TextStyle(
                     height: 1.75,
                     fontSize: 14,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                    color: theme.colorScheme.onSurface.withOpacity(0.85),
                   ),
                 ),
               ),
@@ -827,7 +827,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
           indent: 55,
           endIndent: 15,
           height: 0.3,
-          color: theme.colorScheme.outline.withValues(alpha: 0.08),
+          color: theme.colorScheme.outline.withOpacity(0.08),
         ),
       ],
     );
@@ -851,7 +851,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                   Divider(
                     height: 0.3,
                     thickness: 0.3,
-                    color: theme.colorScheme.outline.withValues(alpha: 0.08),
+                    color: theme.colorScheme.outline.withOpacity(0.08),
                   ),
               ],
             ],
@@ -940,7 +940,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
         child: Text.rich(
           style: TextStyle(
             fontSize: 14,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
+            color: theme.colorScheme.onSurface.withOpacity(0.85),
             height: 1.6,
           ),
           overflow: TextOverflow.ellipsis,
@@ -1013,7 +1013,7 @@ class _PiliPlusCommentsPageState extends State<PiliPlusCommentsPage> {
                 Icon(
                   Icons.reply,
                   size: 18,
-                  color: theme.colorScheme.outline.withValues(alpha: 0.8),
+                  color: theme.colorScheme.outline.withOpacity(0.8),
                 ),
                 const SizedBox(width: 3),
                 Text(
