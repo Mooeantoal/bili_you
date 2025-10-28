@@ -6,6 +6,7 @@ import 'bili_video_info_page.dart';
 import 'bili_player_test.dart';
 import 'bili_player_advanced.dart';
 import 'bili_web_player_test.dart';
+import 'pipepipe_player_page.dart';
 
 class NavigationTestPage extends StatefulWidget {
   const NavigationTestPage({Key? key}) : super(key: key);
@@ -88,6 +89,11 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
     Get.to(() => const BiliWebPlayerTestPage());
   }
 
+  // 跳转到PipePipe播放器页面
+  void _goToPipePipePlayer() {
+    Get.to(() => const PipePipePlayerPage());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,6 +169,10 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
                     ElevatedButton(
                       onPressed: _goToWebPlayer,
                       child: const Text('网页播放器'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _goToPipePipePlayer,
+                      child: const Text('PipePipe播放器'),
                     ),
                   ],
                 ),

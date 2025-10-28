@@ -3,7 +3,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:dio/dio.dart';
 import 'bili_comments_page.dart';
 import 'bili_video_info_page.dart';
-import 'comments_test_page.dart';
 import 'piliplus_comments_page.dart';
 
 class BiliIntegratedTestPage extends StatefulWidget {
@@ -193,42 +192,6 @@ class _BiliIntegratedTestPageState extends State<BiliIntegratedTestPage>
                   ],
                 ),
                 const SizedBox(height: 8),
-                // 添加评论测试页面的按钮
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CommentsTestPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('测试评论功能'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PiliPlusCommentsPage(
-                                videoId: videoId,
-                                aid: aid,
-                                upMid: 0, // 需要从API获取UP主ID
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text('PiliPlus评论'),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),

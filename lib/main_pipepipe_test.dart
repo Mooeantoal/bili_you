@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pages/test/pipepipe_player_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,16 +11,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '评论测试',
+      title: 'PipePipe播放器测试',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('评论测试页面已被移除'),
-        ),
-      ),
+      home: const PipePipePlayerPage(),
     );
   }
 }

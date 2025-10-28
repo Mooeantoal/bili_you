@@ -7,14 +7,12 @@ import 'package:bili_you/pages/home/index.dart';
 import 'package:bili_you/pages/live_tab_page/controller.dart';
 import 'package:bili_you/pages/popular_video/controller.dart';
 import 'package:bili_you/pages/recommend/controller.dart';
-import 'package:bili_you/pages/test/recommend_single_column_test_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../dynamic/controller.dart';
 import '../mine/index.dart';
 import '../test/bili_integrated_test_page.dart';
-import '../test/comments_test_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -124,16 +122,6 @@ class _MainPageState extends State<MainPage> {
                         label: Text("测试"),
                         selectedIcon: Icon(Icons.comment),
                       ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.video_library_outlined),
-                        label: Text("推荐单列测试"),
-                        selectedIcon: Icon(Icons.video_library),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.comment_outlined),
-                        label: Text("评论测试"),
-                        selectedIcon: Icon(Icons.comment),
-                      ),
                     ],
                     selectedIndex: controller.selectedIndex.value,
                     onDestinationSelected: (value) => onDestinationSelected(value),
@@ -180,14 +168,6 @@ class _MainPageState extends State<MainPage> {
                     icon: Icon(Icons.comment), // 恢复整合测试页面的标签
                     label: "测试",
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.video_library_outlined),
-                    label: "推荐单列测试",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.comment_outlined),
-                    label: "评论测试",
-                  ),
                 ],
               ),
             ),
@@ -204,8 +184,6 @@ class MainController extends GetxController {
     const DynamicPage(),
     const MinePage(),
     const BiliIntegratedTestPage(), // 恢复整合测试页面
-    const RecommendSingleColumnTestPage(), // 添加推荐单列测试页面
-    const CommentsTestPage(), // 添加评论测试页面
   ];
 
   // 添加方法确保页面切换时更新选中索引

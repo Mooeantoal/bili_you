@@ -6,6 +6,18 @@
 
 本实现采用了改进代码0.2版本的方案，使用响应式设计，可以更好地适配不同屏幕尺寸。
 
+## PipePipe播放器实现
+
+参考PipePipe项目的播放器实现方案，我们创建了一个集成了播放器、视频信息和评论功能的综合页面。该页面具有以下特点：
+
+1. 使用WebView嵌入B站官方播放器
+2. 集成视频详细信息展示
+3. 集成评论系统，支持热门评论和普通评论
+4. 支持播放器样式切换（移动端/PC端）
+5. 支持视频分P切换
+6. 支持评论排序功能
+7. 响应式设计，适配不同屏幕尺寸
+
 ## 实现原理
 
 1. 使用WebView组件嵌入B站官方播放器
@@ -22,7 +34,7 @@
 
 改进代码0.2版本使用了响应式设计，通过以下方式实现：
 
-```html
+```
 <div style="position: relative; padding: 30% 45%;">
 <iframe style="position: absolute; width: 100%; height: 100%; left: 0; top: 0;" src="//player.bilibili.com/player.html?aid=928861104&bvid=BV1uT4y1P7CX&cid=287639008&page=1" frameborder="no" scrolling="no"></iframe>
 </div>
@@ -107,6 +119,15 @@
 5. 点击左上角图标（💻/📱）可在PC端和移动端播放器样式间切换
 6. 点击右上角刷新按钮可重新加载播放器
 
+### PipePipe播放器测试
+
+1. 在测试页面的播放器选择按钮区域，点击"PipePipe播放器"按钮
+2. 进入PipePipe风格的播放器页面
+3. 该页面集成了播放器、视频信息和评论功能
+4. 支持播放器样式切换（移动端/PC端）
+5. 支持视频跳转功能，可以输入BV号或视频链接切换视频
+6. 支持评论排序和刷新功能
+
 ## 技术细节
 
 ### 播放器URL格式
@@ -137,13 +158,14 @@ https://player.bilibili.com/player.html?bvid={视频ID}&cid={CID}&page=1&autopla
 - `lib/pages/test/bili_integrated_test_page.dart`: 整合的播放器测试页面
 - `lib/pages/test/bili_comments_page.dart`: 视频评论页面
 - `lib/pages/test/bili_video_info_page.dart`: 视频详细信息页面
+- `lib/pages/test/pipepipe_player_page.dart`: PipePipe风格的播放器页面
 - `lib/pages/main/controller.dart`: 主页面控制器
 
 ## 自定义视频
 
 要播放其他视频，只需修改以下参数：
 
-```dart
+```
 // B站视频参数
 final String videoId = 'BV1GJ411x7h7'; // 视频ID
 final String cid = '190597915'; // 视频CID
