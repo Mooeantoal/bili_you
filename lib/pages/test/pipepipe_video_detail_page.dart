@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:dio/dio.dart';
-import 'package:webview_flutter/webview_flutter.dart'; // 添加WebView导入
-import 'dart:convert';
-import 'package:bili_you/common/models/local/video_tile/video_tile_info.dart';
-import 'package:bili_you/common/api/related_video_api.dart';
 
 // 视频信息数据模型
 class VideoInfo {
@@ -234,7 +230,6 @@ class PipePipeVideoDetailPage extends StatefulWidget {
 
 class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
     with SingleTickerProviderStateMixin {
-  // 播放器相关 - 使用WebView而不是media_kit
   late final WebViewController _controller = WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setUserAgent(
@@ -261,13 +256,18 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
         },
       ),
     );
+
+  // B站视频参数
+  String videoId = 'BV1GJ411x7h7'; // 示例视频ID
+  String cid = '190597915'; // 示例cid
+  String aid = '928861104'; // 示例aid
+  bool usePCPlayer = true; // 默认使用PC端播放器样式
   final TextEditingController _urlController = TextEditingController();
   
   // 视频信息和评论数据
   VideoInfo? videoInfo;
   List<Comment> comments = [];
   List<Comment> hotComments = [];
-  List<VideoTileInfo> relatedVideos = []; // 推荐视频列表
   bool isLoading = false;
   String errorMessage = '';
   int currentPage = 1;
@@ -275,24 +275,17 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
   bool hasMore = true; // 是否还有更多数据
   final Dio _dio = Dio();
   final ScrollController _scrollController = ScrollController();
-  
-  // B站视频参数
-  String videoId = 'BV1GJ411x7h7'; // 示例视频ID
-  String cid = '190597915'; // 示例cid
-  String aid = '928861104'; // 示例aid
-  bool usePCPlayer = true; // 默认使用PC端播放器样式
 
   @override
   void initState() {
     super.initState();
-    // 加载默认视频
+    // 加载B站播放器
     _loadBiliPlayer();
+    // 加载视频信息和评论
     _loadVideoInfo();
     _loadComments();
-    _loadRelatedVideos();
   }
 
-  // 加载B站播放器
   void _loadBiliPlayer() {
     // 根据选择使用PC端或移动端播放器
     final String playerBaseUrl = usePCPlayer
@@ -310,6 +303,14 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
     _urlController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  // 切换播放器样式
+  void _togglePlayerStyle() {
+    setState(() {
+      usePCPlayer = !usePCPlayer;
+    });
+    _loadBiliPlayer();
   }
 
   // 跳转到指定视频
@@ -368,7 +369,6 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
           // 重新加载视频信息和评论
           _loadVideoInfo();
           _loadComments();
-          _loadRelatedVideos();
         } else {
           throw Exception('获取视频信息失败: ${response.statusMessage}');
         }
@@ -391,14 +391,6 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
         const SnackBar(content: Text('请输入有效的BV号或B站视频链接')),
       );
     }
-  }
-
-  // 切换播放器样式
-  void _togglePlayerStyle() {
-    setState(() {
-      usePCPlayer = !usePCPlayer;
-    });
-    _loadBiliPlayer();
   }
 
   // 加载视频详细信息
@@ -507,18 +499,6 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
     }
   }
 
-  // 加载推荐视频
-  Future<void> _loadRelatedVideos() async {
-    try {
-      final List<VideoTileInfo> videos = await RelatedVideoApi.getRelatedVideo(bvid: videoId);
-      setState(() {
-        relatedVideos = videos;
-      });
-    } catch (e) {
-      print('加载推荐视频失败: $e');
-    }
-  }
-
   // 刷新评论
   void _refreshComments() {
     setState(() {
@@ -546,13 +526,14 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PipePipe视频详情'),
+        title: const Text('PipePipe视频详情页面'),
         actions: [
           // 切换播放器样式按钮
           IconButton(
             icon: Icon(usePCPlayer ? Icons.phone_android : Icons.computer),
             onPressed: _togglePlayerStyle,
           ),
+          // 刷新按钮
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadBiliPlayer,
@@ -583,12 +564,12 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
               ],
             ),
           ),
-          // 播放器区域
+          // 视频播放器区域
           _buildPlayerSection(),
-          // 视频信息、评论和推荐视频区域
+          // 视频信息和评论区域
           Expanded(
             child: DefaultTabController(
-              length: 3,
+              length: 2,
               child: Column(
                 children: [
                   // Tab导航栏
@@ -596,9 +577,8 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: const TabBar(
                       tabs: [
-                        Tab(text: '详情'),
+                        Tab(text: '视频详情'),
                         Tab(text: '评论'),
-                        Tab(text: '推荐'),
                       ],
                     ),
                   ),
@@ -610,8 +590,6 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
                         _buildVideoInfoTab(),
                         // 评论
                         _buildCommentsTab(),
-                        // 推荐视频
-                        _buildRelatedVideosTab(),
                       ],
                     ),
                   ),
@@ -624,7 +602,7 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
     );
   }
 
-  // 构建播放器区域 - 使用WebView而不是media_kit
+  // 构建播放器区域
   Widget _buildPlayerSection() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
@@ -660,19 +638,16 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
               height: containerHeight,
               decoration: BoxDecoration(
                 color: Colors.black,
-                borderRadius: BorderRadius.circular(12.0), // PipePipe 样式的圆角
+                borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.0),
-                child: WebViewWidget(controller: _controller), // 使用WebView而不是Video组件
-              ),
+              child: WebViewWidget(controller: _controller),
             ),
           );
         },
@@ -680,7 +655,7 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
     );
   }
 
-  // 构建视频详细信息 - 完全按照 PipePipe 样式
+  // 构建视频详细信息
   Widget _buildVideoInfoTab() {
     if (videoInfo == null) {
       return const Center(child: CircularProgressIndicator());
@@ -692,255 +667,152 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 视频标题 - PipePipe 样式
-            Container(
-              padding: const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 8.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+            // 视频标题
+            Text(
+              videoInfo!.title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              child: Text(
-                videoInfo!.title,
-                style: const TextStyle(
-                  fontSize: 18,
+            ),
+            const SizedBox(height: 8),
+            // UP主信息
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: videoInfo!.owner.face.isNotEmpty
+                      ? NetworkImage(videoInfo!.owner.face)
+                      : null,
+                  child: videoInfo!.owner.face.isEmpty
+                      ? const Icon(Icons.account_circle, size: 40)
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        videoInfo!.owner.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'UID: ${videoInfo!.owner.mid}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // 视频统计信息
+            _buildVideoStats(),
+            const SizedBox(height: 12),
+            // 视频简介
+            const Text(
+              '视频简介',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              videoInfo!.desc.isNotEmpty ? videoInfo!.desc : '无简介',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            // 分P列表
+            if (videoInfo!.pages.isNotEmpty) ...[
+              const Text(
+                '分P列表',
+                style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            // UP主信息 - PipePipe 样式
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // UP主头像
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: videoInfo!.owner.face.isNotEmpty
-                          ? Image.network(
-                              videoInfo!.owner.face,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.account_circle, size: 48);
-                              },
-                            )
-                          : const Icon(Icons.account_circle, size: 48),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // UP主信息
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          videoInfo!.owner.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'UID: ${videoInfo!.owner.mid}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 关注按钮 - PipePipe 样式
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      '关注',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            // 视频统计信息 - PipePipe 样式
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '数据统计',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // 统计数据网格
-                  GridView.count(
-                    crossAxisCount: 4,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    childAspectRatio: 1.2,
-                    children: [
-                      _buildStatItem(Icons.play_arrow, '播放', videoInfo!.viewCount),
-                      _buildStatItem(
-                          Icons.comment_outlined, '评论', videoInfo!.commentCount),
-                      _buildStatItem(Icons.thumb_up_outlined, '点赞', videoInfo!.likeCount),
-                      _buildStatItem(Icons.favorite_border, '收藏', videoInfo!.favoriteCount),
-                      _buildStatItem(Icons.attach_money, '投币', videoInfo!.coinCount),
-                      _buildStatItem(Icons.share, '分享', videoInfo!.shareCount),
-                      _buildStatItem(Icons.chat_bubble_outline, '弹幕', videoInfo!.danmakuCount),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            // 视频简介 - PipePipe 样式
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '视频简介',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    videoInfo!.desc.isNotEmpty ? videoInfo!.desc : '无简介',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            // 分P列表 - PipePipe 样式
-            if (videoInfo!.pages.isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(12.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '分P列表',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: videoInfo!.pages.length,
-                      itemBuilder: (context, index) {
-                        final page = videoInfo!.pages[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          child: ListTile(
-                            title: Text('P${page.page} ${page.part}'),
-                            subtitle: Text(_formatDuration(page.duration)),
-                            trailing: const Icon(Icons.play_arrow),
-                            onTap: () {
-                              // 切换到指定分P
-                              setState(() {
-                                cid = page.cid.toString();
-                              });
-                              _loadBiliPlayer();
-                              
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('切换到分P: P${page.page} ${page.part}'),
-                                ),
-                              );
-                            },
+              const SizedBox(height: 8),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: videoInfo!.pages.length,
+                itemBuilder: (context, index) {
+                  final page = videoInfo!.pages[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: ListTile(
+                      title: Text('P${page.page} ${page.part}'),
+                      subtitle: Text(_formatDuration(page.duration)),
+                      trailing: const Icon(Icons.play_arrow),
+                      onTap: () {
+                        // 切换到指定分P
+                        setState(() {
+                          cid = page.cid.toString();
+                        });
+                        _loadBiliPlayer();
+                        
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('切换到分P: P${page.page} ${page.part}'),
                           ),
                         );
                       },
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  // 构建视频统计信息
+  Widget _buildVideoStats() {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '数据统计',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // 统计数据网格
+          GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.2,
+            children: [
+              _buildStatItem(Icons.play_arrow, '播放', videoInfo!.viewCount),
+              _buildStatItem(
+                  Icons.comment_outlined, '评论', videoInfo!.commentCount),
+              _buildStatItem(Icons.thumb_up_outlined, '点赞', videoInfo!.likeCount),
+              _buildStatItem(Icons.favorite_border, '收藏', videoInfo!.favoriteCount),
+              _buildStatItem(Icons.attach_money, '投币', videoInfo!.coinCount),
+              _buildStatItem(Icons.share, '分享', videoInfo!.shareCount),
+              _buildStatItem(Icons.chat_bubble_outline, '弹幕', videoInfo!.danmakuCount),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -950,19 +822,17 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 4),
         Text(
           _formatNumber(count),
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           label,
           style: const TextStyle(
-            fontSize: 10,
+            fontSize: 12,
             color: Colors.grey,
           ),
         ),
@@ -1076,9 +946,6 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
     final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -1088,27 +955,14 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
             Row(
               children: [
                 // 用户头像
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isHot ? theme.colorScheme.secondary : Colors.grey,
-                      width: 1,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: comment.avatarUrl.isNotEmpty
-                        ? Image.network(
-                            comment.avatarUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.account_circle, size: 32);
-                            },
-                          )
-                        : const Icon(Icons.account_circle, size: 32),
-                  ),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundImage: comment.avatarUrl.isNotEmpty
+                      ? NetworkImage(comment.avatarUrl)
+                      : null,
+                  child: comment.avatarUrl.isEmpty
+                      ? const Icon(Icons.account_circle, size: 32)
+                      : null,
                 ),
                 const SizedBox(width: 8),
                 // 用户名和时间
@@ -1147,7 +1001,6 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
                                 horizontal: 4, 
                                 vertical: 1
                               ),
-                              margin: const EdgeInsets.only(left: 4),
                               decoration: BoxDecoration(
                                 color: Colors.blue,
                                 borderRadius: BorderRadius.circular(2),
@@ -1169,7 +1022,6 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
                                 horizontal: 4, 
                                 vertical: 1
                               ),
-                              margin: const EdgeInsets.only(left: 4),
                               decoration: BoxDecoration(
                                 border: Border.all(
                                   color: theme.colorScheme.secondary,
@@ -1252,6 +1104,10 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
                       comment.likeCount.toString(),
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
+                    const Text(
+                      ' 点赞',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 16),
@@ -1262,6 +1118,10 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
                     Text(
                       comment.replyCount.toString(),
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const Text(
+                      ' 回复',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -1280,7 +1140,7 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1288,27 +1148,14 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
           // 回复用户信息
           Row(
             children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1,
-                  ),
-                ),
-                child: ClipOval(
-                  child: reply.avatarUrl.isNotEmpty
-                      ? Image.network(
-                          reply.avatarUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.account_circle, size: 24);
-                          },
-                        )
-                      : const Icon(Icons.account_circle, size: 24),
-                ),
+              CircleAvatar(
+                radius: 12,
+                backgroundImage: reply.avatarUrl.isNotEmpty
+                    ? NetworkImage(reply.avatarUrl)
+                    : null,
+                child: reply.avatarUrl.isEmpty
+                    ? const Icon(Icons.account_circle, size: 24)
+                    : null,
               ),
               const SizedBox(width: 6),
               Text(
@@ -1337,169 +1184,5 @@ class _PipePipeVideoDetailPageState extends State<PipePipeVideoDetailPage>
         ],
       ),
     );
-  }
-
-  // 构建推荐视频Tab - 完全按照 PipePipe 样式
-  Widget _buildRelatedVideosTab() {
-    if (relatedVideos.isEmpty) {
-      return const Center(
-        child: Text(
-          '暂无推荐视频',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: relatedVideos.length,
-      itemBuilder: (context, index) {
-        final video = relatedVideos[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 视频封面
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12.0)),
-                child: Stack(
-                  children: [
-                    Image.network(
-                      video.coverUrl,
-                      width: double.infinity,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: double.infinity,
-                          height: 100,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.image, size: 40),
-                        );
-                      },
-                    ),
-                    // 视频时长
-                    Positioned(
-                      bottom: 4,
-                      right: 4,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _formatDuration(video.timeLength),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // 视频信息
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 视频标题
-                    Text(
-                      video.title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    // UP主信息
-                    Row(
-                      children: [
-                        const Icon(Icons.account_circle, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            video.upName,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    // 播放量和时间
-                    Row(
-                      children: [
-                        const Icon(Icons.play_arrow, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_formatNumber(video.playNum)}播放',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Icon(Icons.access_time, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatTimeAgo(video.pubDate),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // 格式化时间显示（用于推荐视频）
-  String _formatTimeAgo(int timestamp) {
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    final DateTime now = DateTime.now();
-    final Duration difference = now.difference(dateTime);
-    
-    if (difference.inDays > 365) {
-      return '${(difference.inDays / 365).floor()}年前';
-    } else if (difference.inDays > 30) {
-      return '${(difference.inDays / 30).floor()}月前';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays}天前';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}小时前';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}分钟前';
-    } else {
-      return '刚刚';
-    }
   }
 }

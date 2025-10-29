@@ -11,6 +11,7 @@ import 'pipepipe_bilibili_player_page.dart';
 import 'pipepipe_native_player_page.dart';
 import 'pipepipe_full_test_page.dart';
 import 'pipepipe_video_detail_page.dart';
+import 'pipepipe_comments_page.dart';
 
 class NavigationTestPage extends StatefulWidget {
   const NavigationTestPage({Key? key}) : super(key: key);
@@ -118,6 +119,11 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
     Get.to(() => const PipePipeVideoDetailPage());
   }
 
+  // 跳转到PipePipe评论页面
+  void _goToPipePipeComments() {
+    Get.to(() => const PipePipeCommentsPage());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,6 +219,10 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
                     ElevatedButton(
                       onPressed: _goToPipePipeVideoDetail,
                       child: const Text('PipePipe详情'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _goToPipePipeComments,
+                      child: const Text('PipePipe评论'),
                     ),
                   ],
                 ),

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:dio/dio.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
-import 'dart:convert';
 
 // 视频信息数据模型
 class VideoInfo {
@@ -233,9 +230,38 @@ class PipePipeFullTestPage extends StatefulWidget {
 
 class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
     with SingleTickerProviderStateMixin {
-  // 播放器相关
-  late final Player player;
-  late final VideoController videoController;
+  late final WebViewController _controller = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setUserAgent(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1')
+    ..setNavigationDelegate(
+      NavigationDelegate(
+        onProgress: (int progress) {
+          // 页面加载进度
+        },
+        onPageStarted: (String url) {
+          // 页面开始加载
+        },
+        onPageFinished: (String url) async {
+          // 页面加载完成
+          // 确保播放器默认暂停
+          try {
+            await _controller.runJavaScript('document.querySelector("video").pause();');
+          } catch (e) {
+            // 忽略错误，因为页面可能还没有完全加载
+          }
+        },
+        onWebResourceError: (WebResourceError error) {
+          // 资源加载错误
+        },
+      ),
+    );
+
+  // B站视频参数
+  String videoId = 'BV1GJ411x7h7'; // 示例视频ID
+  String cid = '190597915'; // 示例cid
+  String aid = '928861104'; // 示例aid
+  bool usePCPlayer = true; // 默认使用PC端播放器样式
   final TextEditingController _urlController = TextEditingController();
   
   // 视频信息和评论数据
@@ -249,43 +275,42 @@ class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
   bool hasMore = true; // 是否还有更多数据
   final Dio _dio = Dio();
   final ScrollController _scrollController = ScrollController();
-  
-  // B站视频参数
-  String videoId = 'BV1GJ411x7h7'; // 示例视频ID
-  String cid = '190597915'; // 示例cid
-  String aid = '928861104'; // 示例aid
 
   @override
   void initState() {
     super.initState();
-    // 初始化播放器
-    player = Player();
-    videoController = VideoController(player);
-    
-    // 加载默认视频
-    _loadVideo();
+    // 加载B站播放器
+    _loadBiliPlayer();
+    // 加载视频信息和评论
     _loadVideoInfo();
     _loadComments();
   }
 
-  // 加载视频
-  Future<void> _loadVideo() async {
-    try {
-      // 使用media_kit播放器加载视频
-      await player.open(Media('https://www.bilibili.com/video/$videoId'), play: true);
-    } catch (e) {
-      setState(() {
-        errorMessage = '加载视频失败: $e';
-      });
-    }
+  void _loadBiliPlayer() {
+    // 根据选择使用PC端或移动端播放器
+    final String playerBaseUrl = usePCPlayer
+        ? 'https://player.bilibili.com/player.html' // PC端播放器
+        : 'https://www.bilibili.com/blackboard/html5mobileplayer.html'; // 移动端播放器
+
+    final String playerUrl =
+        '$playerBaseUrl?bvid=$videoId&cid=$cid&page=1&autoplay=0&danmaku=1';
+
+    _controller.loadRequest(Uri.parse(playerUrl));
   }
 
   @override
   void dispose() {
-    player.dispose();
     _urlController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  // 切换播放器样式
+  void _togglePlayerStyle() {
+    setState(() {
+      usePCPlayer = !usePCPlayer;
+    });
+    _loadBiliPlayer();
   }
 
   // 跳转到指定视频
@@ -339,7 +364,7 @@ class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
           );
           
           // 重新加载播放器
-          _loadVideo();
+          _loadBiliPlayer();
           
           // 重新加载视频信息和评论
           _loadVideoInfo();
@@ -359,7 +384,7 @@ class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
           aid = '928861104';
           cid = '190597915';
         });
-        _loadVideo();
+        _loadBiliPlayer();
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -503,9 +528,15 @@ class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
       appBar: AppBar(
         title: const Text('PipePipe完整测试页面'),
         actions: [
+          // 切换播放器样式按钮
+          IconButton(
+            icon: Icon(usePCPlayer ? Icons.phone_android : Icons.computer),
+            onPressed: _togglePlayerStyle,
+          ),
+          // 刷新按钮
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadVideo,
+            onPressed: _loadBiliPlayer,
           ),
         ],
       ),
@@ -533,7 +564,7 @@ class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
               ],
             ),
           ),
-          // 播放器区域
+          // 视频播放器区域
           _buildPlayerSection(),
           // 视频信息和评论区域
           Expanded(
@@ -616,37 +647,7 @@ class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
                   ),
                 ],
               ),
-              child: Video(
-                controller: videoController,
-                controls: (state) {
-                  return Stack(
-                    children: [
-                      // 播放控制层
-                      Positioned.fill(
-                        child: GestureDetector(
-                          onTap: () {
-                            if (player.state.playing) {
-                              player.pause();
-                            } else {
-                              player.play();
-                            }
-                          },
-                          child: Container(
-                            color: Colors.transparent,
-                            child: Center(
-                              child: Icon(
-                                player.state.playing ? Icons.pause : Icons.play_arrow,
-                                size: 60,
-                                color: Colors.white.withOpacity(0.7),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+              child: WebViewWidget(controller: _controller),
             ),
           );
         },
@@ -756,7 +757,7 @@ class _PipePipeFullTestPageState extends State<PipePipeFullTestPage>
                         setState(() {
                           cid = page.cid.toString();
                         });
-                        _loadVideo();
+                        _loadBiliPlayer();
                         
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
