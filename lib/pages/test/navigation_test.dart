@@ -9,6 +9,7 @@ import 'bili_web_player_test.dart';
 import 'pipepipe_player_page.dart';
 import 'pipepipe_bilibili_player_page.dart';
 import 'pipepipe_native_player_page.dart';
+import 'pipepipe_full_test_page.dart';
 
 class NavigationTestPage extends StatefulWidget {
   const NavigationTestPage({Key? key}) : super(key: key);
@@ -106,6 +107,11 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
     Get.to(() => const PipePipeNativePlayerPage());
   }
 
+  // 跳转到PipePipe完整测试页面
+  void _goToPipePipeFullTest() {
+    Get.to(() => const PipePipeFullTestPage());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,6 +199,10 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
                     ElevatedButton(
                       onPressed: _goToPipePipeNativePlayer,
                       child: const Text('PipePipe原生'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _goToPipePipeFullTest,
+                      child: const Text('PipePipe完整'),
                     ),
                   ],
                 ),

@@ -47,6 +47,19 @@
 10. 响应式设计，适配不同屏幕尺寸
 11. 支持视频跳转功能，可以输入BV号或视频链接切换视频
 
+## PipePipe完整测试页面实现
+
+基于PipePipe项目的完整架构设计，我们创建了一个全新的测试页面，该页面具有以下特点：
+
+1. 使用MediaKit作为播放器核心，支持多种视频格式
+2. 集成视频详细信息展示
+3. 集成评论系统，支持热门评论和普通评论
+4. 支持视频分P切换
+5. 支持评论排序功能
+6. 响应式设计，适配不同屏幕尺寸
+7. 支持视频跳转功能，可以输入BV号或视频链接切换视频
+8. 简洁的用户界面设计，参考PipePipe项目的现代化UI
+
 ## 实现原理
 
 1. 使用WebView组件嵌入B站官方播放器
@@ -159,6 +172,7 @@
 7. 在播放器选择按钮区域，点击"PipePipe播放器"按钮进入PipePipe风格的播放器页面
 8. 点击"PipePipe Bilibili"按钮进入完整的PipePipe Bilibili播放器页面
 9. 点击"PipePipe原生"按钮进入PipePipe原生播放器页面
+10. 点击"PipePipe完整"按钮进入PipePipe完整测试页面
 
 ### 专门的PipePipe播放器测试入口
 
@@ -189,6 +203,19 @@ flutter run -t lib/main_pipepipe_bilibili_test.dart
 ```
 flutter run -t lib/main_pipepipe_native_test.dart
 ```
+
+### 专门的PipePipe完整测试页面入口
+
+为了方便测试PipePipe完整测试页面，我们还提供了一个专门的测试入口文件：
+- `lib/main_pipepipe_full_test.dart`: PipePipe完整测试页面入口文件
+
+可以通过以下命令运行：
+```
+flutter run -t lib/main_pipepipe_full_test.dart
+```
+
+或者通过运行脚本：
+- `run_pipepipe_full_test.bat`: PipePipe完整测试页面运行脚本
 
 ## 技术细节
 
@@ -223,10 +250,12 @@ https://player.bilibili.com/player.html?bvid={视频ID}&cid={CID}&page=1&autopla
 - `lib/pages/test/pipepipe_player_page.dart`: PipePipe风格的播放器页面
 - `lib/pages/test/pipepipe_bilibili_player_page.dart`: 完整的PipePipe Bilibili播放器页面
 - `lib/pages/test/pipepipe_native_player_page.dart`: PipePipe原生播放器页面
+- `lib/pages/test/pipepipe_full_test_page.dart`: PipePipe完整测试页面
 - `lib/pages/main/controller.dart`: 主页面控制器
 - `lib/main_pipepipe_test_entry.dart`: PipePipe播放器测试入口文件
 - `lib/main_pipepipe_bilibili_test.dart`: PipePipe Bilibili播放器测试入口文件
 - `lib/main_pipepipe_native_test.dart`: PipePipe原生播放器测试入口文件
+- `lib/main_pipepipe_full_test.dart`: PipePipe完整测试页面入口文件
 
 ## 自定义视频
 

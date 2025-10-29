@@ -13,7 +13,7 @@ import 'package:get/get.dart';
 import '../dynamic/controller.dart';
 import '../mine/index.dart';
 import '../test/bili_integrated_test_page.dart';
-import '../test/pipepipe_player_page.dart';
+import '../test/pipepipe_full_test_page.dart'; // 导入新的PipePipe完整测试页面
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -191,12 +191,24 @@ class _MainPageState extends State<MainPage> {
 class MainController extends GetxController {
   final RxInt selectedIndex = 0.obs;
   final List<Widget> pages = [
-    const HomePage(),
+    const HomePage(), // 确保HomePage在home/index.dart中导出
     const DynamicPage(),
     const MinePage(),
     const BiliIntegratedTestPage(), // 恢复整合测试页面
-    const PipePipePlayerPage(), // 添加PipePipe播放器页面
+    const PipePipeFullTestPage(), // 添加新的PipePipe完整测试页面
   ];
+
+  _initData() {
+    // 初始化数据
+  }
+
+  void onTap() {}
+
+  @override
+  void onReady() {
+    super.onReady();
+    _initData();
+  }
 
   // 添加方法确保页面切换时更新选中索引
   void updateSelectedIndex(int index) {
