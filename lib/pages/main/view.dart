@@ -14,6 +14,7 @@ import '../dynamic/controller.dart';
 import '../mine/index.dart';
 import '../test/bili_integrated_test_page.dart';
 import '../test/pipepipe_full_test_page.dart'; // 导入新的PipePipe完整测试页面
+import '../test/pipepipe_video_detail_page.dart'; // 导入新的PipePipe视频详情页面
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -125,8 +126,13 @@ class _MainPageState extends State<MainPage> {
                       ),
                       NavigationRailDestination(
                         icon: Icon(Icons.play_circle_outline),
-                        label: Text("PipePipe"),
+                        label: Text("PipePipe完整"),
                         selectedIcon: Icon(Icons.play_circle),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.info_outline),
+                        label: Text("PipePipe详情"),
+                        selectedIcon: Icon(Icons.info),
                       ),
                     ],
                     selectedIndex: controller.selectedIndex.value,
@@ -177,7 +183,12 @@ class _MainPageState extends State<MainPage> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.play_circle_outline),
                     activeIcon: Icon(Icons.play_circle),
-                    label: "PipePipe",
+                    label: "PipePipe完整",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.info_outline),
+                    activeIcon: Icon(Icons.info),
+                    label: "PipePipe详情",
                   ),
                 ],
               ),
@@ -196,6 +207,7 @@ class MainController extends GetxController {
     const MinePage(),
     const BiliIntegratedTestPage(), // 恢复整合测试页面
     const PipePipeFullTestPage(), // 添加新的PipePipe完整测试页面
+    const PipePipeVideoDetailPage(), // 添加新的PipePipe视频详情页面
   ];
 
   _initData() {

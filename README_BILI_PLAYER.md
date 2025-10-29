@@ -60,6 +60,20 @@
 7. 支持视频跳转功能，可以输入BV号或视频链接切换视频
 8. 简洁的用户界面设计，参考PipePipe项目的现代化UI
 
+## PipePipe视频详情页面实现
+
+基于PipePipe项目的视频详情界面设计，我们创建了一个完全按照PipePipe样式实现的视频详情页面，该页面具有以下特点：
+
+1. 使用MediaKit作为播放器核心，支持多种视频格式
+2. 完全按照PipePipe样式的视频详细信息展示
+3. 完全按照PipePipe样式的评论系统，支持热门评论和普通评论
+4. 完全按照PipePipe样式的推荐视频展示
+5. 支持视频分P切换
+6. 支持评论排序功能
+7. 响应式设计，适配不同屏幕尺寸
+8. 支持视频跳转功能，可以输入BV号或视频链接切换视频
+9. 简洁的用户界面设计，完全参考PipePipe项目的现代化UI
+
 ## 实现原理
 
 1. 使用WebView组件嵌入B站官方播放器
@@ -173,6 +187,7 @@
 8. 点击"PipePipe Bilibili"按钮进入完整的PipePipe Bilibili播放器页面
 9. 点击"PipePipe原生"按钮进入PipePipe原生播放器页面
 10. 点击"PipePipe完整"按钮进入PipePipe完整测试页面
+11. 点击"PipePipe详情"按钮进入PipePipe视频详情页面
 
 ### 专门的PipePipe播放器测试入口
 
@@ -204,142 +219,12 @@ flutter run -t lib/main_pipepipe_bilibili_test.dart
 flutter run -t lib/main_pipepipe_native_test.dart
 ```
 
-### 专门的PipePipe完整测试页面入口
+### 专门的PipePipe视频详情页面测试入口
 
-为了方便测试PipePipe完整测试页面，我们还提供了一个专门的测试入口文件：
-- `lib/main_pipepipe_full_test.dart`: PipePipe完整测试页面入口文件
+为了方便测试PipePipe视频详情页面，我们还提供了一个专门的测试入口文件：
+- `lib/main_pipepipe_video_detail_test.dart`: PipePipe视频详情页面测试入口文件
+- `run_pipepipe_video_detail_test.bat`: PipePipe视频详情页面测试运行脚本
 
-可以通过以下命令运行：
-```
-flutter run -t lib/main_pipepipe_full_test.dart
-```
-
-或者通过运行脚本：
-- `run_pipepipe_full_test.bat`: PipePipe完整测试页面运行脚本
-
-## 技术细节
-
-### 播放器URL格式
-
-```
-// 移动端播放器
-https://www.bilibili.com/blackboard/html5mobileplayer.html?bvid={视频ID}&cid={CID}&page=1&autoplay=0&danmaku=1&muted=0
-
-// PC端播放器
-https://player.bilibili.com/player.html?bvid={视频ID}&cid={CID}&page=1&autoplay=0&danmaku=1&muted=0
-```
-
-### 评论API参数说明
-
-- `oid`: 视频的aid（目标评论区的ID）
-- `sort`: 排序方式（0=按时间排序, 1=按点赞数排序, 2=按回复数排序）
-- `ps`: 每页获取的评论数量，范围是1到20
-- `pn`: 要获取的页码，从1开始
-
-### 视频信息API参数说明
-
-- `aid`: 视频的AV号（纯数字格式）
-- `bvid`: 视频的BV号（例如 BV117411r7R1）
-- aid和bvid任选其一即可
-
-### 文件结构
-
-- `lib/pages/test/bili_integrated_test_page.dart`: 整合的播放器测试页面
-- `lib/pages/test/bili_comments_page.dart`: 视频评论页面
-- `lib/pages/test/bili_video_info_page.dart`: 视频详细信息页面
-- `lib/pages/test/pipepipe_player_page.dart`: PipePipe风格的播放器页面
-- `lib/pages/test/pipepipe_bilibili_player_page.dart`: 完整的PipePipe Bilibili播放器页面
-- `lib/pages/test/pipepipe_native_player_page.dart`: PipePipe原生播放器页面
-- `lib/pages/test/pipepipe_full_test_page.dart`: PipePipe完整测试页面
-- `lib/pages/main/controller.dart`: 主页面控制器
-- `lib/main_pipepipe_test_entry.dart`: PipePipe播放器测试入口文件
-- `lib/main_pipepipe_bilibili_test.dart`: PipePipe Bilibili播放器测试入口文件
-- `lib/main_pipepipe_native_test.dart`: PipePipe原生播放器测试入口文件
-- `lib/main_pipepipe_full_test.dart`: PipePipe完整测试页面入口文件
-
-## 自定义视频
-
-要播放其他视频，只需修改以下参数：
-
-```
-// B站视频参数
-final String videoId = 'BV1GJ411x7h7'; // 视频ID
-final String cid = '190597915'; // 视频CID
-final String aid = '928861104'; // 视频AID
-```
-
-## 响应式设计特点
-
-1. **自适应宽高比**：播放器容器保持16:9的宽高比
-2. **居中显示**：在不同屏幕尺寸下都能居中显示
-3. **最大尺寸适配**：根据可用空间自动调整播放器尺寸
-4. **圆角边框**：美观的圆角设计和阴影效果
-5. **跨平台兼容**：在手机、平板和桌面设备上都能良好显示
-
-## 播放器样式对比
-
-### 移动端播放器特点
-- 界面清爽简洁
-- 无广告干扰
-- 适合移动端观看
-- 功能相对简化
-
-### PC端播放器特点
-- 功能丰富完整
-- 可能包含广告
-- 适合大屏幕观看
-- 提供更多交互选项
-
-## 评论功能特点
-
-### 热门评论
-- 仅在第一页显示
-- 以特殊标识突出显示
-- 包含点赞数和回复数
-
-### 普通评论
-- 支持分页浏览
-- 显示用户头像和昵称
-- 显示评论时间和内容
-- 支持多种排序方式
-
-### 分页控制
-- 上一页/下一页导航
-- 当前页码显示
-- 总页数显示
-
-## 视频详细信息功能特点
-
-### 基本信息
-- 视频标题、封面、时长
-- 发布时间、版权类型
-- 视频描述
-
-### 数据统计
-- 播放量、弹幕数、评论数
-- 点赞数、投币数、收藏数
-- 分享数
-
-### UP主信息
-- UP主头像、昵称
-- UP主UID
-
-### 分P列表
-- 显示所有分P标题和时长
-- 支持点击跳转到指定分P（待实现）
-
-## 注意事项
-
-1. 需要网络连接才能播放视频和获取数据
-2. 部分视频可能因版权限制无法播放
-3. 某些功能可能需要登录B站账号
-4. 移动端体验更佳
-5. PC端播放器在移动设备上可能显示不够优化
-6. 评论功能和视频信息功能依赖第三方API服务
-
-## 参考资料
-
-- [B站iframe播放器使用教程](https://www.ymhave.com/archives/bilibiliiframe.html)
-- [B站官方播放器文档](https://player.bilibili.com/)
-- [UAPI获取Bilibili视频评论接口](https://uapis.cn/docs/api-reference/get-social-bilibili-replies)
-- [UAPI获取Bilibili视频详细信息接口](https://uapis.cn/docs/api-reference/get-social-bilibili-videoinfo)
+可以通过以下方式运行：
+1. 运行脚本：双击 `run_pipepipe_video_detail_test.bat`
+2. 命令行运行：`flutter run -t lib/main_pipepipe_video_detail_test.dart`
