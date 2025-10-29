@@ -112,21 +112,32 @@
 
 ## 使用方法
 
+### 主页面导航栏入口
+
+现在在主页面的导航栏中已经添加了 PipePipe 播放器的入口：
+1. 在桌面端：导航栏中会显示"PipePipe"选项
+2. 在移动端：底部导航栏中会显示"PipePipe"选项
+3. 点击该选项可以直接进入 PipePipe 播放器页面
+
+### 导航测试页面入口
+
 1. 在应用底部导航栏点击"测试"选项卡
 2. 进入整合的B站播放器测试页面
 3. 页面会自动加载默认视频
 4. 通过顶部的Tab导航切换简介、评论和更多内容
 5. 点击左上角图标（💻/📱）可在PC端和移动端播放器样式间切换
 6. 点击右上角刷新按钮可重新加载播放器
+7. 在播放器选择按钮区域，点击"PipePipe播放器"按钮进入PipePipe风格的播放器页面
 
-### PipePipe播放器测试
+### 专门的PipePipe播放器测试入口
 
-1. 在测试页面的播放器选择按钮区域，点击"PipePipe播放器"按钮
-2. 进入PipePipe风格的播放器页面
-3. 该页面集成了播放器、视频信息和评论功能
-4. 支持播放器样式切换（移动端/PC端）
-5. 支持视频跳转功能，可以输入BV号或视频链接切换视频
-6. 支持评论排序和刷新功能
+为了方便测试PipePipe播放器，我们还提供了一个专门的测试入口文件：
+- `lib/main_pipepipe_test_entry.dart`: PipePipe播放器测试入口文件
+
+可以通过以下命令运行：
+```
+flutter run -t lib/main_pipepipe_test_entry.dart
+```
 
 ## 技术细节
 
@@ -160,6 +171,7 @@ https://player.bilibili.com/player.html?bvid={视频ID}&cid={CID}&page=1&autopla
 - `lib/pages/test/bili_video_info_page.dart`: 视频详细信息页面
 - `lib/pages/test/pipepipe_player_page.dart`: PipePipe风格的播放器页面
 - `lib/pages/main/controller.dart`: 主页面控制器
+- `lib/main_pipepipe_test_entry.dart`: PipePipe播放器测试入口文件
 
 ## 自定义视频
 
