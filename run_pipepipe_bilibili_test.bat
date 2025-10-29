@@ -1,0 +1,3 @@
+@echo off
+echo 正在启动 PipePipe Bilibili 播放器测试...
+flutter run -t lib/main_pipepipe_bilibili_test.dart
