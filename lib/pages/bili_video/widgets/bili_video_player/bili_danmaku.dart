@@ -17,7 +17,6 @@ class BiliDanmakuController extends GetxController {
 
   final BiliVideoPlayerController biliVideoPlayerController;
   
-  // dmSegList 现在是一个包含所有分段所有弹幕的扁平化列表
   final List<DanmakuElem> dmSegList = [];
   int currentIndex = 0;
   bool _isInitialized = false;
@@ -50,7 +49,7 @@ class BiliDanmakuController extends GetxController {
     currentIndex = dmSegList.length;
   }
 
-  // 【最终修复】根据真实的 API 重写了 initDanmaku 方法
+  // 【最终修复】使用正确的 cid 获取方式
   Future<void> initDanmaku() async {
     if (_isInitialized) return;
     _isInitialized = true;
@@ -58,28 +57,22 @@ class BiliDanmakuController extends GetxController {
     currentIndex = 0;
 
     try {
-      // 【重要】TODO: 请根据您的实际情况修改获取 cid 的方式
-      // 示例: final cid = biliVideoPlayerController.videoParams.cid;
-      final cid = 123456789; // 临时占位符，请替换为真实的 cid
+      // ✅ 直接从 biliVideoPlayerController 获取 cid
+      final cid = biliVideoPlayerController.cid;
 
       // 弹幕是分段的，我们循环获取前几段
-      // 对于一个10分钟的视频，通常有3-6段弹幕
       for (int i = 1; i <= 5; i++) {
         try {
-          // 调用真实的 API 方法
           final DmSegMobileReply reply = await DanmakuApi.requestDanmaku(
             cid: cid,
             segmentIndex: i,
           );
-          // 假设 DmSegMobileReply 有一个名为 elems 的字段，包含弹幕列表
           if (reply.elems.isNotEmpty) {
             dmSegList.addAll(reply.elems);
           } else {
-            // 如果返回的段没有弹幕，可能已经到末尾了，可以停止加载
             break;
           }
         } catch (e) {
-          // 如果某个段加载失败，可以记录日志并继续加载下一段
           log('加载第 $i 段弹幕失败: $e');
         }
       }
