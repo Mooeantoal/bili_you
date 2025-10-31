@@ -55,7 +55,8 @@ class BiliVideoController extends GetxController
             progress != null ? Duration(seconds: progress!) : Duration.zero);
     biliVideoPlayerPanelController =
         BiliVideoPlayerPanelController(biliVideoPlayerController);
-    biliDanmakuController = BiliDanmakuController(biliVideoPlayerController);
+    biliDanmakuController = BiliDanmakuController(biliVideoPlayerController: biliVideoPlayerController);
+
     super.onInit();
   }
 
