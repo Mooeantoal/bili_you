@@ -1,18 +1,17 @@
-import 'dart:developer';
 import 'dart:math' as math;
-
-import 'package:bili_you/common/models/local/video/audio_play_item.dart';
-import 'package:bili_you/common/models/local/video/video_play_item.dart';
-import 'package:bili_you/common/utils/index.dart';
-import 'package:bili_you/common/widget/slider_dialog.dart';
-import 'package:bili_you/common/widget/video_audio_player.dart';
-import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:screen_brightness/screen_brightness.dart';
-import 'package:volume_controller/volume_controller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:bili_you/common/widget/player/base_player.dart';
+import 'package:bili_you/common/widget/video_audio_player.dart';
+import 'package:bili_you/common/utils/index.dart';
+import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
+import 'package:volume_controller/volume_controller.dart';
+import 'package:screen_brightness/screen_brightness.dart';
+import 'package:bili_you/common/widget/slider_dialog.dart';
+import 'package:bili_you/common/models/local/video/video_play_item.dart';
+import 'package:bili_you/common/models/local/video/audio_play_item.dart';
+import 'dart:developer' as developer;
 
 class BiliVideoPlayerPanel extends StatefulWidget {
   const BiliVideoPlayerPanel(this.controller, {super.key});
@@ -39,9 +38,9 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
   static const Color textColor = Colors.white;
   static const Color iconColor = Colors.white;
 
-  void playStateChangedCallback(VideoAudioState value) {
+  void playStateChangedCallback(PlayerStateModel value) {
     widget.controller._isPlayerPlaying = value.isPlaying;
-    widget.controller._isPlayerEnd = value.isEnd;
+    widget.controller._isPlayerEnd = value.isCompleted;
     widget.controller._isPlayerBuffering = value.isBuffering;
     playButtonKey.currentState?.setState(() {});
   }
@@ -568,7 +567,7 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                 );
                                 break;
                               default:
-                                log(value);
+                                developer.log(value);
                             }
                           },
                         )
@@ -637,18 +636,20 @@ class _BiliVideoPlayerPanelState extends State<BiliVideoPlayerPanel> {
                                     .duration
                                     .inMilliseconds
                                     .toDouble(),
-                                value: clampDouble(
-                                    widget.controller._position.inMilliseconds
-                                        .toDouble(),
-                                    0,
+                                value: math.min(
+                                    math.max(
+                                        widget.controller._position.inMilliseconds
+                                            .toDouble(),
+                                        0),
                                     widget.controller._biliVideoPlayerController
                                         .duration.inMilliseconds
                                         .toDouble()),
-                                secondaryTrackValue: clampDouble(
-                                    widget.controller._fartherestBuffed
-                                        .inMilliseconds
-                                        .toDouble(),
-                                    0,
+                                secondaryTrackValue: math.min(
+                                    math.max(
+                                        widget.controller._fartherestBuffed
+                                            .inMilliseconds
+                                            .toDouble(),
+                                        0),
                                     widget.controller._biliVideoPlayerController
                                         .duration.inMilliseconds
                                         .toDouble()),

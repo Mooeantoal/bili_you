@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:bili_you/common/api/danmaku_api.dart';
 import 'package:bili_you/common/models/network/proto/danmaku/danmaku.pb.dart';
 import 'package:bili_you/common/utils/index.dart';
-import 'package:bili_you/common/widget/video_audio_player.dart';
+import 'package:bili_you/common/widget/player/base_player.dart';
 
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +25,7 @@ class _BiliDanmakuState extends State<BiliDanmaku> {
   DanmakuController? danmakuController;
   bool isListenerLocked = false;
   bool isPlaying = true;
-  void videoPlayerStateChangedCallback(VideoAudioState value) {
+  void videoPlayerStateChangedCallback(PlayerStateModel value) {
     if (value.isBuffering || !value.isPlaying) {
       danmakuController?.pause();
     } else if (value.isPlaying) {
@@ -178,99 +178,5 @@ class _BiliDanmakuState extends State<BiliDanmaku> {
         },
       );
     });
-  }
-}
-
-class BiliDanmakuController {
-  BiliDanmakuController(this.biliVideoPlayerController);
-  final BiliVideoPlayerController biliVideoPlayerController;
-  int segmentCount = 1;
-  int currentIndex = 0;
-  int currentSegmentIndex = 0;
-  double initDuration = 0;
-  List<DmSegMobileReply> dmSegList = [];
-  bool _isInitializedState = false;
-  bool _isInitialized = false;
-
-  ///字体缩放
-  double fontScale = 1.0;
-
-  ///字体不透明度
-  double fontOpacity = 1.0;
-
-  ///弹幕速度
-  double speed = 1.0;
-
-  void Function()? clearAllDanmaku;
-  void Function()? reloadDanmaku;
-  void Function()? refreshDanmaku;
-
-  bool _isDanmakuOpened = true;
-  bool get isDanmakuOpened => _isDanmakuOpened;
-
-  Future<void> _requestDanmaku() async {
-    dmSegList.clear();
-    segmentCount =
-        (biliVideoPlayerController.videoPlayInfo!.timeLength / (60 * 6)).ceil();
-    for (int segmentIndex = 1; segmentIndex <= segmentCount; segmentIndex++) {
-      log(biliVideoPlayerController.cid.toString());
-      var response = await DanmakuApi.requestDanmaku(
-          cid: biliVideoPlayerController.cid, segmentIndex: segmentIndex);
-      response.elems.sort((a, b) {
-        return a.progress - b.progress;
-      });
-      dmSegList.add(response);
-      _isInitialized = true;
-      _findPositionIndex(biliVideoPlayerController.position.inMilliseconds);
-    }
-  }
-
-  void _findPositionIndex(int videoPosition) {
-    //使用二分查找法查距离最近的弹幕的位置
-    var controller = this;
-    int segIndex = (videoPosition / 360000).ceil() - 1;
-    if (segIndex < 0) segIndex = 0;
-    if (segIndex < controller.dmSegList.length) {
-      int left = 0;
-      int right = controller.dmSegList[segIndex].elems.length;
-      while (left < right) {
-        int mid = (right + left) ~/ 2;
-        var midPosition = controller.dmSegList[segIndex].elems[mid].progress;
-        if (midPosition >= videoPosition) {
-          right = mid;
-        } else {
-          left = mid + 1;
-        }
-      }
-      controller.currentSegmentIndex = segIndex;
-      controller.currentIndex = right;
-    } else {
-      //如果还没加载好这部分的内容,则设index为0
-      controller.currentSegmentIndex = segIndex;
-      controller.currentIndex = 0;
-    }
-  }
-
-  void initDanmaku() {
-    if (!_isInitialized && dmSegList.isEmpty && isDanmakuOpened) {
-      //如果弹幕列表还是空的话，而且是可见的，就进行请求获取弹幕
-      _requestDanmaku();
-      speed = SettingsUtil.getValue(SettingsStorageKeys.defaultDanmakuSpeed,
-          defaultValue: 1.0);
-      fontScale = SettingsUtil.getValue(SettingsStorageKeys.defaultDanmakuScale,
-          defaultValue: 1.0);
-      fontOpacity = SettingsUtil.getValue(
-          SettingsStorageKeys.defaultDanmakuOpacity,
-          defaultValue: 0.6);
-    } else {
-      _findPositionIndex(biliVideoPlayerController.position.inMilliseconds);
-    }
-  }
-
-  void toggleDanmaku() {
-    _isDanmakuOpened = !_isDanmakuOpened;
-    clearAllDanmaku?.call();
-    refreshDanmaku?.call();
-    initDanmaku();
   }
 }
