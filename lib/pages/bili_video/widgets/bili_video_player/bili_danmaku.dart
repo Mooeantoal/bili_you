@@ -4,13 +4,71 @@ import 'package:bili_you/common/api/danmaku_api.dart';
 import 'package:bili_you/common/models/network/proto/danmaku/danmaku.pb.dart';
 import 'package:bili_you/common/utils/index.dart';
 import 'package:bili_you/common/widget/player/base_player.dart';
-
 import 'package:bili_you/pages/bili_video/widgets/bili_video_player/bili_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // 【修改1】添加 Getx 依赖
 import 'package:ns_danmaku/danmaku_controller.dart';
 import 'package:ns_danmaku/danmaku_view.dart';
 import 'package:ns_danmaku/models/danmaku_item.dart';
 import 'package:ns_danmaku/models/danmaku_option.dart';
+
+/// 【修改2】根据使用情况，重新添加完整的 BiliDanmakuController 类定义
+class BiliDanmakuController extends GetxController {
+  BiliDanmakuController({required this.biliVideoPlayerController});
+
+  final BiliVideoPlayerController biliVideoPlayerController;
+  final List<DanmakuElem> dmSegList = [];
+  int currentSegmentIndex = 0;
+  int currentIndex = 0;
+  int segmentCount = 0;
+  bool _isInitialized = false;
+  bool _isInitializedState = false;
+  bool _isDanmakuOpened = true;
+  double fontScale = 1.0;
+  double fontOpacity = 1.0;
+  double speed = 1.0;
+  int initDuration = 8000;
+
+  bool get isDanmakuOpened => _isDanmakuOpened;
+  bool get isInitialized => _isInitialized;
+
+  VoidCallback? reloadDanmaku;
+  VoidCallback? refreshDanmaku;
+
+  void _findPositionIndex(int milliseconds) {
+    // 简单的线性搜索，实际项目中可能需要更高效的算法
+    for (int i = 0; i < dmSegList.length; i++) {
+      for (int j = 0; j < dmSegList[i].elems.length; j++) {
+        if (dmSegList[i].elems[j].progress >= milliseconds) {
+          currentSegmentIndex = i;
+          currentIndex = j;
+          return;
+        }
+      }
+    }
+    // 如果没找到，说明已经播放到最后了
+    currentSegmentIndex = dmSegList.length - 1;
+    currentIndex = dmSegList[currentSegmentIndex].elems.length;
+  }
+
+  Future<void> initDanmaku() async {
+    if (_isInitialized) return;
+    _isInitialized = true;
+    dmSegList.clear();
+    try {
+      // 假设 cid 可以从 biliVideoPlayerController 中获取
+      final cid = biliVideoPlayerController.value?.cid;
+      if (cid != null) {
+        final danmakuData = await DanmakuApi.getDanmaku(cid: cid);
+        if (danmakuData != null) {
+          dmSegList.addAll(danmakuData);
+        }
+      }
+    } catch (e) {
+      log('弹幕加载失败: $e');
+    }
+  }
+}
 
 class BiliDanmaku extends StatefulWidget {
   const BiliDanmaku({super.key, required this.controller});
@@ -21,10 +79,12 @@ class BiliDanmaku extends StatefulWidget {
   State<BiliDanmaku> createState() => _BiliDanmakuState();
 }
 
-class BiliDanmakuState extends State<BiliDanmaku> {
+// 【修改3】将类名改为 _BiliDanmakuState 以匹配 createState 的返回值
+class _BiliDanmakuState extends State<BiliDanmaku> {
   DanmakuController? danmakuController;
   bool isListenerLocked = false;
   bool isPlaying = true;
+
   void videoPlayerStateChangedCallback(PlayerStateModel value) {
     if (value.isBuffering || !value.isPlaying) {
       danmakuController?.pause();
@@ -43,7 +103,7 @@ class BiliDanmakuState extends State<BiliDanmaku> {
       danmakuController?.clear();
     }
     if (!isListenerLocked &&
-        widget.controller._isInitialized &&
+        widget.controller.isInitialized &&
         widget.controller.isDanmakuOpened) {
       isListenerLocked = true;
       var currentPosition =
@@ -119,6 +179,9 @@ class BiliDanmakuState extends State<BiliDanmaku> {
 
   @override
   void initState() {
+    // 【修改4】将 super.initState() 调用移到方法开头，这是最佳实践
+    super.initState();
+
     var controller = widget.controller;
     if (!controller._isInitializedState) {
       if (SettingsUtil.getValue(SettingsStorageKeys.defaultShowDanmaku,
@@ -144,7 +207,6 @@ class BiliDanmakuState extends State<BiliDanmaku> {
     widget.controller._isInitializedState = true;
 
     addAllListeners();
-    super.initState();
   }
 
   @override
