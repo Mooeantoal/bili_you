@@ -21,7 +21,7 @@ class BiliDanmaku extends StatefulWidget {
   State<BiliDanmaku> createState() => _BiliDanmakuState();
 }
 
-class _BiliDanmakuState extends State<BiliDanmaku> {
+class BiliDanmakuState extends State<BiliDanmaku> {
   DanmakuController? danmakuController;
   bool isListenerLocked = false;
   bool isPlaying = true;
