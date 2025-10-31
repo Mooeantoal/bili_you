@@ -6,12 +6,8 @@ import 'bili_video_info_page.dart';
 import 'bili_player_test.dart';
 import 'bili_player_advanced.dart';
 import 'bili_web_player_test.dart';
-import 'pipepipe_player_page.dart';
-import 'pipepipe_bilibili_player_page.dart';
-import 'pipepipe_native_player_page.dart';
-import 'pipepipe_full_test_page.dart';
-import 'pipepipe_video_detail_page.dart';
-import 'pipepipe_comments_page.dart';
+import 'custom_player_test.dart';
+// 移除了PipePipe相关的导入
 
 class NavigationTestPage extends StatefulWidget {
   const NavigationTestPage({Key? key}) : super(key: key);
@@ -94,35 +90,12 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
     Get.to(() => const BiliWebPlayerTestPage());
   }
 
-  // 跳转到PipePipe播放器页面
-  void _goToPipePipePlayer() {
-    Get.to(() => const PipePipePlayerPage());
+  // 跳转到自定义播放器测试页面
+  void _goToCustomPlayer() {
+    Get.to(() => const CustomPlayerTestPage());
   }
 
-  // 跳转到PipePipe Bilibili播放器页面
-  void _goToPipePipeBilibiliPlayer() {
-    Get.to(() => const PipePipeBilibiliPlayerPage());
-  }
-
-  // 跳转到PipePipe原生播放器页面
-  void _goToPipePipeNativePlayer() {
-    Get.to(() => const PipePipeNativePlayerPage());
-  }
-
-  // 跳转到PipePipe完整测试页面
-  void _goToPipePipeFullTest() {
-    Get.to(() => const PipePipeFullTestPage());
-  }
-
-  // 跳转到PipePipe视频详情页面
-  void _goToPipePipeVideoDetail() {
-    Get.to(() => const PipePipeVideoDetailPage());
-  }
-
-  // 跳转到PipePipe评论页面
-  void _goToPipePipeComments() {
-    Get.to(() => const PipePipeCommentsPage());
-  }
+  // 移除了所有PipePipe相关的跳转方法
 
   @override
   Widget build(BuildContext context) {
@@ -201,29 +174,10 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
                       child: const Text('网页播放器'),
                     ),
                     ElevatedButton(
-                      onPressed: _goToPipePipePlayer,
-                      child: const Text('PipePipe播放器'),
+                      onPressed: _goToCustomPlayer,
+                      child: const Text('自定义播放器'),
                     ),
-                    ElevatedButton(
-                      onPressed: _goToPipePipeBilibiliPlayer,
-                      child: const Text('PipePipe Bilibili'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _goToPipePipeNativePlayer,
-                      child: const Text('PipePipe原生'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _goToPipePipeFullTest,
-                      child: const Text('PipePipe完整'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _goToPipePipeVideoDetail,
-                      child: const Text('PipePipe详情'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _goToPipePipeComments,
-                      child: const Text('PipePipe评论'),
-                    ),
+                    // 移除了所有PipePipe相关的按钮
                   ],
                 ),
               ],
@@ -277,18 +231,6 @@ class _NavigationTestPageState extends State<NavigationTestPage> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        // 去除蓝色遮罩，使用透明背景
-        color: Colors.transparent,
-        height: 60 + MediaQuery.of(context).padding.bottom,
-        child: const Center(
-          child: Text(
-            '底部导航栏',
-            style: TextStyle(color: Colors.grey, fontSize: 18),
-          ),
-        ),
       ),
     );
   }

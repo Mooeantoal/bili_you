@@ -13,8 +13,7 @@ import 'package:get/get.dart';
 import '../dynamic/controller.dart';
 import '../mine/index.dart';
 import '../test/bili_integrated_test_page.dart';
-import '../test/pipepipe_full_test_page.dart'; // 导入新的PipePipe完整测试页面
-import '../test/pipepipe_video_detail_page.dart'; // 导入新的PipePipe视频详情页面
+// 移除了PipePipe相关的导入
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -124,16 +123,7 @@ class _MainPageState extends State<MainPage> {
                         label: Text("测试"),
                         selectedIcon: Icon(Icons.comment),
                       ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.play_circle_outline),
-                        label: Text("PipePipe完整"),
-                        selectedIcon: Icon(Icons.play_circle),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.info_outline),
-                        label: Text("PipePipe详情"),
-                        selectedIcon: Icon(Icons.info),
-                      ),
+                      // 移除了PipePipe相关的导航项
                     ],
                     selectedIndex: controller.selectedIndex.value,
                     onDestinationSelected: (value) => onDestinationSelected(value),
@@ -180,16 +170,7 @@ class _MainPageState extends State<MainPage> {
                     icon: Icon(Icons.comment), // 恢复整合测试页面的标签
                     label: "测试",
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.play_circle_outline),
-                    activeIcon: Icon(Icons.play_circle),
-                    label: "PipePipe完整",
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.info_outline),
-                    activeIcon: Icon(Icons.info),
-                    label: "PipePipe详情",
-                  ),
+                  // 移除了PipePipe相关的导航项
                 ],
               ),
             ),
@@ -206,8 +187,7 @@ class MainController extends GetxController {
     const DynamicPage(),
     const MinePage(),
     const BiliIntegratedTestPage(), // 恢复整合测试页面
-    const PipePipeFullTestPage(), // 添加新的PipePipe完整测试页面
-    const PipePipeVideoDetailPage(), // 添加新的PipePipe视频详情页面
+    // 移除了PipePipe相关的页面
   ];
 
   _initData() {

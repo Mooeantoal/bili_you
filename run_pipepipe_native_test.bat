@@ -1,3 +1,0 @@
-@echo off
-echo 正在启动 PipePipe 原生播放器测试...
-flutter run -t lib/main_pipepipe_native_test.dart
